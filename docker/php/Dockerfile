@@ -1,12 +1,9 @@
 FROM php:8.3-fpm
 
-# Copy composer.lock and composer.json into the working directory
-COPY composer.lock composer.json /var/www/html/
-
 # Set working directory
-WORKDIR /var/www/html/
+WORKDIR /var/www/html
 
-# Install dependencies for the operating system software
+# Install dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     libpng-dev \
@@ -25,28 +22,42 @@ RUN apt-get update && apt-get install -y \
     libonig-dev \
     curl \
     nodejs \
-    npm
+    npm \
+    zlib1g-dev \
+    libicu-dev \
+    g++ \
+    libmagickwand-dev \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Clear cache
-RUN apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install extensions for php
+# Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install gd
+RUN docker-php-ext-configure intl
+RUN docker-php-ext-install intl
+RUN docker-php-ext-enable intl
 RUN pecl install redis && docker-php-ext-enable redis
 
-# Install composer (php package manager)
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+# Install Imagick PHP extension
+RUN pecl install imagick \
+    && docker-php-ext-enable imagick
 
-# Copy existing application directory contents to the working directory
-COPY . /var/www/html
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
-# Assign permissions of the working directory to the www-data user
-RUN chown -R www-data:www-data \
-        /var/www/html/storage \
-        /var/www/html/bootstrap/cache
+# Copy composer files and install dependencies
+COPY composer.lock composer.json ./
+RUN composer install --no-scripts --no-autoloader
 
-# Expose port 9000 and start php-fpm server (for FastCGI Process Manager)
+# Copy application code
+COPY . .
+
+# Run composer again to optimize autoload
+RUN composer dump-autoload --optimize
+
+# Set permissions
+RUN chown -R www-data:www-data storage bootstrap/cache
+
+# Expose port 9000 and start php-fpm server
 EXPOSE 9000
 CMD ["php-fpm"]
