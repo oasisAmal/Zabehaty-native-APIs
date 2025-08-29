@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Modules\Auth\App\Http\Controllers\AuthController;
 
 Route::prefix('auth')->as('auth.')->controller(AuthController::class)->group(function () {
-    Route::post('login', 'login')->name('login');
+    Route::post('login', 'loginByPassword')->name('login');
     Route::post('register', 'register')->name('register');
     Route::post('reset-password', 'resetPassword')->name('reset-password');
 
