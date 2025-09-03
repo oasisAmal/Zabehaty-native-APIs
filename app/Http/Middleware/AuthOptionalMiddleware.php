@@ -6,7 +6,7 @@ use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate;
 
-class AuthOptional extends Authenticate
+class AuthOptionalMiddleware extends Authenticate
 {
     public function handle($request, Closure $next, ...$guards)
     {
