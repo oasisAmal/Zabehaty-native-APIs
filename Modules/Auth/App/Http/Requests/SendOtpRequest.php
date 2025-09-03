@@ -3,6 +3,7 @@
 namespace Modules\Auth\App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Propaganistas\LaravelPhone\Rules\Phone;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
@@ -16,7 +17,7 @@ class SendOtpRequest extends FormRequest
     public function rules()
     {
         return [
-            'mobile' => 'required|string|max:255',
+            'mobile' => ['required', (new Phone)->countryField('mobile_country_code'), 'exists:user,mobile'],
             'mobile_country_code' => 'required|string|max:255',
         ];
     }
@@ -30,6 +31,7 @@ class SendOtpRequest extends FormRequest
     {
         return [
             'mobile.required' => __('auth::messages.mobile_required'),
+            'mobile.exists' => __('auth::messages.mobile_exists'),
             'mobile_country_code.required' => __('auth::messages.mobile_country_code_required'),
         ];
     }
@@ -54,7 +56,9 @@ class SendOtpRequest extends FormRequest
      */
     protected function prepareForValidation()
     {
-        //
+        $this->merge([
+            'mobile' => format_mobile_number($this->mobile),
+        ]);
     }
 
     /**
