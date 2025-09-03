@@ -2,11 +2,12 @@
 
 namespace Modules\Auth\App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 
 use Modules\Auth\App\Services\AuthService;
 use Modules\Auth\App\Http\Requests\LoginRequest;
+use Modules\Auth\App\Http\Requests\SendOtpRequest;
 
 class AuthController extends Controller
 {
@@ -32,4 +33,22 @@ class AuthController extends Controller
             return responseErrorMessage($e->getMessage(), 422);
         }
     }
+
+    /**
+     * Send Otp
+     */
+    public function sendOtp(SendOtpRequest $request)
+    {
+        return $this->authService->sendOtp($request->validated());
+    }
+    
+    /**
+     * Verify Otp
+     */
+    public function verifyOtp(VerifyOtpRequest $request)
+    {
+        return $this->authService->verifyOtp($request->validated());
+    }
+    
+    
 }

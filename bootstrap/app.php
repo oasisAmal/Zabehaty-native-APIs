@@ -2,8 +2,9 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Http\Middleware\AuthOptional;
-use App\Http\Middleware\Localization;
+use App\Http\Middleware\AuthOptionalMiddleware;
+use App\Http\Middleware\LocalizationMiddleware;
+use App\Http\Middleware\CountryMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -18,11 +19,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->api(prepend: [
-            Localization::class,
+            LocalizationMiddleware::class,
+            CountryMiddleware::class,
         ]);
 
         $middleware->alias([
-            'auth-optional' => AuthOptional::class,
+            'auth-optional' => AuthOptionalMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
