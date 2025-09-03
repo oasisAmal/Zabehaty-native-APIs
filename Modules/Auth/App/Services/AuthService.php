@@ -25,4 +25,26 @@ class AuthService
         }
         return $user;
     }
+
+    /**
+     * Send Otp
+     *
+     * @param array $data
+     * @return array
+     */
+    public function sendOtp($data)
+    {
+        return $data;
+    }
+
+    /**
+     * Verify Otp
+     *
+     * @param array $data
+     * @return array
+     */
+    public function verifyOtp($data)
+    {
+        return $data;
+    }
 }
