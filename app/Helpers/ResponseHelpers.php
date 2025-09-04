@@ -11,7 +11,7 @@ function responseSuccessData($data = null, $code = 200)
 {
     return response()->json([
         'status' => 'success',
-        'locale' => app()->getLocale(),
+        'lang' => app()->getLocale(),
         'data' => $data,
     ], $code);
 }
@@ -19,19 +19,15 @@ function responseSuccessData($data = null, $code = 200)
 /**
  * Response on success message
  *
- * @param array $data
+ * @param string $messages
  * @param integer $code
  * @return Response
  */
 function responseSuccessMessage($messages, $code = 200)
 {
-    if (!is_array($messages)) {
-        $messages = [$messages];
-    }
-
     return response()->json([
         'status' => 'success',
-        'locale' => app()->getLocale(),
+        'lang' => app()->getLocale(),
         'data' => $messages,
     ], $code);
 }
@@ -51,7 +47,7 @@ function responseErrorData($data, $code = 200)
 
     return response()->json([
         'status' => 'error',
-        'locale' => app()->getLocale(),
+        'lang' => app()->getLocale(),
         'data' => $data,
     ], $code);
 }
@@ -71,7 +67,7 @@ function responseErrorMessage($messages, $code = 400)
 
     return response()->json([
         'status' => 'error',
-        'locale' => app()->getLocale(),
+        'lang' => app()->getLocale(),
         'data' => $messages,
     ], $code);
 }
@@ -87,7 +83,7 @@ function validationErrors($errors, $code = 400)
 {
     return response()->json([
         'status' => 'validations',
-        'locale' => app()->getLocale(),
+        'lang' => app()->getLocale(),
         'data' => $errors,
     ], $code);
 }
@@ -103,7 +99,7 @@ function responsePaginate($result, $append = null, $code = 200)
 {
     return response()->json([
         'status' => 'success',
-        'locale' => app()->getLocale(),
+        'lang' => app()->getLocale(),
         'hasMorePages' => $result->hasMorePages(),
         'nextPageUrl' => $result->nextPageUrl(),
         'total' => $result->total(),

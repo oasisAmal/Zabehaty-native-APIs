@@ -28,7 +28,7 @@ class CountryMiddleware
             return responseErrorMessage('The App-Country may not be valid.');
         }
 
-        app()->setLocale($request->header('App-Country'));
+        $request->merge(['app_country_code' => $request->header('App-Country')]);
 
         return $next($request);
     }

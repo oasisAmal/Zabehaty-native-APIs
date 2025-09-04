@@ -23,6 +23,18 @@ class SendOtpRequest extends FormRequest
     }
 
     /**
+     * Prepare the data for validation.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'mobile' => format_mobile_number($this->mobile),
+        ]);
+    }
+
+    /**
      * Get the validation messages that apply to the request.
      *
      * @return array
@@ -44,21 +56,9 @@ class SendOtpRequest extends FormRequest
     public function attributes()
     {
         return [
-            'mobile' => __('auth::attributes.mobile'),
-            'mobile_country_code' => __('auth::attributes.mobile_country_code'),
+            'mobile' => __('auth::messages.attributes.mobile'),
+            'mobile_country_code' => __('auth::messages.attributes.mobile_country_code'),
         ];
-    }
-
-    /**
-     * Prepare the data for validation.
-     *
-     * @return void
-     */
-    protected function prepareForValidation()
-    {
-        $this->merge([
-            'mobile' => format_mobile_number($this->mobile),
-        ]);
     }
 
     /**

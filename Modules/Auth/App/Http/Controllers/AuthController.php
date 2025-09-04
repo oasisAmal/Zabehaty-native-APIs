@@ -39,7 +39,11 @@ class AuthController extends Controller
      */
     public function sendOtp(SendOtpRequest $request)
     {
-        return $this->authService->sendOtp($request->validated());
+        $result = $this->authService->sendOtp($request->validated());
+        if ($result) {
+            return responseSuccessMessage(__('auth::messages.otp_sent_successfully'), 200);
+        }
+        return responseErrorMessage(__('auth::messages.failed_to_send_otp'), 422);
     }
     
     /**

@@ -9,4 +9,6 @@ final class AppCountries extends Enum
     const AE = 'AE';
     const SA = 'SA';
     const OM = 'OM';
+    const KW = 'KW';
+    const BH = 'BH';
 }

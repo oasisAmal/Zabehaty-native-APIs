@@ -36,15 +36,17 @@ class AuthService
      */
     public function sendOtp($data)
     {
-        $user = User::where('mobile', $data['mobile'])->first();
+        $user = User::where('mobile', $data['mobile'])
+        ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
+        ->first();
         if (!$user) {
             return false;
         }
 
-        $user->otp_code = generateRandomNumber(Common::RANDOM_AUTH_CODE_LENGTH);
-        $user->otp_code_expire_at = now()->addMinutes(30);
+        $user->verification_code = generateRandomNumber(Common::RANDOM_AUTH_CODE_LENGTH);
+        // $user->otp_code_expire_at = now()->addMinutes(30);
         $user->save();
-        $message = __('auth::messages.otp_code', ['code' => $user->otp_code]);
+        $message = __('auth::messages.otp_code', ['code' => $user->verification_code]);
 
         return app(SMSService::class)->send($message, $user->mobile, $data['mobile_country_code']);
     }
