@@ -2,6 +2,7 @@
 
 namespace App\Services\Integrations\Whatsapp;
 
+use App\Enums\AppName;
 use Illuminate\Support\Facades\Log;
 use Twilio\Rest\Client;
 use App\Interfaces\WhatsappInterface;
@@ -17,7 +18,7 @@ class TwilioService implements WhatsappInterface
      */
     public function __construct()
     {
-        if (env('APP_NAME', '') == "HALAL APP") {
+        if (request()->app_name == AppName::HALAL_APP) {
             $this->twilio = new Client(config('integrations-credentials.twilio.account_id.halal_app'), config('integrations-credentials.twilio.token.halal_app'));
             $this->whatsapp_from_number = config('integrations-credentials.twilio.whatsapp_number.halal_app');
         } else {

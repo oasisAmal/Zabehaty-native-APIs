@@ -2,6 +2,7 @@
 
 namespace Modules\Notifications\App\Services;
 
+use App\Enums\AppName;
 use Google\Client as GoogleClient;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
@@ -16,7 +17,7 @@ class FCMService
 
     function __construct()
     {
-        if (env('APP_NAME', '') == "HALAL APP") {
+        if (request()->app_name == AppName::HALAL_APP) {
             $this->project_id = config('integrations-credentials.fcm.project_id.halal_app');
             $this->key = config('integrations-credentials.fcm.key.halal_app');
             $this->image = config('integrations-credentials.fcm.image_url.halal_app');
@@ -82,7 +83,11 @@ class FCMService
     private function getAccessToken()
     {
         $client = new GoogleClient();
-        $client->setAuthConfig(config('integrations-credentials.fcm.service_accounts.' . env('APP_NAME', ''))); // Update the path to your service account JSON file
+        if (request()->app_name == AppName::HALAL_APP) {
+            $client->setAuthConfig(config('integrations-credentials.fcm.service_accounts.halal_app'));
+        } else {
+            $client->setAuthConfig(config('integrations-credentials.fcm.service_accounts.zabehaty_app'));
+        }
         $client->addScope('https://www.googleapis.com/auth/firebase.messaging');
 
         $token = $client->fetchAccessTokenWithAssertion();
