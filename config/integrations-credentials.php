@@ -85,6 +85,10 @@ return [
         'color' => [
             'zabehaty_app' => '#135725',
             'halal_app' => '#135725'
-        ]
+        ],
+        'key' => [
+            'zabehaty_app' => 'AAAACtAJ9NU:APA91bHLBvurghpvXglSX4PthNYTyU5QspiTcLjfCdtsGRc1CkEYknyEVPZZBRQ-qZHJYpq0YcEQDUSZxBuX0PYVgEzsZD56hPrXKq62f_c07evu_3RZM05cKn4ubxyuHKDRwhvxhGx-',
+            'halal_app' => 'AAAACtAJ9NU:APA91bHLBvurghpvXglSX4PthNYTyU5QspiTcLjfCdtsGRc1CkEYknyEVPZZBRQ-qZHJYpq0YcEQDUSZxBuX0PYVgEzsZD56hPrXKq62f_c07evu_3RZM05cKn4ubxyuHKDRwhvxhGx-',
+        ],
     ],
 ];
