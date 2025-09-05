@@ -53,15 +53,6 @@ class SMSService implements SMSInterface
     }
 
     /**
-     * Check Credentials
-     * @return boolean
-     */
-    public function checkCredential()
-    {
-        return $this->checkCredential;
-    }
-
-    /**
      * Send SMS
      * @param string $message
      * @param string $number
@@ -70,7 +61,7 @@ class SMSService implements SMSInterface
      */
     public function send($message, $number, $country_code = null)
     {
-        if (!$this->checkCredential()) {
+        if (!$this->checkCredential) {
             return false;
         }
         return $this->provider->send($message, $number, $country_code);

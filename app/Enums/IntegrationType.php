@@ -17,4 +17,9 @@ final class IntegrationType extends Enum
      * Email
      */
     const SMTP_EMAIL = 'smtp_email';
+
+    /**
+     * Whatsapp
+     */
+    const TWILIO_WHATSAPP = 'twilio_whatsapp';
 }

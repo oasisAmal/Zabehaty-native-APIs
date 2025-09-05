@@ -28,6 +28,25 @@ return [
     ], // for Saudi Arabia
 
     /**
+     * Whatsapp
+     */
+    'default_whatsapp_service' => 'twilio',
+    'twilio' => [
+        'account_id' => [
+            'zabehaty_app' => env('TWILIO_ACCOUNT_SID_ZABEHATY_APP'),
+            'halal_app' => env('TWILIO_ACCOUNT_SID_HALAL_APP'),
+        ],
+        'token' => [
+            'zabehaty_app' => env('TWILIO_AUTH_TOKEN_ZABEHATY_APP'),
+            'halal_app' => env('TWILIO_AUTH_TOKEN_HALAL_APP'),
+        ],
+        'whatsapp_number' => [
+            'zabehaty_app' => env('TWILIO_WHATSAPP_NUMBER_ZABEHATY_APP'),
+            'halal_app' => env('TWILIO_WHATSAPP_NUMBER_HALAL_APP'),
+        ],
+    ],
+
+    /**
      * Email
      */
     'smtp_email' => [
