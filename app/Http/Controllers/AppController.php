@@ -17,12 +17,12 @@ class AppController extends Controller
                 'country_code' => $country->country_code,
             ];
         });
-        return responseSuccessData($availableCountries, 200);
+        return responseSuccessData($availableCountries);
     }
 
     public function getAuthOptions()
     {
         $authOptions = Settings::where('key', 'auth_options')->first()->value;
-        return responseSuccessData($authOptions, 200);
+        return responseSuccessData($authOptions);
     }
 }

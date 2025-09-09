@@ -40,6 +40,6 @@ class UpdateDeviceTokenRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(validationErrors($validator->errors()->toArray()));
+        throw new HttpResponseException(validationErrors($validator->errors()->all()));
     }
 }

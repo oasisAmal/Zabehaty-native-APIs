@@ -29,8 +29,7 @@ class VerifyOtpRequest extends FormRequest
     {
         return [
             'mobile_country_code' => ['required'],
-            // 'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code), 'exists:user,mobile'],
-            'mobile' => ['required'],
+            'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
             'verification_code' => 'required|numeric',
             'device_token' => 'nullable',
             'device_type' => ['nullable', Rule::in(DeviceTokenType::ANDROID, DeviceTokenType::IOS)],
@@ -55,6 +54,6 @@ class VerifyOtpRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(validationErrors($validator->errors()->toArray()));
+        throw new HttpResponseException(validationErrors($validator->errors()->all()));
     }
 }

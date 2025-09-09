@@ -29,7 +29,7 @@ class AuthController extends Controller
     {
         try {
             $result = $this->authService->login($request->validated());
-            return responseSuccessData($result, 200);
+            return responseSuccessData($result);
         } catch (\Exception $e) {
             return responseErrorMessage($e->getMessage(), 422);
         }
@@ -42,7 +42,7 @@ class AuthController extends Controller
     {
         $result = $this->authService->sendOtp($request->validated());
         if ($result) {
-            return responseSuccessMessage(__('auth::messages.otp_sent_successfully'), 200);
+            return responseSuccessMessage(__('auth::messages.otp_sent_successfully'));
         }
         return responseErrorMessage(__('auth::messages.failed_to_send_otp'), 422);
     }
@@ -54,7 +54,7 @@ class AuthController extends Controller
     {
         $result = $this->authService->verifyOtp($request->validated());
         if ($result) {
-            return responseSuccessData($result, 200);
+            return responseSuccessData($result);
         }
         return responseErrorMessage(__('auth::messages.failed_to_verify_otp'), 422);
     }    

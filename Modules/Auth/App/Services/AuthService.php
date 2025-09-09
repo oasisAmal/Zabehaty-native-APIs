@@ -49,25 +49,23 @@ class AuthService
      */
     public function verifyOtp($data)
     {
-        // $user = User::where('mobile', $data['mobile'])
-        //     ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
-        //     ->first();
-        $user = User::
-            first();
+        $user = User::where('mobile', $data['mobile'])
+            ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
+            ->first();
         if (!$user) {
             return false;
         }
-        // if ($user->verification_code != $data['verification_code']) {
-        //     return false;
-        // }
-        // if ($user->updated_at < now()->subMinutes(10)) {
-        //     return false;
-        // }
-        // if ($data['device_token'] && $data['device_type']) {
-        //     $user->device_token = $data['device_token'];
-        //     $user->device_type = $data['device_type'];
-        //     $user->device_brand = $data['device_brand'];
-        // }
+        if ($user->verification_code != $data['verification_code']) {
+            return false;
+        }
+        if ($user->updated_at < now()->subMinutes(10)) {
+            return false;
+        }
+        if ($data['device_token'] && $data['device_type']) {
+            $user->device_token = $data['device_token'];
+            $user->device_type = $data['device_type'];
+            $user->device_brand = $data['device_brand'];
+        }
 
         $user->verification_code = null;
         $user->is_verified = true;

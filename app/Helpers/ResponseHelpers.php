@@ -7,11 +7,11 @@
  * @param integer $code
  * @return Response
  */
-function responseSuccessData($data = null, $code = 200)
+function responseSuccessData($data = null, $message = null, $code = 200)
 {
     return response()->json([
         'status' => 'success',
-        'lang' => app()->getLocale(),
+        'message' => $message,
         'data' => $data,
     ], $code);
 }
@@ -19,36 +19,16 @@ function responseSuccessData($data = null, $code = 200)
 /**
  * Response on success message
  *
- * @param string $messages
+ * @param string $message
  * @param integer $code
  * @return Response
  */
-function responseSuccessMessage($messages, $code = 200)
+function responseSuccessMessage($message, $code = 200)
 {
     return response()->json([
         'status' => 'success',
-        'lang' => app()->getLocale(),
-        'data' => $messages,
-    ], $code);
-}
-
-/**
- * Response on success data
- *
- * @param array $data
- * @param integer $code
- * @return Response
- */
-function responseErrorData($data, $code = 200)
-{
-    if (!is_array($data)) {
-        $data = [$data];
-    }
-
-    return response()->json([
-        'status' => 'error',
-        'lang' => app()->getLocale(),
-        'data' => $data,
+        'message' => $message,
+        'data' => null,
     ], $code);
 }
 
@@ -65,10 +45,12 @@ function responseErrorMessage($messages, $code = 400)
         $messages = [$messages];
     }
 
+    $message = implode(', ', $messages);
+
     return response()->json([
         'status' => 'error',
-        'lang' => app()->getLocale(),
-        'data' => $messages,
+        'message' => $message,
+        'data' => null,
     ], $code);
 }
 
@@ -81,10 +63,12 @@ function responseErrorMessage($messages, $code = 400)
  */
 function validationErrors($errors, $code = 400)
 {
+    $message = implode(', ', $errors);
+
     return response()->json([
-        'status' => 'validations',
-        'lang' => app()->getLocale(),
-        'data' => $errors,
+        'status' => 'error',
+        'message' => $message,
+        'data' => null,
     ], $code);
 }
 
@@ -99,7 +83,7 @@ function responsePaginate($result, $append = null, $code = 200)
 {
     return response()->json([
         'status' => 'success',
-        'lang' => app()->getLocale(),
+        'message' => null,
         'hasMorePages' => $result->hasMorePages(),
         'nextPageUrl' => $result->nextPageUrl(),
         'total' => $result->total(),

@@ -16,7 +16,7 @@ class SendOtpRequest extends FormRequest
     public function rules()
     {
         return [
-            'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code), 'exists:user,mobile'],
+            'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
             'mobile_country_code' => 'required|string|max:255',
         ];
     }
@@ -68,6 +68,6 @@ class SendOtpRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(validationErrors($validator->errors()->toArray()));
+        throw new HttpResponseException(validationErrors($validator->errors()->all()));
     }
 }
