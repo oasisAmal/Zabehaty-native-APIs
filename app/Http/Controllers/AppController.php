@@ -3,13 +3,16 @@
 namespace App\Http\Controllers;
 
 use App\Models\Settings;
+use App\Enums\MobileRegex;
+use Illuminate\Http\Request;
 use App\Models\AvailableCountry;
+use App\Http\Resources\OnboardingSettingsResource;
 
 class AppController extends Controller
 {
-    public function getAvailableCountries()
+    public function getAppCountries()
     {
-        $availableCountries = AvailableCountry::active()->get()->map(function ($country) {
+        $appCountries = AvailableCountry::active()->get()->map(function ($country) {
             return [
                 'id' => $country->id,
                 'name' => $country->name,
@@ -17,12 +20,26 @@ class AppController extends Controller
                 'country_code' => $country->country_code,
             ];
         });
-        return responseSuccessData($availableCountries);
+        return responseSuccessData($appCountries);
     }
 
-    public function getAuthOptions()
+    public function getMobileCountries()
     {
-        $authOptions = Settings::where('key', 'auth_options')->first()->value;
-        return responseSuccessData($authOptions);
+        $mobileCountries = AvailableCountry::active()->get()->map(function ($country) {
+            return [
+                'id' => $country->id,
+                'name' => $country->name,
+                'flag_url' => $country->flag_url,
+                'country_code' => $country->country_code,
+                'mobile_code' => $country->mobile_code,
+                'mobile_regex' => MobileRegex::ALL_MOBILE_REGEX[$country->country_code] ?? '',
+            ];
+        });
+        return responseSuccessData($mobileCountries);
+    }
+
+    public function getOnboardingSettings(Request $request)
+    {
+        return responseSuccessData(OnboardingSettingsResource::make([]));
     }
 }

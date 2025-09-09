@@ -16,7 +16,7 @@ class CountryMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($request->route()->getName() == 'app.get-available-countries') {
+        if (in_array($request->route()->getName(), $this->getExcludedRoutes())) {
             return $next($request);
         }
 
@@ -35,5 +35,14 @@ class CountryMiddleware
         $request->merge(['app_country_code' => $request->header('App-Country')]);
 
         return $next($request);
+    }
+
+    private function getExcludedRoutes()
+    {
+        return [
+            'app.get-app-countries',
+            'app.get-mobile-countries',
+            'app.config.get-onboarding-settings'
+        ];
     }
 }
