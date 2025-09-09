@@ -9,6 +9,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use App\Http\Middleware\AppNameMiddleware;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -21,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             LocalizationMiddleware::class,
             CountryMiddleware::class,
+            AppNameMiddleware::class,
         ]);
 
         $middleware->alias([
