@@ -71,7 +71,6 @@ class OnboardingSettingsResource extends JsonResource
         return $settings['forgot_background_image'] ?? '';
     }
 
-
     private function getCreateAccountBackgroundImage($settings)
     {
         return $settings['create_account_background_image'] ?? '';
