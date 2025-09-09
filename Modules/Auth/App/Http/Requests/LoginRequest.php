@@ -2,6 +2,8 @@
 
 namespace Modules\Auth\App\Http\Requests;
 
+use App\Enums\DeviceTokenType;
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -19,6 +21,8 @@ class LoginRequest extends FormRequest
             'mobile' => 'required|string|max:255',
             'mobile_country_code' => 'required|string|max:255',
             'password' => 'required|string|max:255',
+            'device_token' => ['required'],
+            'device_type' => ['required', Rule::in(DeviceTokenType::ANDROID, DeviceTokenType::IOS)],
         ];
     }
 
