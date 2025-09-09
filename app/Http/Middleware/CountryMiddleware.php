@@ -16,6 +16,10 @@ class CountryMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if ($request->route()->getName() == 'app.get-available-countries') {
+            return $next($request);
+        }
+
         if (!$request->headers->has('App-Country')) {
             return responseErrorMessage('The App-Country not found');
         }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Settings;
 use App\Models\AvailableCountry;
 
 class AppController extends Controller
@@ -17,5 +18,11 @@ class AppController extends Controller
             ];
         });
         return responseSuccessData($availableCountries, 200);
+    }
+
+    public function getAuthOptions()
+    {
+        $authOptions = Settings::where('key', 'auth_options')->first()->value;
+        return responseSuccessData($authOptions, 200);
     }
 }
