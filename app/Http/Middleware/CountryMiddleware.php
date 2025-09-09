@@ -16,6 +16,10 @@ class CountryMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
+        if (in_array($request->route()->getName(), $this->getExcludedRoutes())) {
+            return $next($request);
+        }
+
         if (!$request->headers->has('App-Country')) {
             return responseErrorMessage('The App-Country not found');
         }
@@ -28,8 +32,17 @@ class CountryMiddleware
             return responseErrorMessage('The App-Country may not be valid.');
         }
 
-        app()->setLocale($request->header('App-Country'));
+        $request->merge(['app_country_code' => $request->header('App-Country')]);
 
         return $next($request);
+    }
+
+    private function getExcludedRoutes()
+    {
+        return [
+            'app.get-app-countries',
+            'app.get-mobile-countries',
+            'app.config.get-onboarding-settings'
+        ];
     }
 }

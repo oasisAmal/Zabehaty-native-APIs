@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Modules\Auth\App\Services\AuthService;
 use Modules\Auth\App\Http\Requests\LoginRequest;
 use Modules\Auth\App\Http\Requests\SendOtpRequest;
+use Modules\Auth\App\Http\Requests\VerifyOtpRequest;
 
 class AuthController extends Controller
 {
@@ -24,11 +25,11 @@ class AuthController extends Controller
     /**
      * Login
      */
-    public function loginByPassword(LoginRequest $request)
+    public function login(LoginRequest $request)
     {
         try {
-            $result = $this->authService->loginByPassword($request->validated());
-            return responseSuccessData($result, 200);
+            $result = $this->authService->login($request->validated());
+            return responseSuccessData($result);
         } catch (\Exception $e) {
             return responseErrorMessage($e->getMessage(), 422);
         }
@@ -39,7 +40,11 @@ class AuthController extends Controller
      */
     public function sendOtp(SendOtpRequest $request)
     {
-        return $this->authService->sendOtp($request->validated());
+        $result = $this->authService->sendOtp($request->validated());
+        if ($result) {
+            return responseSuccessMessage(__('auth::messages.otp_sent_successfully'));
+        }
+        return responseErrorMessage(__('auth::messages.failed_to_send_otp'), 422);
     }
     
     /**
@@ -47,8 +52,10 @@ class AuthController extends Controller
      */
     public function verifyOtp(VerifyOtpRequest $request)
     {
-        return $this->authService->verifyOtp($request->validated());
-    }
-    
-    
+        $result = $this->authService->verifyOtp($request->validated());
+        if ($result) {
+            return responseSuccessData($result);
+        }
+        return responseErrorMessage(__('auth::messages.failed_to_verify_otp'), 422);
+    }    
 }

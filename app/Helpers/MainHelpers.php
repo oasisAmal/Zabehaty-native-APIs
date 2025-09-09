@@ -2,6 +2,7 @@
 
 use Carbon\Carbon;
 use App\Enums\Common;
+use App\Enums\MobileRegex;
 use Illuminate\Support\Str;
 use Illuminate\Support\Number;
 use Shivella\Bitly\Facade\Bitly;
@@ -239,9 +240,10 @@ function format_mobile_number_to_database($number, $country_code = null)
 {
     try {
         $phone = new PhoneNumber($number, $country_code);
-        return $phone->formatForMobileDialingInCountry($country_code);
+        $formatted = $phone->formatForMobileDialingInCountry($country_code);
+        return format_mobile_number($formatted);
     } catch (\Throwable $th) {
-        return $number;
+        return format_mobile_number($number);
     }
 }
 
@@ -446,4 +448,17 @@ function addDurationToDateTime($datetime, $duration)
 {
     $totalMinutes = convertDurationToMinutes($duration);
     return Carbon::parse($datetime)->addMinutes($totalMinutes)->format('Y-m-d H:i:s');
+}
+
+/**
+ * Get Mobile Regex based on the given country code
+ *
+ * @param string $country_code
+ * @return string
+ */
+function getMobileRegexBasedOnCountryCode($country_code)
+{
+    $mobileRegex = MobileRegex::ALL_MOBILE_REGEX;
+    $regex = $mobileRegex[$country_code] ?? MobileRegex::AE;
+    return '/' . $regex . '/';
 }

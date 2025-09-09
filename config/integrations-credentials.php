@@ -28,6 +28,25 @@ return [
     ], // for Saudi Arabia
 
     /**
+     * Whatsapp
+     */
+    'default_whatsapp_service' => 'twilio',
+    'twilio' => [
+        'account_id' => [
+            'zabehaty_app' => env('TWILIO_ACCOUNT_SID_ZABEHATY_APP'),
+            'halal_app' => env('TWILIO_ACCOUNT_SID_HALAL_APP'),
+        ],
+        'token' => [
+            'zabehaty_app' => env('TWILIO_AUTH_TOKEN_ZABEHATY_APP'),
+            'halal_app' => env('TWILIO_AUTH_TOKEN_HALAL_APP'),
+        ],
+        'whatsapp_number' => [
+            'zabehaty_app' => env('TWILIO_WHATSAPP_NUMBER_ZABEHATY_APP'),
+            'halal_app' => env('TWILIO_WHATSAPP_NUMBER_HALAL_APP'),
+        ],
+    ],
+
+    /**
      * Email
      */
     'smtp_email' => [
@@ -66,6 +85,10 @@ return [
         'color' => [
             'zabehaty_app' => '#135725',
             'halal_app' => '#135725'
-        ]
+        ],
+        'key' => [
+            'zabehaty_app' => 'AAAACtAJ9NU:APA91bHLBvurghpvXglSX4PthNYTyU5QspiTcLjfCdtsGRc1CkEYknyEVPZZBRQ-qZHJYpq0YcEQDUSZxBuX0PYVgEzsZD56hPrXKq62f_c07evu_3RZM05cKn4ubxyuHKDRwhvxhGx-',
+            'halal_app' => 'AAAACtAJ9NU:APA91bHLBvurghpvXglSX4PthNYTyU5QspiTcLjfCdtsGRc1CkEYknyEVPZZBRQ-qZHJYpq0YcEQDUSZxBuX0PYVgEzsZD56hPrXKq62f_c07evu_3RZM05cKn4ubxyuHKDRwhvxhGx-',
+        ],
     ],
 ];

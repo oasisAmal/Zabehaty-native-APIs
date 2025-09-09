@@ -28,6 +28,7 @@ class LocalizationMiddleware
         }
 
         app()->setLocale($request->header('App-Language'));
+        $request->merge(['app_lang' => $request->header('App-Language')]);
 
         return $next($request);
     }
