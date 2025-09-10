@@ -4,6 +4,7 @@ namespace Modules\Auth\App\Services;
 
 use App\Enums\Common;
 use Modules\Users\App\Models\User;
+use Laravel\Sanctum\PersonalAccessToken;
 use App\Services\Integrations\SMS\SMSService;
 use Modules\Auth\App\Transformers\AuthResource;
 
@@ -106,13 +107,63 @@ class AuthService
     /**
      * Login Sanctum
      *
+     * @param User $user
      * @return array
      */
-    public function loginSanctum($user)
+    public function loginSanctum($user): array
     {
+        $user->tokens()->delete();
         return [
-            'token' => $user->createToken('auth_token')->plainTextToken,
+            'token' => $user->createToken('userAuthToken')->plainTextToken,
             'profile' => new AuthResource($user),
+        ];
+    }
+
+    /**
+     * Logout
+     *
+     * @param User $user
+     * @return array
+     */
+    public function logout($user): array
+    {
+        $user->tokens()->delete();
+        return [
+            'status' => true,
+            'message' => __('auth::messages.logout_successfully'),
+            'data' => null,
+        ];
+    }
+
+    /**
+     * Refresh Token
+     *
+     * @param string $bearerToken
+     * @return array
+     */
+    public function refreshToken($bearerToken): array
+    {
+        $currentToken = PersonalAccessToken::findToken($bearerToken);
+        if (!$bearerToken || !$currentToken) {
+            return [
+                'status' => false,
+                'message' => __('auth::messages.invalid_bearer_token'),
+                'data' => null,
+            ];
+        }
+        $user = User::whereId($currentToken->tokenable_id)->first();
+        if (!$user) {
+            return [
+                'status' => false,
+                'message' => __('auth::messages.user_not_found'),
+                'data' => null,
+            ];
+        }
+        $currentToken->delete();
+        return [
+            'status' => true,
+            'message' => __('auth::messages.refresh_token_successfully'),
+            'data' => ['token' => $user->createToken('userAuthToken')->plainTextToken],
         ];
     }
 }

@@ -14,6 +14,11 @@ return [
     'device_brand_max' => 'علامة الجهاز يجب أن تكون أقل من 255 حرف',
     'password_or_mobile_incorrect' => 'كلمة المرور أو الهاتف غير صحيحة',
     'login_successfully' => 'تم تسجيل الدخول بنجاح',
+    'logout_successfully' => 'تم تسجيل الخروج بنجاح',
+    'failed_to_logout' => 'فشل في تسجيل الخروج',
+    'refresh_token_successfully' => 'تم تحديث رمز التحقق بنجاح',
+    'invalid_bearer_token' => 'رمز التحقق غير صالح',
+    'user_not_found' => 'المستخدم غير موجود',
     'attributes' => [
         'mobile' => 'الهاتف',
         'mobile_country_code' => 'رمز الدولة',

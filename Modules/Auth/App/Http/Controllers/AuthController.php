@@ -61,4 +61,28 @@ class AuthController extends Controller
         }
         return responseErrorMessage(__('auth::messages.failed_to_verify_otp'), 422);
     }
+
+    /**
+     * Logout
+     */
+    public function logout(Request $request)
+    {
+        $result = $this->authService->logout($request->user());
+        if ($result['status']) {
+            return responseSuccessData($result);
+        }
+        return responseErrorMessage(__('auth::messages.failed_to_logout'), 422);
+    }
+
+    /**
+     * Refresh Token
+     */
+    public function refreshToken(Request $request)
+    {
+        $result = $this->authService->refreshToken($request->bearerToken());
+        if ($result['status']) {
+            return responseSuccessData($result);
+        }
+        return responseErrorMessage(__('auth::messages.failed_to_refresh_token'), 422);
+    }
 }

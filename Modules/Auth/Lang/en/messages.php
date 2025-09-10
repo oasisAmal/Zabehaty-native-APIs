@@ -14,6 +14,11 @@ return [
     'device_brand_max' => 'Device brand must be less than 255 characters',
     'password_or_mobile_incorrect' => 'Password or mobile number is incorrect',
     'login_successfully' => 'Login successfully',
+    'logout_successfully' => 'Logout successfully',
+    'failed_to_logout' => 'Failed to logout',
+    'refresh_token_successfully' => 'Refresh token successfully',
+    'invalid_bearer_token' => 'Invalid bearer token',
+    'user_not_found' => 'User not found',
     'attributes' => [
         'mobile' => 'Mobile',
         'mobile_country_code' => 'Mobile country code',
