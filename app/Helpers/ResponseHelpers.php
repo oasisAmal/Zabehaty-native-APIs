@@ -84,11 +84,13 @@ function responsePaginate($result, $append = null, $code = 200)
     return response()->json([
         'status' => 'success',
         'message' => null,
-        'hasMorePages' => $result->hasMorePages(),
-        'nextPageUrl' => $result->nextPageUrl(),
-        'total' => $result->total(),
-        'perPage' => $result->perPage(),
-        'currentPage' => $result->currentPage(),
         'data' => ($append != null) ? ['append' => $append, 'result' => $result->items()] : $result->items(),
+        'pagination' => [
+            'hasMorePages' => $result->hasMorePages(),
+            'nextPageUrl' => $result->nextPageUrl(),
+            'total' => $result->total(),
+            'perPage' => $result->perPage(),
+            'currentPage' => $result->currentPage(),
+        ],
     ], $code);
 }
