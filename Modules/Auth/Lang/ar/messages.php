@@ -19,9 +19,16 @@ return [
     'refresh_token_successfully' => 'تم تحديث رمز التحقق بنجاح',
     'invalid_bearer_token' => 'رمز التحقق غير صالح',
     'user_not_found' => 'المستخدم غير موجود',
+    'failed_to_change_password' => 'فشل في تغيير كلمة المرور',
+    'password_changed_successfully' => 'تم تغيير كلمة المرور بنجاح',
+    'new_password_required' => 'كلمة المرور الجديدة مطلوبة',
+    'confirm_password_required' => 'تأكيد كلمة المرور مطلوب',
+    'confirm_password_same' => 'تأكيد كلمة المرور يجب أن يتطابق مع كلمة المرور الجديدة',
     'attributes' => [
         'mobile' => 'الهاتف',
         'mobile_country_code' => 'رمز الدولة',
         'device_brand' => 'علامة الجهاز',
+        'new_password' => 'كلمة المرور الجديدة',
+        'confirm_password' => 'تأكيد كلمة المرور',
     ],
 ];

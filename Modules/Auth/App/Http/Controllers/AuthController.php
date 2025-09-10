@@ -9,6 +9,7 @@ use Modules\Auth\App\Services\AuthService;
 use Modules\Auth\App\Http\Requests\LoginRequest;
 use Modules\Auth\App\Http\Requests\SendOtpRequest;
 use Modules\Auth\App\Http\Requests\VerifyOtpRequest;
+use Modules\Auth\App\Http\Requests\ChangePasswordRequest;
 
 class AuthController extends Controller
 {
@@ -84,5 +85,20 @@ class AuthController extends Controller
             return responseSuccessData($result);
         }
         return responseErrorMessage(__('auth::messages.failed_to_refresh_token'), 422);
+    }
+
+    /**
+     * Change Password
+     * 
+     * @param ChangePasswordRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function changePassword(ChangePasswordRequest $request)
+    {
+        $result = $this->authService->changePassword($request->validated());
+        if ($result['status']) {
+            return responseSuccessData($result);
+        }
+        return responseErrorMessage(__('auth::messages.failed_to_change_password'), 422);
     }
 }

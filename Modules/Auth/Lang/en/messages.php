@@ -19,9 +19,16 @@ return [
     'refresh_token_successfully' => 'Refresh token successfully',
     'invalid_bearer_token' => 'Invalid bearer token',
     'user_not_found' => 'User not found',
+    'failed_to_change_password' => 'Failed to change password',
+    'password_changed_successfully' => 'Password changed successfully',
+    'new_password_required' => 'New password is required',
+    'confirm_password_required' => 'Confirm password is required',
+    'confirm_password_same' => 'Confirm password must be same as new password',
     'attributes' => [
         'mobile' => 'Mobile',
         'mobile_country_code' => 'Mobile country code',
         'device_brand' => 'Device brand',
+        'new_password' => 'New password',
+        'confirm_password' => 'Confirm password',
     ],
 ];
