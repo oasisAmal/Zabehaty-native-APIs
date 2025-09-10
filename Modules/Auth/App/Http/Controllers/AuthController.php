@@ -23,6 +23,18 @@ class AuthController extends Controller
         $this->authService = $authService;
     }
 
+    // /**
+    //  * Register
+    //  */
+    // public function register(RegisterRequest $request)
+    // {
+    //     $result = $this->authService->register($request->validated());
+    //     if ($result['status']) {
+    //         return responseSuccessData($result);
+    //     }
+    //     return responseErrorMessage(__('auth::messages.failed_to_register'), 422);
+    // }
+
     /**
      * Login
      */
@@ -100,5 +112,20 @@ class AuthController extends Controller
             return responseSuccessData($result);
         }
         return responseErrorMessage(__('auth::messages.failed_to_change_password'), 422);
+    }
+
+    /**
+     * Delete Account
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function deleteAccount(Request $request)
+    {
+        $result = $this->authService->deleteAccount($request->user());
+        if ($result['status']) {
+            return responseSuccessData($result);
+        }
+        return responseErrorMessage(__('auth::messages.failed_to_delete_account'), 422);
     }
 }

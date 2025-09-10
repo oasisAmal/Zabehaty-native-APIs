@@ -24,6 +24,8 @@ return [
     'new_password_required' => 'كلمة المرور الجديدة مطلوبة',
     'confirm_password_required' => 'تأكيد كلمة المرور مطلوب',
     'confirm_password_same' => 'تأكيد كلمة المرور يجب أن يتطابق مع كلمة المرور الجديدة',
+    'account_deleted_successfully' => 'تم حذف الحساب بنجاح',
+    'failed_to_delete_account' => 'فشل في حذف الحساب',
     'attributes' => [
         'mobile' => 'الهاتف',
         'mobile_country_code' => 'رمز الدولة',

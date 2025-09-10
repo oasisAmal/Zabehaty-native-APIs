@@ -24,6 +24,8 @@ return [
     'new_password_required' => 'New password is required',
     'confirm_password_required' => 'Confirm password is required',
     'confirm_password_same' => 'Confirm password must be same as new password',
+    'account_deleted_successfully' => 'Account deleted successfully',
+    'failed_to_delete_account' => 'Failed to delete account',
     'attributes' => [
         'mobile' => 'Mobile',
         'mobile_country_code' => 'Mobile country code',

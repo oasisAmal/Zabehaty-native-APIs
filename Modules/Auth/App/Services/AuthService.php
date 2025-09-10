@@ -4,6 +4,7 @@ namespace Modules\Auth\App\Services;
 
 use App\Enums\Common;
 use Modules\Users\App\Models\User;
+use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\PersonalAccessToken;
 use App\Services\Integrations\SMS\SMSService;
 use Modules\Auth\App\Transformers\AuthResource;
@@ -192,5 +193,31 @@ class AuthService
             'message' => __('auth::messages.password_changed_successfully'),
             'data' => null,
         ];
+    }
+
+    /**
+     * Delete Account
+     *
+     * @param User $user
+     * @return array
+     */
+    public function deleteAccount($user): array
+    {
+        try {
+            $user->tokens()->delete();
+            $user->delete();
+            return [
+                'status' => true,
+                'message' => __('auth::messages.account_deleted_successfully'),
+                'data' => null,
+            ];
+        } catch (\Throwable $th) {
+            Log::error('Failed to delete account', ['error' => $th->getMessage()]);
+            return [
+                'status' => false,
+                'message' => __('auth::messages.failed_to_delete_account'),
+                'data' => null,
+            ];
+        }
     }
 }
