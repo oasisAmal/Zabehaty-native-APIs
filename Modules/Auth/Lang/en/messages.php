@@ -9,8 +9,14 @@ return [
     'failed_to_send_otp' => 'Failed to send OTP',
     'otp_verified_successfully' => 'OTP verified successfully',
     'failed_to_verify_otp' => 'Failed to verify OTP',
+    'device_brand_required' => 'Device brand is required',
+    'device_brand_string' => 'Device brand must be a string',
+    'device_brand_max' => 'Device brand must be less than 255 characters',
+    'password_or_mobile_incorrect' => 'Password or mobile number is incorrect',
+    'login_successfully' => 'Login successfully',
     'attributes' => [
         'mobile' => 'Mobile',
         'mobile_country_code' => 'Mobile country code',
+        'device_brand' => 'Device brand',
     ],
 ];

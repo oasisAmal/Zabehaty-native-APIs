@@ -18,12 +18,25 @@ class LoginRequest extends FormRequest
     public function rules()
     {
         return [
-            'mobile' => 'required|string|max:255',
+            'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
             'mobile_country_code' => 'required|string|max:255',
             'password' => 'required|string|max:255',
             'device_token' => ['required'],
             'device_type' => ['required', Rule::in(DeviceTokenType::ANDROID, DeviceTokenType::IOS)],
+            'device_brand' => 'nullable|string|max:255',
         ];
+    }
+
+    /**
+     * Prepare the data for validation.
+     *
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        $this->merge([
+            'mobile' => format_mobile_number($this->mobile),
+        ]);
     }
 
     /**
@@ -37,6 +50,9 @@ class LoginRequest extends FormRequest
             'mobile.required' => __('auth::messages.mobile_required'),
             'mobile_country_code.required' => __('auth::messages.mobile_country_code_required'),
             'password.required' => __('auth::messages.password_required'),
+            'device_brand.required' => __('auth::messages.device_brand_required'),
+            'device_brand.string' => __('auth::messages.device_brand_string'),
+            'device_brand.max' => __('auth::messages.device_brand_max'),
         ];
     }
 
@@ -51,17 +67,8 @@ class LoginRequest extends FormRequest
             'mobile' => __('auth::attributes.mobile'),
             'mobile_country_code' => __('auth::attributes.mobile_country_code'),
             'password' => __('auth::attributes.password'),
+            'device_brand' => __('auth::attributes.device_brand'),
         ];
-    }
-
-    /**
-     * Prepare the data for validation.
-     *
-     * @return void
-     */
-    protected function prepareForValidation()
-    {
-        //
     }
 
     /**

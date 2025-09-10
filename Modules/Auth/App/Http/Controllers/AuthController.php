@@ -29,6 +29,9 @@ class AuthController extends Controller
     {
         try {
             $result = $this->authService->login($request->validated());
+            if (!$result['status']) {
+                return responseErrorMessage($result['message'], 422);
+            }
             return responseSuccessData($result);
         } catch (\Exception $e) {
             return responseErrorMessage($e->getMessage(), 422);
@@ -46,7 +49,7 @@ class AuthController extends Controller
         }
         return responseErrorMessage(__('auth::messages.failed_to_send_otp'), 422);
     }
-    
+
     /**
      * Verify Otp
      */
@@ -57,5 +60,5 @@ class AuthController extends Controller
             return responseSuccessData($result);
         }
         return responseErrorMessage(__('auth::messages.failed_to_verify_otp'), 422);
-    }    
+    }
 }

@@ -4,27 +4,52 @@ namespace Modules\Auth\App\Services;
 
 use App\Enums\Common;
 use Modules\Users\App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use App\Services\Integrations\SMS\SMSService;
 use Modules\Auth\App\Transformers\AuthResource;
 
 class AuthService
 {
     /**
-     * Login by passowrd or otp
+     * Login by password
      *
      * @param array $data
      * @return array
      */
-    public function login($data) {}
+    public function login($data): array
+    {
+        $user = User::where('mobile', $data['mobile'])
+            ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
+            ->first();
+        if (!$user) {
+            return [
+                'status' => false,
+                'message' => __('auth::messages.password_or_mobile_incorrect'),
+                'data' => null,
+            ];
+        }
+
+        if (md5($data['password']) != $user->password) {
+            return [
+                'status' => false,
+                'message' => __('auth::messages.password_or_mobile_incorrect'),
+                'data' => null,
+            ];
+        }
+
+        return [
+            'status' => true,
+            'message' => __('auth::messages.login_successfully'),
+            'data' => $this->loginSanctum($user),
+        ];
+    }
 
     /**
      * Send Otp
      *
      * @param array $data
-     * @return array
+     * @return bool
      */
-    public function sendOtp($data)
+    public function sendOtp($data): bool
     {
         $user = User::where('mobile', $data['mobile'])
             ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
@@ -45,9 +70,9 @@ class AuthService
      * Verify Otp
      *
      * @param array $data
-     * @return array
+     * @return array|bool
      */
-    public function verifyOtp($data)
+    public function verifyOtp($data): array|bool
     {
         $user = User::where('mobile', $data['mobile'])
             ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
@@ -71,7 +96,11 @@ class AuthService
         $user->is_verified = true;
         $user->save();
 
-        return $this->loginSanctum($user);
+        if ($data['return_token'] ?? false) {
+            return $this->loginSanctum($user);
+        }
+
+        return true;
     }
 
     /**
