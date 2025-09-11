@@ -19,12 +19,11 @@ class OnboardingSettingsResource extends JsonResource
         return [
             'auth_options' => $this->getAuthOptions($settings),
             'guest_mode' => $this->getGuestMode($settings),
-            'login_background_image' => $this->getLoginBackgroundImage($settings),
-            'forgot_background_image' => $this->getForgotBackgroundImage($settings),
-            'create_account_background_image' => $this->getCreateAccountBackgroundImage($settings),
-            'otp_background_image' => $this->getOtpBackgroundImage($settings),
-            'forgot_password_background_image' => $this->getForgotPasswordBackgroundImage($settings),
-            'dailog_opacity' => $this->getDailogOpacity($settings),
+            'login_screen_settings' => $this->getLoginScreenSettings($settings),
+            'forgot_screen_settings' => $this->getForgotScreenSettings($settings),
+            'create_account_screen_settings' => $this->getCreateAccountScreenSettings($settings),
+            'otp_screen_settings' => $this->getOtpScreenSettings($settings),
+            'forgot_password_screen_settings' => $this->getForgotPasswordScreenSettings($settings),
             'ads' => $this->getAds($settings),
         ];
     }
@@ -42,7 +41,7 @@ class OnboardingSettingsResource extends JsonResource
         }
 
         if ($authOptions['password_or_otp']) {
-            return 'both';
+            return 'password_or_otp';
         }
 
         if ($authOptions['password_only']) {
@@ -61,34 +60,44 @@ class OnboardingSettingsResource extends JsonResource
         return $settings['guest_mode'] ?? false;
     }
 
-    private function getLoginBackgroundImage($settings)
+    private function getLoginScreenSettings($settings)
     {
-        return $settings['login_background_image'] ?? '';
+        return [
+            'background_image' => $settings['login_background_image'] ?? '',
+            'dialog_opacity' => $settings['dialog_opacity'] ?? 0.4,
+        ];
     }
 
-    private function getForgotBackgroundImage($settings)
+    private function getForgotScreenSettings($settings)
     {
-        return $settings['forgot_background_image'] ?? '';
+        return [
+            'background_image' => $settings['forgot_background_image'] ?? '',
+            'dialog_opacity' => $settings['dialog_opacity'] ?? 0.4,
+        ];
     }
 
-    private function getCreateAccountBackgroundImage($settings)
+    private function getCreateAccountScreenSettings($settings)
     {
-        return $settings['create_account_background_image'] ?? '';
+        return [
+            'background_image' => $settings['create_account_background_image'] ?? '',
+            'dialog_opacity' => $settings['dialog_opacity'] ?? 0.4,
+        ];
     }
 
-    private function getOtpBackgroundImage($settings)
+    private function getOtpScreenSettings($settings)
     {
-        return $settings['otp_background_image'] ?? '';
+        return [
+            'background_image' => $settings['otp_background_image'] ?? '',
+            'dialog_opacity' => $settings['dialog_opacity'] ?? 0.4,
+        ];
     }
 
-    private function getForgotPasswordBackgroundImage($settings)
+    private function getForgotPasswordScreenSettings($settings)
     {
-        return $settings['forgot_password_background_image'] ?? '';
-    }
-
-    private function getDailogOpacity($settings)
-    {
-        return $settings['dailog_opacity'] ?? 0.4;
+        return [
+            'background_image' => $settings['forgot_password_background_image'] ?? '',
+            'dialog_opacity' => $settings['dialog_opacity'] ?? 0.4,
+        ];
     }
 
     private function getAds($settings)
