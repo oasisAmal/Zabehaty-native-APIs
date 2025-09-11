@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Closure;
 use App\Enums\AppCountries;
+use App\Services\Common\DatabaseConnectionService;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -32,7 +33,15 @@ class CountryMiddleware
             return responseErrorMessage('The App-Country may not be valid.');
         }
 
-        $request->merge(['app_country_code' => $request->header('App-Country')]);
+        $countryCode = $request->header('App-Country');
+        $request->merge(['app_country_code' => $countryCode]);
+
+        // Set the database connection for this country
+        try {
+            DatabaseConnectionService::setConnection($countryCode);
+        } catch (\Exception $e) {
+            return responseErrorMessage('Database connection error for country: ' . $countryCode);
+        }
 
         return $next($request);
     }

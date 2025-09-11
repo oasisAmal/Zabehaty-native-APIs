@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\CountryDatabaseTrait;
 use App\Traits\TraitLanguage;
 use Illuminate\Database\Eloquent\Model;
 
 class Country extends Model
 {
-    use TraitLanguage;
+    use TraitLanguage, CountryDatabaseTrait;
 
     /**
      * The table associated with the model.
