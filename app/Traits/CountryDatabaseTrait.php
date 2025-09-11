@@ -12,19 +12,19 @@ trait CountryDatabaseTrait
         // Set the connection when the model is instantiated
         static::creating(function ($model) {
             if (request()->has('app_country_code')) {
-                $model->setConnection(request()->get('app_country_code'));
+                $model->setConnection(strtolower(request()->get('app_country_code')));
             }
         });
 
         static::updating(function ($model) {
             if (request()->has('app_country_code')) {
-                $model->setConnection(request()->get('app_country_code'));
+                $model->setConnection(strtolower(request()->get('app_country_code')));
             }
         });
 
         static::deleting(function ($model) {
             if (request()->has('app_country_code')) {
-                $model->setConnection(request()->get('app_country_code'));
+                $model->setConnection(strtolower(request()->get('app_country_code')));
             }
         });
     }
@@ -97,7 +97,7 @@ trait CountryDatabaseTrait
      */
     protected function getCurrentCountryCode(): ?string
     {
-        return request()->get('app_country_code');
+        return strtolower(request()->get('app_country_code'));
     }
 
     /**
