@@ -375,10 +375,15 @@ php artisan view:clear
 
 ## API Usage
 
+### Supported Platforms
+- **iOS** - Apple iOS platform
+- **Android** - Google Android platform
+
 ### Required Headers
 ```bash
 # All API requests need:
 App-Country: AE  # or SA, OM, KW, BH
+App-Platform: iOS  # or Android
 Content-Type: application/json
 Accept: application/json
 ```
@@ -388,12 +393,14 @@ Accept: application/json
 # Login
 curl -X POST http://localhost:8080/api/auth/login \
   -H "App-Country: AE" \
+  -H "App-Platform: iOS" \
   -H "Content-Type: application/json" \
   -d '{"phone": "+971501234567", "password": "password"}'
 
 # Get users
 curl -X GET http://localhost:8080/api/users \
   -H "App-Country: AE" \
+  -H "App-Platform: Android" \
   -H "Authorization: Bearer your_token"
 ```
 

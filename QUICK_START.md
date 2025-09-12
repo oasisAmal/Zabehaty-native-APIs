@@ -85,12 +85,14 @@ php artisan serve
 # Test login endpoint
 curl -X POST http://localhost:8080/api/auth/login \
   -H "App-Country: AE" \
+  -H "App-Platform: iOS" \
   -H "Content-Type: application/json" \
   -d '{"phone": "+971501234567", "password": "password"}'
 
 # Test users endpoint
 curl -X GET http://localhost:8080/api/users \
   -H "App-Country: AE" \
+  -H "App-Platform: Android" \
   -H "Accept: application/json"
 ```
 
@@ -113,6 +115,7 @@ php artisan module:list
 All API requests must include:
 ```
 App-Country: AE  # or SA, OM, KW, BH
+App-Platform: iOS  # or Android
 Content-Type: application/json
 Accept: application/json
 ```
@@ -123,6 +126,10 @@ Accept: application/json
 - **OM** - Oman
 - **KW** - Kuwait
 - **BH** - Bahrain
+
+### Supported Platforms
+- **iOS** - Apple iOS platform
+- **Android** - Google Android platform
 
 ### Next Steps
 1. **Configure Integrations**: Update Twilio and Firebase credentials in `.env`
