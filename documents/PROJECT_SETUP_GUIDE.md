@@ -373,20 +373,97 @@ php artisan route:clear
 php artisan view:clear
 ```
 
+### Middleware Management
+```bash
+# List all middleware
+php artisan route:list --middleware
+
+# Clear middleware cache
+php artisan config:clear
+php artisan route:clear
+```
+
+#### Force Update Middleware Configuration
+The `ForceUpdateMiddleware` is automatically applied to all API routes. To configure:
+
+1. **Update minimum versions** in `app/Http/Middleware/ForceUpdateMiddleware.php`
+2. **Update app store URLs** in the same file
+3. **Clear cache** after changes: `php artisan config:clear`
+
+#### Selective Middleware Application
+To apply force update middleware to specific routes only:
+
+```php
+// In routes/api.php
+Route::middleware('force-update')->group(function () {
+    Route::get('protected-endpoint', 'Controller@method');
+});
+```
+
 ## API Usage
 
 ### Supported Platforms
 - **iOS** - Apple iOS platform
 - **Android** - Google Android platform
 
+### App Version Management & Force Updates
+
+The API includes an automatic force update system that checks app versions on every API call and blocks outdated apps from accessing the API.
+
+#### Automatic Force Update Middleware
+The API includes a `ForceUpdateMiddleware` that automatically checks app versions on all API calls:
+
+- **Applied to**: All API routes automatically
+- **Response**: Returns HTTP 426 (Upgrade Required) with force update information
+- **Headers Required**: `App-Version`, `App-Platform`, and `App-Country` are mandatory
+- **Platform Support**: Only iOS and Android platforms are supported
+- **Version Logic**: Compares current version with latest available version
+
+**Required Headers Validation:**
+If any of the required headers are missing, the middleware returns HTTP 400:
+```json
+{
+  "status": "error",
+  "message": "The App-Version, App-Platform, and App-Country headers are required",
+  "data": null
+}
+```
+
+**Unsupported Platform Response:**
+If an unsupported platform is provided, returns HTTP 400:
+```json
+{
+  "status": "error",
+  "message": "The App-Platform is not supported",
+  "data": null
+}
+```
+
+**Force Update Response from Middleware:**
+```json
+{
+  "status": "error",
+  "message": "Please update to the latest version to continue using the app",
+  "data": {
+    "latest_version": "2.0.0",
+    "force_update": true,
+    "update_url": "https://apps.apple.com/app/zabehaty/id123456789",
+    "current_version": "1.0.0"
+  }
+}
+```
+
 ### Required Headers
 ```bash
 # All API requests need:
-App-Country: AE  # or SA, OM, KW, BH
-App-Platform: iOS  # or Android
+App-Country: AE  # or SA, OM, KW, BH (MANDATORY)
+App-Platform: iOS  # or Android (MANDATORY)
+App-Version: 1.0.0  # Current app version (MANDATORY)
 Content-Type: application/json
 Accept: application/json
 ```
+
+**Important**: The `App-Version`, `App-Platform`, and `App-Country` headers are now mandatory for all API requests. Missing any of these headers will result in a 400 Bad Request response.
 
 ### Usage Examples
 ```bash
@@ -394,6 +471,7 @@ Accept: application/json
 curl -X POST http://localhost:8080/api/auth/login \
   -H "App-Country: AE" \
   -H "App-Platform: iOS" \
+  -H "App-Version: 1.0.0" \
   -H "Content-Type: application/json" \
   -d '{"phone": "+971501234567", "password": "password"}'
 
@@ -401,7 +479,27 @@ curl -X POST http://localhost:8080/api/auth/login \
 curl -X GET http://localhost:8080/api/users \
   -H "App-Country: AE" \
   -H "App-Platform: Android" \
+  -H "App-Version: 1.0.0" \
   -H "Authorization: Bearer your_token"
+
+# Test force update middleware (with old version)
+curl -X GET http://localhost:8080/api/users \
+  -H "App-Country: AE" \
+  -H "App-Platform: iOS" \
+  -H "App-Version: 0.9.0" \
+  -H "Authorization: Bearer your_token"
+
+# Test missing headers (will return 400 error)
+curl -X GET http://localhost:8080/api/users \
+  -H "App-Country: AE" \
+  -H "App-Platform: iOS"
+  # Missing App-Version header
+
+# Test unsupported platform (will return 400 error)
+curl -X GET http://localhost:8080/api/users \
+  -H "App-Country: AE" \
+  -H "App-Platform: Windows" \
+  -H "App-Version: 1.0.0"
 ```
 
 ## Troubleshooting

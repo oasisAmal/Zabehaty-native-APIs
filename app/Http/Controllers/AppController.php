@@ -42,4 +42,5 @@ class AppController extends Controller
     {
         return responseSuccessData(OnboardingSettingsResource::make([]));
     }
+
 }
