@@ -6,4 +6,5 @@ return [
     'an_error_occurred' => 'حدث خطأ ما',
     'unknown_issue' => 'مشكلة غير معلومة',
     'unauthenticated' => 'غير مصرح',
+    'force_update_required' => 'يرجى تحديث التطبيق إلى أحدث إصدار للمتابعة',
 ];

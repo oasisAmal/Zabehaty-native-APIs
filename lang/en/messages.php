@@ -6,4 +6,5 @@ return [
     'an_error_occurred' => 'An error occurred',
     'unknown_issue' => 'Unknown issue',
     'unauthenticated' => 'Unauthenticated',
+    'force_update_required' => 'Please update to the latest version to continue using the app',
 ];
