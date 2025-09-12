@@ -55,6 +55,22 @@ function responseErrorMessage($messages, $code = 400)
 }
 
 /**
+ * Response on failure data
+ *
+ * @param array $data
+ * @param integer $code
+ * @return Response
+ */
+function responseErrorData($data, $message, $code = 400)
+{
+    return response()->json([
+        'status' => 'error',
+        'message' => $message,
+        'data' => $data,
+    ], $code);
+}
+
+/**
  * Response on Validation Errors
  *
  * @param array $errors

@@ -85,13 +85,30 @@ php artisan serve
 # Test login endpoint
 curl -X POST http://localhost:8080/api/auth/login \
   -H "App-Country: AE" \
+  -H "App-Platform: iOS" \
+  -H "App-Version: 1.0.0" \
   -H "Content-Type: application/json" \
   -d '{"phone": "+971501234567", "password": "password"}'
 
 # Test users endpoint
 curl -X GET http://localhost:8080/api/users \
   -H "App-Country: AE" \
+  -H "App-Platform: Android" \
+  -H "App-Version: 1.0.0" \
   -H "Accept: application/json"
+
+# Test force update middleware (with old version)
+curl -X GET http://localhost:8080/api/users \
+  -H "App-Country: AE" \
+  -H "App-Platform: iOS" \
+  -H "App-Version: 0.9.0" \
+  -H "Accept: application/json"
+
+# Test missing headers (will return 400 error)
+curl -X GET http://localhost:8080/api/users \
+  -H "App-Country: AE" \
+  -H "App-Platform: iOS"
+  # Missing App-Version header
 ```
 
 ### Check System Status
@@ -112,10 +129,14 @@ php artisan module:list
 ### Required Headers
 All API requests must include:
 ```
-App-Country: AE  # or SA, OM, KW, BH
+App-Country: AE  # or SA, OM, KW, BH (MANDATORY)
+App-Platform: iOS  # or Android (MANDATORY)
+App-Version: 1.0.0  # Current app version (MANDATORY)
 Content-Type: application/json
 Accept: application/json
 ```
+
+**Important**: All three headers (`App-Country`, `App-Platform`, `App-Version`) are now mandatory. Missing any of these will result in a 400 Bad Request response.
 
 ### Supported Countries
 - **AE** - United Arab Emirates
@@ -123,6 +144,50 @@ Accept: application/json
 - **OM** - Oman
 - **KW** - Kuwait
 - **BH** - Bahrain
+
+### Supported Platforms
+- **iOS** - Apple iOS platform
+- **Android** - Google Android platform
+
+### Force Update Feature
+The API includes automatic version checking that can force app updates:
+
+#### Automatic Middleware Check
+**All API calls are automatically checked for force updates!**
+
+If your app version is outdated, any API call will return:
+```json
+{
+  "status": "error",
+  "message": "Please update to the latest version to continue using the app",
+  "data": {
+    "latest_version": "2.0.0",
+    "force_update": true,
+    "update_url": "https://apps.apple.com/app/zabehaty/id123456789",
+    "current_version": "1.0.0"
+  }
+}
+```
+
+**Missing Headers Response:**
+```json
+{
+  "status": "error",
+  "message": "The App-Version, App-Platform, and App-Country headers are required",
+  "data": null
+}
+```
+
+**Unsupported Platform Response:**
+```json
+{
+  "status": "error",
+  "message": "The App-Platform is not supported",
+  "data": null
+}
+```
+
+**HTTP Status Code**: `426 Upgrade Required`
 
 ### Next Steps
 1. **Configure Integrations**: Update Twilio and Firebase credentials in `.env`
