@@ -19,7 +19,7 @@ class ForceUpdateMiddleware
         $appPlatform = $request->header('App-Platform');
         $countryCode = $request->header('App-Country');
 
-        if (!$appVersion || !$appPlatform || !$countryCode) {
+        if (!$appVersion || !$appPlatform) {
             return responseErrorMessage('The App-Version, App-Platform, and App-Country headers are required', 400);
         }
 
