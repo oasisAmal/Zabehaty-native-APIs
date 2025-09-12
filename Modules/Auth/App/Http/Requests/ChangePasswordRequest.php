@@ -8,8 +8,18 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
-class LoginRequest extends FormRequest
+class ChangePasswordRequest extends FormRequest
 {
+    /**
+     * Determine if the user is authorized to make this request.
+     *
+     * @return bool
+     */
+    public function authorize()
+    {
+        return true;
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -18,25 +28,19 @@ class LoginRequest extends FormRequest
     public function rules()
     {
         return [
+            'mobile_country_code' => ['required'],
             'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
-            'mobile_country_code' => 'required|string|max:255',
-            'password' => 'required|string|max:255',
-            'device_token' => ['required'],
-            'device_type' => ['required', Rule::in(DeviceTokenType::ANDROID, DeviceTokenType::IOS)],
-            'device_brand' => 'nullable|string|max:255',
+            'new_password' => 'required|string|max:255',
+            'confirm_password' => 'required|string|max:255|same:new_password',
         ];
     }
 
     /**
      * Prepare the data for validation.
-     *
-     * @return void
      */
-    protected function prepareForValidation()
+    protected function prepareForValidation(): void
     {
-        $this->merge([
-            'mobile' => format_mobile_number($this->mobile),
-        ]);
+        //
     }
 
     /**
@@ -49,10 +53,9 @@ class LoginRequest extends FormRequest
         return [
             'mobile.required' => __('auth::messages.mobile_required'),
             'mobile_country_code.required' => __('auth::messages.mobile_country_code_required'),
-            'password.required' => __('auth::messages.password_required'),
-            'device_brand.required' => __('auth::messages.device_brand_required'),
-            'device_brand.string' => __('auth::messages.device_brand_string'),
-            'device_brand.max' => __('auth::messages.device_brand_max'),
+            'new_password.required' => __('auth::messages.new_password_required'),
+            'confirm_password.required' => __('auth::messages.confirm_password_required'),
+            'confirm_password.same' => __('auth::messages.confirm_password_same'),
         ];
     }
 
@@ -66,16 +69,15 @@ class LoginRequest extends FormRequest
         return [
             'mobile' => __('auth::attributes.mobile'),
             'mobile_country_code' => __('auth::attributes.mobile_country_code'),
-            'password' => __('auth::attributes.password'),
-            'device_brand' => __('auth::attributes.device_brand'),
+            'new_password' => __('auth::attributes.new_password'),
+            'confirm_password' => __('auth::attributes.confirm_password'),
         ];
     }
 
     /**
-     * Handle a failed validation attempt.
+     * Get the error messages for the defined validation rules.
      *
-     * @param Validator $validator
-     * @return void
+     * @return array
      */
     protected function failedValidation(Validator $validator)
     {
