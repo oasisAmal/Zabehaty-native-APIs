@@ -4,27 +4,54 @@ namespace Modules\Auth\App\Services;
 
 use App\Enums\Common;
 use Modules\Users\App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Laravel\Sanctum\PersonalAccessToken;
 use App\Services\Integrations\SMS\SMSService;
 use Modules\Auth\App\Transformers\AuthResource;
 
 class AuthService
 {
     /**
-     * Login by passowrd or otp
+     * Login by password
      *
      * @param array $data
      * @return array
      */
-    public function login($data) {}
+    public function login($data): array
+    {
+        $user = User::where('mobile', $data['mobile'])
+            ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
+            ->first();
+        if (!$user) {
+            return [
+                'status' => false,
+                'message' => __('auth::messages.password_or_mobile_incorrect'),
+                'data' => null,
+            ];
+        }
+
+        if (md5($data['password']) != $user->password) {
+            return [
+                'status' => false,
+                'message' => __('auth::messages.password_or_mobile_incorrect'),
+                'data' => null,
+            ];
+        }
+
+        return [
+            'status' => true,
+            'message' => __('auth::messages.login_successfully'),
+            'data' => $this->loginSanctum($user),
+        ];
+    }
 
     /**
      * Send Otp
      *
      * @param array $data
-     * @return array
+     * @return bool
      */
-    public function sendOtp($data)
+    public function sendOtp($data): bool
     {
         $user = User::where('mobile', $data['mobile'])
             ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
@@ -45,9 +72,9 @@ class AuthService
      * Verify Otp
      *
      * @param array $data
-     * @return array
+     * @return array|bool
      */
-    public function verifyOtp($data)
+    public function verifyOtp($data): array|bool
     {
         $user = User::where('mobile', $data['mobile'])
             ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
@@ -71,19 +98,126 @@ class AuthService
         $user->is_verified = true;
         $user->save();
 
-        return $this->loginSanctum($user);
+        if ($data['return_token'] ?? false) {
+            return $this->loginSanctum($user);
+        }
+
+        return true;
     }
 
     /**
      * Login Sanctum
      *
+     * @param User $user
      * @return array
      */
-    public function loginSanctum($user)
+    public function loginSanctum($user): array
     {
+        $user->tokens()->delete();
         return [
-            'token' => $user->createToken('auth_token')->plainTextToken,
+            'token' => $user->createToken('userAuthToken')->plainTextToken,
             'profile' => new AuthResource($user),
         ];
+    }
+
+    /**
+     * Logout
+     *
+     * @param User $user
+     * @return array
+     */
+    public function logout($user): array
+    {
+        $user->tokens()->delete();
+        return [
+            'status' => true,
+            'message' => __('auth::messages.logout_successfully'),
+            'data' => null,
+        ];
+    }
+
+    /**
+     * Refresh Token
+     *
+     * @param string $bearerToken
+     * @return array
+     */
+    public function refreshToken($bearerToken): array
+    {
+        $currentToken = PersonalAccessToken::findToken($bearerToken);
+        if (!$bearerToken || !$currentToken) {
+            return [
+                'status' => false,
+                'message' => __('auth::messages.invalid_bearer_token'),
+                'data' => null,
+            ];
+        }
+        $user = User::whereId($currentToken->tokenable_id)->first();
+        if (!$user) {
+            return [
+                'status' => false,
+                'message' => __('auth::messages.user_not_found'),
+                'data' => null,
+            ];
+        }
+        $currentToken->delete();
+        return [
+            'status' => true,
+            'message' => __('auth::messages.refresh_token_successfully'),
+            'data' => ['token' => $user->createToken('userAuthToken')->plainTextToken],
+        ];
+    }
+
+    /**
+     * Change Password
+     *
+     * @param array $data
+     * @return array
+     */
+    public function changePassword($data): array
+    {
+        $user = User::where('mobile', $data['mobile'])
+            ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
+            ->first();
+        if (!$user) {
+            return [
+                'status' => false,
+                'message' => __('auth::messages.user_not_found'),
+                'data' => null,
+            ];
+        }
+        $user->password = md5($data['new_password']);
+        $user->save();
+        return [
+            'status' => true,
+            'message' => __('auth::messages.password_changed_successfully'),
+            'data' => null,
+        ];
+    }
+
+    /**
+     * Delete Account
+     *
+     * @param User $user
+     * @return array
+     */
+    public function deleteAccount($user): array
+    {
+        try {
+            $user->tokens()->delete();
+            $user->delete();
+            return [
+                'status' => true,
+                'message' => __('auth::messages.account_deleted_successfully'),
+                'data' => null,
+            ];
+        } catch (\Throwable $th) {
+            Log::error('Failed to delete account', ['error' => $th->getMessage()]);
+            return [
+                'status' => false,
+                'message' => __('auth::messages.failed_to_delete_account'),
+                'data' => null,
+            ];
+        }
     }
 }

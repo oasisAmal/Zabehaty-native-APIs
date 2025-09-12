@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\CountryDatabaseTrait;
 use Illuminate\Database\Eloquent\Model;
 
 class Settings extends Model
 {
+    use CountryDatabaseTrait;
     /**
      * The table associated with the model.
      *

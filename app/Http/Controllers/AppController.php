@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Settings;
+use App\Models\Country;
 use App\Enums\MobileRegex;
 use Illuminate\Http\Request;
 use App\Models\AvailableCountry;
@@ -25,14 +25,14 @@ class AppController extends Controller
 
     public function getMobileCountries()
     {
-        $mobileCountries = AvailableCountry::active()->get()->map(function ($country) {
+        $mobileCountries = Country::get()->map(function ($country) {
             return [
                 'id' => $country->id,
                 'name' => $country->name,
                 'flag_url' => $country->flag_url,
-                'country_code' => $country->country_code,
-                'mobile_code' => $country->mobile_code,
-                'mobile_regex' => MobileRegex::ALL_MOBILE_REGEX[$country->country_code] ?? '',
+                'country_code' => $country->code,
+                'mobile_code' => $country->phone_code,
+                'mobile_regex' => MobileRegex::ALL_MOBILE_REGEX[$country->code] ?? '',
             ];
         });
         return responseSuccessData($mobileCountries);
