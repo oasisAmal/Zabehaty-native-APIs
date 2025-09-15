@@ -46,6 +46,59 @@ class AuthService
     }
 
     /**
+     * Register
+     *
+     * @param array $data
+     * @return array
+     */
+    public function register($data): array
+    {
+        // Check if user is already authenticated (guest user with token)
+        $currentUser = User::find(auth('api')->id());
+        
+        if ($currentUser) {
+            if ($currentUser->isGuest()) {
+                // Update existing guest user to registered user
+                $currentUser->name = $data['name'];
+                $currentUser->mobile = $data['mobile'];
+                $currentUser->email = $data['email'];
+                $currentUser->password = md5($data['password']);
+                $currentUser->is_guest = false;
+                $currentUser->is_verified = true;
+                $currentUser->save();
+                
+                return [
+                    'status' => true,
+                    'message' => __('auth::messages.guest_registered_successfully'),
+                    'data' => $this->loginSanctum($currentUser),
+                ];
+            } else {
+                // User is already registered
+                return [
+                    'status' => false,
+                    'message' => __('auth::messages.user_already_registered'),
+                    'data' => null,
+                ];
+            }
+        } else {
+            // Create new registered user
+            $user = User::create([
+                'name' => $data['name'],
+                'mobile' => $data['mobile'],
+                'email' => $data['email'],
+                'password' => md5($data['password']),
+                'is_guest' => false,
+            ]);
+            
+            return [
+                'status' => true,
+                'message' => __('auth::messages.register_successfully'),
+                'data' => $this->loginSanctum($user),
+            ];
+        }
+    }
+
+    /**
      * Send Otp
      *
      * @param array $data
@@ -219,5 +272,50 @@ class AuthService
                 'data' => null,
             ];
         }
+    }
+
+    /**
+     * Create Guest User
+     *
+     * @param array $data
+     * @return array
+     */
+    public function createGuest($data = []): array
+    {
+        try {
+            $guestData = [
+                'name' => 'Guest User',
+                'mobile' => null,
+                'email' => null,
+                'is_guest' => true,
+            ];
+
+            $user = User::createGuest($guestData);
+            
+            return [
+                'status' => true,
+                'message' => __('auth::messages.guest_created_successfully'),
+                'data' => $this->loginSanctum($user),
+            ];
+        } catch (\Throwable $th) {
+            Log::error('Failed to create guest user', ['error' => $th->getMessage()]);
+            return [
+                'status' => false,
+                'message' => __('auth::messages.failed_to_create_guest'),
+                'data' => null,
+            ];
+        }
+    }
+
+
+    /**
+     * Check if user can create order
+     *
+     * @param User $user
+     * @return bool
+     */
+    public function canCreateOrder($user): bool
+    {
+        return $user->isRegistered();
     }
 }

@@ -31,6 +31,15 @@ class User extends Authenticatable
     ];
 
     /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'is_guest' => 'boolean',
+    ];
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>
@@ -50,5 +59,46 @@ class User extends Authenticatable
         return [
             'password' => 'hashed',
         ];
+    }
+
+    /**
+     * Check if user is a guest
+     *
+     * @return bool
+     */
+    public function isGuest(): bool
+    {
+        return $this->is_guest === true;
+    }
+
+    /**
+     * Check if user is registered (not guest)
+     *
+     * @return bool
+     */
+    public function isRegistered(): bool
+    {
+        return $this->is_guest === false;
+    }
+
+
+    /**
+     * Create a guest user
+     *
+     * @param array $attributes
+     * @param string|null $countryCode
+     * @return static
+     */
+    public static function createGuest(array $attributes = [], ?string $countryCode = null): static
+    {
+        $attributes['is_guest'] = true;
+        
+        if ($countryCode) {
+            return static::createForCountry($attributes, $countryCode);
+        }
+        
+        $model = new static($attributes);
+        $model->save();
+        return $model;
     }
 }
