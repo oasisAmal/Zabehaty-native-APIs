@@ -4,6 +4,8 @@ namespace Database\Seeders;
 
 use App\Models\Settings;
 use Illuminate\Database\Seeder;
+use App\Helpers\DatabaseHelpers;
+use Illuminate\Support\Facades\DB;
 
 class InsertSettingsSeeder extends Seeder
 {
@@ -12,6 +14,18 @@ class InsertSettingsSeeder extends Seeder
      */
     public function run(): void
     {
+        $headerId = null;
+        DatabaseHelpers::forCountry('ae', function() use (&$headerId) {
+            $headerId = DB::table('settings_header')->where('name', 'خصائص التطبيق')->first()->id;
+            if (!$headerId) {
+                $headerId = DB::table('settings_header')->insert([
+                    'name' => 'خصائص التطبيق',
+                    'order' => 12,
+                ]);
+                $headerId = DB::table('settings_header')->where('name', 'خصائص التطبيق')->first()->id;
+            }
+        });
+
         Settings::forCountry('ae')->updateOrCreate([
             'key' => 'auth_options',
         ], [
@@ -24,7 +38,7 @@ class InsertSettingsSeeder extends Seeder
             'type' => 1,
             'category' => 3,
             'lang' => 'ar',
-            'header_id' => 9,
+            'header_id' => $headerId,
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
@@ -35,7 +49,7 @@ class InsertSettingsSeeder extends Seeder
             'type' => 3,
             'category' => 3,
             'lang' => 'ar',
-            'header_id' => 9,
+            'header_id' => $headerId,
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
@@ -46,7 +60,7 @@ class InsertSettingsSeeder extends Seeder
             'type' => 5,
             'category' => 3,
             'lang' => 'ar',
-            'header_id' => 9,
+            'header_id' => $headerId,
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
@@ -57,7 +71,7 @@ class InsertSettingsSeeder extends Seeder
             'type' => 1,
             'category' => 3,
             'lang' => 'ar',
-            'header_id' => 9,
+            'header_id' => $headerId,
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
@@ -68,7 +82,7 @@ class InsertSettingsSeeder extends Seeder
             'type' => 5,
             'category' => 3,
             'lang' => 'ar',
-            'header_id' => 9,
+            'header_id' => $headerId,
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
@@ -79,7 +93,7 @@ class InsertSettingsSeeder extends Seeder
             'type' => 1,
             'category' => 3,
             'lang' => 'ar',
-            'header_id' => 9,
+            'header_id' => $headerId,
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
@@ -90,7 +104,7 @@ class InsertSettingsSeeder extends Seeder
             'type' => 5,
             'category' => 3,
             'lang' => 'ar',
-            'header_id' => 9,
+            'header_id' => $headerId,
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
@@ -101,7 +115,7 @@ class InsertSettingsSeeder extends Seeder
             'type' => 1,
             'category' => 3,
             'lang' => 'ar',
-            'header_id' => 9,
+            'header_id' => $headerId,
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
@@ -112,7 +126,7 @@ class InsertSettingsSeeder extends Seeder
             'type' => 5,
             'category' => 3,
             'lang' => 'ar',
-            'header_id' => 9,
+            'header_id' => $headerId,
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
@@ -123,7 +137,7 @@ class InsertSettingsSeeder extends Seeder
             'type' => 1,
             'category' => 3,
             'lang' => 'ar',
-            'header_id' => 9,
+            'header_id' => $headerId,
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
@@ -134,7 +148,7 @@ class InsertSettingsSeeder extends Seeder
             'type' => 5,
             'category' => 3,
             'lang' => 'ar',
-            'header_id' => 9,
+            'header_id' => $headerId,
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
@@ -145,7 +159,7 @@ class InsertSettingsSeeder extends Seeder
             'type' => 1,
             'category' => 3,
             'lang' => 'ar',
-            'header_id' => 9,
+            'header_id' => $headerId,
         ]);       
     }
 }
