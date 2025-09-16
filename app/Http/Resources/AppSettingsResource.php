@@ -62,40 +62,40 @@ class AppSettingsResource extends JsonResource
     private function getLoginScreenSettings($settings)
     {
         return [
-            'background_image' => $settings['login_background_image'] ?? '',
-            'dialog_opacity' => $settings['dialog_opacity'] ?? 0.4,
+            'background_image' => $settings['login_screen_settings_image'] ?? '',
+            'dialog_opacity' => (float) ($settings['login_screen_settings_dialog_opacity'] ?? 1.0),
         ];
     }
 
     private function getForgotScreenSettings($settings)
     {
         return [
-            'background_image' => $settings['forgot_background_image'] ?? '',
-            'dialog_opacity' => $settings['dialog_opacity'] ?? 0.4,
+            'background_image' => $settings['forgot_screen_settings_image'] ?? '',
+            'dialog_opacity' => (float) ($settings['forgot_screen_settings_dialog_opacity'] ?? 1.0),
         ];
     }
 
     private function getCreateAccountScreenSettings($settings)
     {
         return [
-            'background_image' => $settings['create_account_background_image'] ?? '',
-            'dialog_opacity' => $settings['dialog_opacity'] ?? 0.4,
+            'background_image' => $settings['create_account_screen_settings_image'] ?? '',
+            'dialog_opacity' => (float) ($settings['create_account_screen_settings_dialog_opacity'] ?? 1.0),
         ];
     }
 
     private function getOtpScreenSettings($settings)
     {
         return [
-            'background_image' => $settings['otp_background_image'] ?? '',
-            'dialog_opacity' => $settings['dialog_opacity'] ?? 0.4,
+            'background_image' => $settings['otp_screen_settings_image'] ?? '',
+            'dialog_opacity' => (float) ($settings['otp_screen_settings_dialog_opacity'] ?? 1.0),
         ];
     }
 
     private function getForgotPasswordScreenSettings($settings)
     {
         return [
-            'background_image' => $settings['forgot_password_background_image'] ?? '',
-            'dialog_opacity' => $settings['dialog_opacity'] ?? 0.4,
+            'background_image' => $settings['forgot_password_screen_settings_image'] ?? '',
+            'dialog_opacity' => (float) ($settings['forgot_password_screen_settings_dialog_opacity'] ?? 1.0),
         ];
     }
 }
