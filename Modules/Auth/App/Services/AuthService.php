@@ -169,6 +169,7 @@ class AuthService
         $user->tokens()->delete();
         return [
             'token' => $user->createToken('userAuthToken')->plainTextToken,
+            'expires_at' => config('session.lifetime'),
             'profile' => new AuthResource($user),
         ];
     }
@@ -217,7 +218,7 @@ class AuthService
         return [
             'status' => true,
             'message' => __('auth::messages.refresh_token_successfully'),
-            'data' => ['token' => $user->createToken('userAuthToken')->plainTextToken],
+            'data' => ['token' => $user->createToken('userAuthToken')->plainTextToken, 'expires_at' => config('session.lifetime')],
         ];
     }
 
@@ -284,13 +285,24 @@ class AuthService
     {
         try {
             $guestData = [
-                'name' => 'Guest User',
+                'first_name' => 'Guest',
+                'last_name' => 'User',
                 'mobile' => null,
                 'email' => null,
                 'is_guest' => true,
+                'app_version' => $data['app_version'],
+                'old_id' => 0,
             ];
 
-            $user = User::createGuest($guestData);
+            $user = User::create($guestData);
+
+            if ($data['device_token'] && $data['device_type']) {
+                $user->device_token = $data['device_token'];
+                $user->device_type = $data['device_type'];
+                $user->device_brand = $data['device_brand'];
+            }
+
+            $user->save();
             
             return [
                 'status' => true,
@@ -305,17 +317,5 @@ class AuthService
                 'data' => null,
             ];
         }
-    }
-
-
-    /**
-     * Check if user can create order
-     *
-     * @param User $user
-     * @return bool
-     */
-    public function canCreateOrder($user): bool
-    {
-        return $user->isRegistered();
     }
 }

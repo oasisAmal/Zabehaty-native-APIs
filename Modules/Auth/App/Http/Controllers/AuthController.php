@@ -9,6 +9,7 @@ use Modules\Auth\App\Services\AuthService;
 use Modules\Auth\App\Http\Requests\LoginRequest;
 use Modules\Auth\App\Http\Requests\SendOtpRequest;
 use Modules\Auth\App\Http\Requests\VerifyOtpRequest;
+use Modules\Auth\App\Http\Requests\CreateGuestRequest;
 use Modules\Auth\App\Http\Requests\ChangePasswordRequest;
 
 class AuthController extends Controller
@@ -135,7 +136,7 @@ class AuthController extends Controller
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function createGuest(Request $request)
+    public function createGuest(CreateGuestRequest $request)
     {
         $result = $this->authService->createGuest($request->all());
         if ($result['status']) {
