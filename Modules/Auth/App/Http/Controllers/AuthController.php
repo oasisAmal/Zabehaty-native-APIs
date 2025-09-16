@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use Modules\Auth\App\Services\AuthService;
 use Modules\Auth\App\Http\Requests\LoginRequest;
 use Modules\Auth\App\Http\Requests\SendOtpRequest;
+use Modules\Auth\App\Http\Requests\RegisterRequest;
 use Modules\Auth\App\Http\Requests\VerifyOtpRequest;
 use Modules\Auth\App\Http\Requests\CreateGuestRequest;
 use Modules\Auth\App\Http\Requests\ChangePasswordRequest;
@@ -144,5 +145,4 @@ class AuthController extends Controller
         }
         return responseErrorMessage($result['message'], 422);
     }
-
 }

@@ -59,12 +59,15 @@ class AuthService
         if ($currentUser) {
             if ($currentUser->isGuest()) {
                 // Update existing guest user to registered user
-                $currentUser->name = $data['name'];
+                $currentUser->first_name = $data['first_name'];
+                $currentUser->last_name = $data['last_name'];
                 $currentUser->mobile = $data['mobile'];
                 $currentUser->email = $data['email'];
                 $currentUser->password = md5($data['password']);
                 $currentUser->is_guest = false;
                 $currentUser->is_verified = true;
+                $currentUser->app_version = $data['app_version'];
+                $currentUser->old_id = 0;
                 $currentUser->save();
                 
                 return [
@@ -83,11 +86,14 @@ class AuthService
         } else {
             // Create new registered user
             $user = User::create([
-                'name' => $data['name'],
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
                 'mobile' => $data['mobile'],
                 'email' => $data['email'],
                 'password' => md5($data['password']),
                 'is_guest' => false,
+                'app_version' => $data['app_version'],
+                'old_id' => 0,
             ]);
             
             return [
