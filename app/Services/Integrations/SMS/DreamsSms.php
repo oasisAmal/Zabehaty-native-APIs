@@ -43,12 +43,12 @@ class DreamsSms implements SMSInterface
             if (trim($result) === 'Success') {
                 return true;
             } else {
-                Log::error('Failed Send SMS Saudi Arabia:' . $result);
+                Log::error('Failed Send SMS Saudi Arabia:', ['response' => $result]);
                 return false;
             }
 
         } catch (\Exception $e) {
-            Log::error('Failed Send SMS Saudi Arabia:' . json_encode($e->getMessage()));
+            Log::error('Failed Send SMS Saudi Arabia:', ['exception' => $e->getMessage()]);
             return false;
         }
     }
