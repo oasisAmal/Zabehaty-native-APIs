@@ -48,9 +48,10 @@ class SMSCountry implements SMSInterface
             if ($response->ok()) {
                 return true;
             }
+            Log::error('Failed Send smscountry:', ['response' => $response->json()]);
             return false;
         } catch (\Exception $e) {
-            Log::error('Fail Send smscountry:' . json_encode($e->getMessage()));
+            Log::error('Exception Send smscountry:', ['exception' => $e->getMessage()]);
             return false;
         }
     }

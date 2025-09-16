@@ -80,25 +80,4 @@ class User extends Authenticatable
     {
         return $this->is_guest === false;
     }
-
-
-    /**
-     * Create a guest user
-     *
-     * @param array $attributes
-     * @param string|null $countryCode
-     * @return static
-     */
-    public static function createGuest(array $attributes = [], ?string $countryCode = null): static
-    {
-        $attributes['is_guest'] = true;
-        
-        if ($countryCode) {
-            return static::createForCountry($attributes, $countryCode);
-        }
-        
-        $model = new static($attributes);
-        $model->save();
-        return $model;
-    }
 }

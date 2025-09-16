@@ -59,12 +59,15 @@ class AuthService
         if ($currentUser) {
             if ($currentUser->isGuest()) {
                 // Update existing guest user to registered user
-                $currentUser->name = $data['name'];
+                $currentUser->first_name = $data['first_name'];
+                $currentUser->last_name = $data['last_name'];
                 $currentUser->mobile = $data['mobile'];
                 $currentUser->email = $data['email'];
                 $currentUser->password = md5($data['password']);
                 $currentUser->is_guest = false;
                 $currentUser->is_verified = true;
+                $currentUser->app_version = $data['app_version'];
+                $currentUser->old_id = 0;
                 $currentUser->save();
                 
                 return [
@@ -83,11 +86,14 @@ class AuthService
         } else {
             // Create new registered user
             $user = User::create([
-                'name' => $data['name'],
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
                 'mobile' => $data['mobile'],
                 'email' => $data['email'],
                 'password' => md5($data['password']),
                 'is_guest' => false,
+                'app_version' => $data['app_version'],
+                'old_id' => 0,
             ]);
             
             return [
@@ -169,6 +175,7 @@ class AuthService
         $user->tokens()->delete();
         return [
             'token' => $user->createToken('userAuthToken')->plainTextToken,
+            'expires_at' => config('session.lifetime'),
             'profile' => new AuthResource($user),
         ];
     }
@@ -217,7 +224,7 @@ class AuthService
         return [
             'status' => true,
             'message' => __('auth::messages.refresh_token_successfully'),
-            'data' => ['token' => $user->createToken('userAuthToken')->plainTextToken],
+            'data' => ['token' => $user->createToken('userAuthToken')->plainTextToken, 'expires_at' => config('session.lifetime')],
         ];
     }
 
@@ -284,13 +291,24 @@ class AuthService
     {
         try {
             $guestData = [
-                'name' => 'Guest User',
+                'first_name' => 'Guest',
+                'last_name' => 'User',
                 'mobile' => null,
                 'email' => null,
                 'is_guest' => true,
+                'app_version' => $data['app_version'],
+                'old_id' => 0,
             ];
 
-            $user = User::createGuest($guestData);
+            $user = User::create($guestData);
+
+            if ($data['device_token'] && $data['device_type']) {
+                $user->device_token = $data['device_token'];
+                $user->device_type = $data['device_type'];
+                $user->device_brand = $data['device_brand'];
+            }
+
+            $user->save();
             
             return [
                 'status' => true,
@@ -305,17 +323,5 @@ class AuthService
                 'data' => null,
             ];
         }
-    }
-
-
-    /**
-     * Check if user can create order
-     *
-     * @param User $user
-     * @return bool
-     */
-    public function canCreateOrder($user): bool
-    {
-        return $user->isRegistered();
     }
 }

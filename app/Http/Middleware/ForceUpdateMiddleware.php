@@ -25,8 +25,8 @@ class ForceUpdateMiddleware
 
         // Define latest available versions per platform
         $latestVersions = [
-            'ios' => '2.0.0',
-            'android' => '2.0.0',
+            'ios' => '2.0',
+            'android' => '2.0',
         ];
 
         // Define app store URLs
@@ -39,8 +39,8 @@ class ForceUpdateMiddleware
         }
 
         $platform = strtolower($appPlatform);
-        $currentVersion = $appVersion ?? '0.0.0';
-        $latestVersion = $latestVersions[$platform] ?? '1.0.0';
+        $currentVersion = $appVersion ?? '0.0';
+        $latestVersion = $latestVersions[$platform] ?? '1.0';
 
         // Check if force update is required
         $forceUpdate = version_compare($currentVersion, $latestVersion, '<');
@@ -53,6 +53,9 @@ class ForceUpdateMiddleware
                 'current_version' => $currentVersion,
             ], __('messages.force_update_required'), 426);
         }
+
+        $request->merge(['app_version' => $appVersion]);
+        $request->merge(['app_platform' => $appPlatform]);
 
         return $next($request);
     }
