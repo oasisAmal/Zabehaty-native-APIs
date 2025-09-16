@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use $MODULE_NAMESPACE$\$STUDLY_NAME$\$CONTROLLER_NAMESPACE$\$STUDLY_NAME$Controller;
 
 Route::prefix('$PLURAL_LOWER_NAME$')->as('$PLURAL_LOWER_NAME$.')->controller($STUDLY_NAME$Controller::class)->group(function () {
-    Route::group(['middleware' => ['auth:api']], function () {
+    Route::group(['middleware' => ['auth:api', 'require-registered']], function () {
         //
     });
 });

@@ -6,7 +6,8 @@ use App\Models\Country;
 use App\Enums\MobileRegex;
 use Illuminate\Http\Request;
 use App\Models\AvailableCountry;
-use App\Http\Resources\OnboardingSettingsResource;
+use App\Http\Resources\AppSettingsResource;
+use App\Http\Resources\OnboardingAdsResource;
 
 class AppController extends Controller
 {
@@ -38,9 +39,14 @@ class AppController extends Controller
         return responseSuccessData($mobileCountries);
     }
 
-    public function getOnboardingSettings(Request $request)
+    public function getAppSettings(Request $request)
     {
-        return responseSuccessData(OnboardingSettingsResource::make([]));
+        return responseSuccessData(AppSettingsResource::make([]));
+    }
+
+    public function getOnboardingAds(Request $request)
+    {
+        return responseSuccessData(OnboardingAdsResource::make([]));
     }
 
 }

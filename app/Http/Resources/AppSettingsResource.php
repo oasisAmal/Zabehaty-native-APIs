@@ -6,7 +6,7 @@ use App\Models\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class OnboardingSettingsResource extends JsonResource
+class AppSettingsResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -24,7 +24,6 @@ class OnboardingSettingsResource extends JsonResource
             'create_account_screen_settings' => $this->getCreateAccountScreenSettings($settings),
             'otp_screen_settings' => $this->getOtpScreenSettings($settings),
             'forgot_password_screen_settings' => $this->getForgotPasswordScreenSettings($settings),
-            'ads' => $this->getAds($settings),
         ];
     }
 
@@ -98,10 +97,5 @@ class OnboardingSettingsResource extends JsonResource
             'background_image' => $settings['forgot_password_background_image'] ?? '',
             'dialog_opacity' => $settings['dialog_opacity'] ?? 0.4,
         ];
-    }
-
-    private function getAds($settings)
-    {
-        return $settings['ads'] ?? [];
     }
 }

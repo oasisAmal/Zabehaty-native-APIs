@@ -6,6 +6,7 @@ use App\Http\Middleware\AuthOptionalMiddleware;
 use App\Http\Middleware\LocalizationMiddleware;
 use App\Http\Middleware\CountryMiddleware;
 use App\Http\Middleware\ForceUpdateMiddleware;
+use App\Http\Middleware\RequireRegisteredUserMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'auth-optional' => AuthOptionalMiddleware::class,
+            'require-registered' => RequireRegisteredUserMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
