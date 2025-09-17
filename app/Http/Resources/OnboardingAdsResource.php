@@ -24,12 +24,6 @@ class OnboardingAdsResource extends JsonResource
         if ($onboardingAds == null || empty($onboardingAds->value)) {
             return [];
         }
-
-        $data = [];
-        foreach ($onboardingAds as $onboardingAd) {
-            $data[] = config('integrations-credentials.s3.url') . '/uploads/' . $onboardingAd;
-        }
-
-        return $data;
+        return $onboardingAds->value;
     }
 }
