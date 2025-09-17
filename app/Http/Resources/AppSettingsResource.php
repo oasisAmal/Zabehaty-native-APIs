@@ -22,7 +22,8 @@ class AppSettingsResource extends JsonResource
             'login_screen_settings' => $this->getLoginScreenSettings($settings),
             'forgot_screen_settings' => $this->getForgotScreenSettings($settings),
             'create_account_screen_settings' => $this->getCreateAccountScreenSettings($settings),
-            'otp_screen_settings' => $this->getOtpScreenSettings($settings)
+            'otp_screen_settings' => $this->getOtpScreenSettings($settings),
+            'forgot_password_screen_settings' => $this->getForgotPasswordScreenSettings($settings),
         ];
     }
 
@@ -87,6 +88,14 @@ class AppSettingsResource extends JsonResource
         return [
             'background_image' => $settings['otp_screen_settings_image'] ?? '',
             'dialog_opacity' => (float) ($settings['otp_screen_settings_dialog_opacity'] ?? 1.0),
+        ];
+    }
+
+    private function getForgotPasswordScreenSettings($settings)
+    {
+        return [
+            'background_image' => $settings['forgot_password_screen_settings_image'] ?? '',
+            'dialog_opacity' => (float) ($settings['forgot_password_screen_settings_dialog_opacity'] ?? 1.0),
         ];
     }
 }
