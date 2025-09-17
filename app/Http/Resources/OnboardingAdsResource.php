@@ -27,9 +27,9 @@ class OnboardingAdsResource extends JsonResource
 
         $data = [];
         foreach ($onboardingAds as $onboardingAd) {
-            $data[] = url('uploads/on-boarding-screens/' . $onboardingAd);
+            $data[] = config('integrations-credentials.s3.url') . '/uploads/' . $onboardingAd;
         }
-        
+
         return $data;
     }
 }
