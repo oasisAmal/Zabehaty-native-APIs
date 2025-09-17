@@ -6,13 +6,21 @@ namespace Modules\Users\App\Models;
 use Laravel\Sanctum\HasApiTokens;
 use App\Traits\CountryDatabaseTrait;
 use Illuminate\Notifications\Notifiable;
+use Modules\Users\App\Models\UserScopes;
+use Spatie\Activitylog\Traits\LogsActivity;
+use Modules\Users\App\Models\UserAttributes;
+use Modules\Users\App\Models\UserRelationships;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens, CountryDatabaseTrait;
+    use HasFactory, Notifiable, HasApiTokens, CountryDatabaseTrait, LogsActivity, SoftDeletes;
+    use UserAttributes, UserScopes, UserRelationships;
+
+    protected static $logFillable  = true;
+    protected static $logOnlyDirty = true;
 
     /**
      * The table associated with the model.
@@ -48,18 +56,6 @@ class User extends Authenticatable
         'password',
         'remember_token',
     ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'password' => 'hashed',
-        ];
-    }
 
     /**
      * Check if user is a guest

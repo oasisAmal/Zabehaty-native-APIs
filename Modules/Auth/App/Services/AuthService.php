@@ -55,21 +55,21 @@ class AuthService
     {
         // Check if user is already authenticated (guest user with token)
         $currentUser = User::find(auth('api')->id());
-        
+
         if ($currentUser) {
             if ($currentUser->isGuest()) {
                 // Update existing guest user to registered user
                 $currentUser->first_name = $data['first_name'];
                 $currentUser->last_name = $data['last_name'];
                 $currentUser->mobile = $data['mobile'];
-                $currentUser->email = $data['email'];
+                $currentUser->email = $data['email'] ?? null;
                 $currentUser->password = md5($data['password']);
                 $currentUser->is_guest = false;
                 $currentUser->is_verified = true;
                 $currentUser->app_version = $data['app_version'];
                 $currentUser->old_id = 0;
                 $currentUser->save();
-                
+
                 return [
                     'status' => true,
                     'message' => __('auth::messages.guest_registered_successfully'),
@@ -89,13 +89,13 @@ class AuthService
                 'first_name' => $data['first_name'],
                 'last_name' => $data['last_name'],
                 'mobile' => $data['mobile'],
-                'email' => $data['email'],
+                'email' => $data['email'] ?? null,
                 'password' => md5($data['password']),
                 'is_guest' => false,
                 'app_version' => $data['app_version'],
                 'old_id' => 0,
             ]);
-            
+
             return [
                 'status' => true,
                 'message' => __('auth::messages.register_successfully'),
@@ -312,7 +312,7 @@ class AuthService
             }
 
             $user->save();
-            
+
             return [
                 'status' => true,
                 'message' => __('auth::messages.guest_created_successfully'),

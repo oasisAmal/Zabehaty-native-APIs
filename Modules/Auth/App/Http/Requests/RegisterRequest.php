@@ -18,12 +18,16 @@ class RegisterRequest extends FormRequest
     public function rules()
     {
         return [
+            'first_name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'email' => 'required|email|unique:user,email',
             'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
             'mobile_country_code' => 'required|string|max:255',
             'password' => 'required|string|max:255',
             'device_token' => ['required'],
             'device_type' => ['required', Rule::in(DeviceTokenType::ANDROID, DeviceTokenType::IOS)],
             'device_brand' => 'nullable|string|max:255',
+            'app_version' => 'required|string|max:255',
         ];
     }
 
@@ -36,6 +40,7 @@ class RegisterRequest extends FormRequest
     {
         $this->merge([
             'mobile' => format_mobile_number($this->mobile),
+            'app_version' => $this->app_version,
         ]);
     }
 
@@ -47,6 +52,15 @@ class RegisterRequest extends FormRequest
     public function messages()
     {
         return [
+            'first_name.required' => __('auth::messages.first_name_required'),
+            'first_name.string' => __('auth::messages.first_name_string'),
+            'first_name.max' => __('auth::messages.first_name_max'),
+            'last_name.required' => __('auth::messages.last_name_required'),
+            'last_name.string' => __('auth::messages.last_name_string'),
+            'last_name.max' => __('auth::messages.last_name_max'),
+            'email.required' => __('auth::messages.email_required'),
+            'email.email' => __('auth::messages.email_email'),
+            'email.unique' => __('auth::messages.email_unique'),
             'mobile.required' => __('auth::messages.mobile_required'),
             'mobile_country_code.required' => __('auth::messages.mobile_country_code_required'),
             'password.required' => __('auth::messages.password_required'),
@@ -64,6 +78,9 @@ class RegisterRequest extends FormRequest
     public function attributes()
     {
         return [
+            'first_name' => __('auth::attributes.first_name'),
+            'last_name' => __('auth::attributes.last_name'),
+            'email' => __('auth::attributes.email'),
             'mobile' => __('auth::attributes.mobile'),
             'mobile_country_code' => __('auth::attributes.mobile_country_code'),
             'password' => __('auth::attributes.password'),
