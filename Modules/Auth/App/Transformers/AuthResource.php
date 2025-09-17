@@ -12,6 +12,18 @@ class AuthResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'first_name' => $this->first_name,
+            'middle_name' => $this->middle_name,
+            'last_name' => $this->last_name,
+            'email' => $this->email,
+            'mobile' => $this->mobile,
+            'is_guest' => $this->is_guest,
+            'is_verified' => $this->is_verified,
+            'rating' => $this->rating,
+            'image_url' => $this->image_url,
+            'created_at' => $this->created_at,
+        ];
     }
 }
