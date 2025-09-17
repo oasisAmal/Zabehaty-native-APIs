@@ -160,6 +160,19 @@ class InsertSettingsSeeder extends Seeder
             'category' => 3,
             'lang' => 'ar',
             'header_id' => $headerId,
-        ]);       
+        ]);
+
+        Settings::forCountry('ae')->updateOrCreate([
+            'key' => 'on_boarding_screens',
+        ], [
+            'alias' => 'اعلانات بعد فتح شاشه التطبيق',
+            'value' => '',
+            'type' => 1,
+            'category' => 3,
+            'lang' => 'ar',
+            'header_id' => $headerId,
+            'is_json' => 1,
+            'in_api' => 1,
+        ]);    
     }
 }
