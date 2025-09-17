@@ -150,18 +150,7 @@ class InsertSettingsSeeder extends Seeder
             'lang' => 'ar',
             'header_id' => $headerId,
         ]);
-
-        Settings::forCountry('ae')->updateOrCreate([
-            'key' => 'forgot_password_screen_settings_dialog_opacity',
-        ], [
-            'alias' => 'نسبة الشاشة تعيين كلمة المرور للتطبيق',
-            'value' => '1.0',
-            'type' => 1,
-            'category' => 3,
-            'lang' => 'ar',
-            'header_id' => $headerId,
-        ]);
-
+        
         Settings::forCountry('ae')->updateOrCreate([
             'key' => 'on_boarding_screens',
         ], [
