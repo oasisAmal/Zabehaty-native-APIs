@@ -40,9 +40,10 @@ class SMSGlobal implements SMSInterface
             if (isset($response['messages'][0]['status']) && $response['messages'][0]['status'] == 'sent') {
                 return true;
             }
+            Log::error('Failed Send SMS:', ['response' => $response]);
             return false;
         } catch (\Exception $e) {
-            Log::error('Fail Send SMS:' . json_encode($e->getMessage()));
+            Log::error('Exception Send SMS:', ['exception' => $e->getMessage()]);
             return false;
         }
     }

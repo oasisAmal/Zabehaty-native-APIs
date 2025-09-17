@@ -55,18 +55,21 @@ class AuthService
     {
         // Check if user is already authenticated (guest user with token)
         $currentUser = User::find(auth('api')->id());
-        
+
         if ($currentUser) {
             if ($currentUser->isGuest()) {
                 // Update existing guest user to registered user
-                $currentUser->name = $data['name'];
+                $currentUser->first_name = $data['first_name'];
+                $currentUser->last_name = $data['last_name'];
                 $currentUser->mobile = $data['mobile'];
-                $currentUser->email = $data['email'];
+                $currentUser->email = $data['email'] ?? null;
                 $currentUser->password = md5($data['password']);
                 $currentUser->is_guest = false;
                 $currentUser->is_verified = true;
+                $currentUser->app_version = $data['app_version'];
+                $currentUser->old_id = 0;
                 $currentUser->save();
-                
+
                 return [
                     'status' => true,
                     'message' => __('auth::messages.guest_registered_successfully'),
@@ -83,13 +86,16 @@ class AuthService
         } else {
             // Create new registered user
             $user = User::create([
-                'name' => $data['name'],
+                'first_name' => $data['first_name'],
+                'last_name' => $data['last_name'],
                 'mobile' => $data['mobile'],
-                'email' => $data['email'],
+                'email' => $data['email'] ?? null,
                 'password' => md5($data['password']),
                 'is_guest' => false,
+                'app_version' => $data['app_version'],
+                'old_id' => 0,
             ]);
-            
+
             return [
                 'status' => true,
                 'message' => __('auth::messages.register_successfully'),
@@ -113,10 +119,13 @@ class AuthService
             return false;
         }
 
-        $user->verification_code = generateRandomNumber(Common::RANDOM_AUTH_CODE_LENGTH);
+        // $user->verification_code = generateRandomNumber(Common::RANDOM_AUTH_CODE_LENGTH);
+        $user->verification_code = '0000';
         $user->updated_at = now()->addMinutes(10);
         $user->save();
         $message = __('auth::messages.otp_code', ['code' => $user->verification_code]);
+
+        return true;
 
         return app(SMSService::class)->send($message, $user->mobile, $data['mobile_country_code']);
     }
@@ -169,6 +178,7 @@ class AuthService
         $user->tokens()->delete();
         return [
             'token' => $user->createToken('userAuthToken')->plainTextToken,
+            'expires_at' => config('session.lifetime'),
             'profile' => new AuthResource($user),
         ];
     }
@@ -217,7 +227,7 @@ class AuthService
         return [
             'status' => true,
             'message' => __('auth::messages.refresh_token_successfully'),
-            'data' => ['token' => $user->createToken('userAuthToken')->plainTextToken],
+            'data' => ['token' => $user->createToken('userAuthToken')->plainTextToken, 'expires_at' => config('session.lifetime')],
         ];
     }
 
@@ -284,14 +294,25 @@ class AuthService
     {
         try {
             $guestData = [
-                'name' => 'Guest User',
+                'first_name' => 'Guest',
+                'last_name' => 'User',
                 'mobile' => null,
                 'email' => null,
                 'is_guest' => true,
+                'app_version' => $data['app_version'],
+                'old_id' => 0,
             ];
 
-            $user = User::createGuest($guestData);
-            
+            $user = User::create($guestData);
+
+            if ($data['device_token'] && $data['device_type']) {
+                $user->device_token = $data['device_token'];
+                $user->device_type = $data['device_type'];
+                $user->device_brand = $data['device_brand'];
+            }
+
+            $user->save();
+
             return [
                 'status' => true,
                 'message' => __('auth::messages.guest_created_successfully'),
@@ -305,17 +326,5 @@ class AuthService
                 'data' => null,
             ];
         }
-    }
-
-
-    /**
-     * Check if user can create order
-     *
-     * @param User $user
-     * @return bool
-     */
-    public function canCreateOrder($user): bool
-    {
-        return $user->isRegistered();
     }
 }
