@@ -82,8 +82,9 @@ trait UserAttributes
     public function getImageUrlAttribute()
     {
         if ($this->image) {
-            return config('integrations-credentials.s3.url') . '/uploads/' . $this->image;
+            // return config('integrations-credentials.s3.url') . '/uploads/' . $this->image;
+            return $this->image;
         }
-        return url('avatar_user.png');
+        return url('images/avatar_user.png');
     }
 }
