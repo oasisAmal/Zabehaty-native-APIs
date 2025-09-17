@@ -91,4 +91,12 @@ return [
             'halal_app' => 'AAAACtAJ9NU:APA91bHLBvurghpvXglSX4PthNYTyU5QspiTcLjfCdtsGRc1CkEYknyEVPZZBRQ-qZHJYpq0YcEQDUSZxBuX0PYVgEzsZD56hPrXKq62f_c07evu_3RZM05cKn4ubxyuHKDRwhvxhGx-',
         ],
     ],
+
+    /**
+     * S3
+     */
+    's3' => [
+        'url' => env('S3_URL', 'https://zabehaty.s3.us-east-2.amazonaws.com'),
+    ],
+    
 ];
