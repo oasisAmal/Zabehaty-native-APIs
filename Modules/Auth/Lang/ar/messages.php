@@ -42,6 +42,7 @@ return [
     'email_email' => 'البريد الإلكتروني يجب أن يكون عبارة عن بريد إلكتروني',
     'email_unique' => 'البريد الإلكتروني يجب أن يكون فريد',
     'failed_to_register' => 'فشل في تسجيل المستخدم',
+    'register_successfully' => 'تم تسجيل المستخدم بنجاح',
     'attributes' => [
         'mobile' => 'الهاتف',
         'mobile_country_code' => 'رمز الدولة',
