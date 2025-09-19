@@ -18,7 +18,7 @@ class AuthResource extends JsonResource
             'last_name' => $this->last_name,
             'email' => $this->email,
             'mobile' => $this->mobile,
-            'is_guest' => $this->is_guest,
+            'is_guest' => (bool) $this->is_guest,
             'is_verified' => (bool) $this->is_verified,
             'rating' => (float) $this->rating ?? 0,
             'image_url' => $this->image_url,
