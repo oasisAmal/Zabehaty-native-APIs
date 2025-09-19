@@ -23,6 +23,7 @@ Route::prefix('auth')->as('auth.')->controller(AuthController::class)->group(fun
     Route::group(['middleware' => ['auth:api']], function () {
         Route::post('refresh-token', 'refreshToken');
         Route::post('logout', 'logout');
+        Route::get('profile', 'profile');
         Route::post('delete-account', 'deleteAccount');
     });
 });
