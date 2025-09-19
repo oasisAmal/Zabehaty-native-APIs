@@ -19,7 +19,7 @@ class AuthResource extends JsonResource
             'email' => $this->email,
             'mobile' => $this->mobile,
             'is_guest' => $this->is_guest,
-            'is_verified' => $this->is_verified,
+            'is_verified' => (bool) $this->is_verified,
             'rating' => $this->rating,
             'image_url' => $this->image_url,
             'created_at' => $this->created_at,
