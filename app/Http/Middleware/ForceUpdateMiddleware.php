@@ -17,10 +17,9 @@ class ForceUpdateMiddleware
     {
         $appVersion = $request->header('App-Version');
         $appPlatform = $request->header('App-Platform');
-        $countryCode = $request->header('App-Country');
 
         if (!$appVersion || !$appPlatform) {
-            return responseErrorMessage('The App-Version, App-Platform, and App-Country headers are required', 400);
+            return responseErrorMessage('The App-Version, App-Platform headers are required', 400);
         }
 
         // Define latest available versions per platform
@@ -31,9 +30,9 @@ class ForceUpdateMiddleware
 
         // Define app store URLs
         if ($appPlatform == 'IOS') {
-            $updateUrl = 'https://apps.apple.com/app/zabehaty/id123456789';
+            $updateUrl = 'https://apps.apple.com/us/app/zabehaty-%D8%B0%D8%A8%D9%8A%D8%AD%D8%AA%D9%8A/id1227769641';
         } elseif ($appPlatform == 'Android') {
-            $updateUrl = 'https://play.google.com/store/apps/details?id=com.zabehaty.app';
+            $updateUrl = 'https://play.google.com/store/apps/details?id=com.atp.zabehati&hl=en';
         } else {
             return responseErrorMessage('The App-Platform is not supported', 400);
         }

@@ -2,17 +2,18 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Foundation\Application;
+use App\Http\Middleware\AppNameMiddleware;
+use App\Http\Middleware\CountryMiddleware;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Auth\AuthenticationException;
+use App\Http\Middleware\ForceUpdateMiddleware;
 use App\Http\Middleware\AuthOptionalMiddleware;
 use App\Http\Middleware\LocalizationMiddleware;
-use App\Http\Middleware\CountryMiddleware;
-use App\Http\Middleware\ForceUpdateMiddleware;
-use App\Http\Middleware\RequireRegisteredUserMiddleware;
-use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use App\Http\Middleware\RequireRegisteredUserMiddleware;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use App\Http\Middleware\AppNameMiddleware;
-use Illuminate\Auth\AuthenticationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -34,15 +35,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'require-registered' => RequireRegisteredUserMiddleware::class,
         ]);
     })
+    ->withSchedule(function (Schedule $schedule) {
+        $schedule->command('pull')->everyTwoMinutes();
+    })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
-                Log::error([
-                    'message' => $e->getMessage(),
-                    'route' => $request->route(),
-                    'route_url' => $request->url(),
-                    'request' => $request->all(),
-                ]);
                 return responseErrorMessage(__('messages.not_found'), 404);
             }
         });
@@ -55,6 +53,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (Throwable $e, Request $request) {
             if ($request->is('api/*')) {
+                Log::error('Exception in API', [
+                    'message' => $e->getMessage(),
+                    'route' => $request->route(),
+                    'route_url' => $request->url(),
+                    'request' => $request->all(),
+                ]);
                 return responseErrorMessage($e->getMessage(), 500);
             }
         });
