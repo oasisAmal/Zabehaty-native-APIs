@@ -281,6 +281,21 @@ class AuthService
     }
 
     /**
+     * Profile
+     *
+     * @param User $user
+     * @return array
+     */
+    public function profile($user): array
+    {
+        return [
+            'status' => true,
+            'message' => __('auth::messages.profile_get_successfully'),
+            'data' => new AuthResource($user),
+        ];
+    }
+
+    /**
      * Delete Account
      *
      * @param User $user
