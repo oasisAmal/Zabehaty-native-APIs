@@ -116,7 +116,6 @@ class AuthService
                 'data' => $user,
             ];
         } catch (\Throwable $th) {
-            dd($th->getMessage());
             Log::error('Failed to register user', ['error' => $th->getMessage()]);
             DB::rollBack();
             return [
