@@ -3,6 +3,7 @@
 namespace Modules\Auth\App\Services;
 
 use App\Enums\Common;
+use Illuminate\Support\Facades\DB;
 use Modules\Users\App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\PersonalAccessToken;
@@ -53,53 +54,75 @@ class AuthService
      */
     public function register($data): array
     {
-        // Check if user is already authenticated (guest user with token)
-        $currentUser = User::find(auth('api')->id());
+        DB::beginTransaction();
+        try {
+            // Format mobile number to database, to avoid issues with phone number validation
+            $data['mobile'] = format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']);
 
-        if ($currentUser) {
-            if ($currentUser->isGuest()) {
-                // Update existing guest user to registered user
-                $currentUser->first_name = $data['first_name'];
-                $currentUser->last_name = $data['last_name'];
-                $currentUser->mobile = $data['mobile'];
-                $currentUser->email = $data['email'] ?? null;
-                $currentUser->password = md5($data['password']);
-                $currentUser->is_guest = false;
-                $currentUser->is_verified = true;
-                $currentUser->app_version = $data['app_version'];
-                $currentUser->old_id = 0;
-                $currentUser->save();
+            // Check if user is already authenticated (guest user with token)
+            $currentUser = User::find(auth('api')->id());
+
+            if ($currentUser) {
+                if ($currentUser->isGuest()) {
+                    // Update existing guest user to registered user
+                    $currentUser->first_name = $data['first_name'];
+                    $currentUser->last_name = $data['last_name'];
+                    $currentUser->mobile = $data['mobile'];
+                    $currentUser->email = $data['email'] ?? null;
+                    $currentUser->password = md5($data['password']);
+                    $currentUser->is_guest = false;
+                    $currentUser->is_verified = true;
+                    $currentUser->app_version = $data['app_version'];
+                    $currentUser->old_id = 0;
+                    $currentUser->save();
+
+                    return [
+                        'status' => true,
+                        'message' => __('auth::messages.guest_registered_successfully'),
+                        'data' => $this->loginSanctum($currentUser),
+                    ];
+                } else {
+                    // User is already registered
+                    return [
+                        'status' => false,
+                        'message' => __('auth::messages.user_already_registered'),
+                        'data' => null,
+                    ];
+                }
+            } else {
+                // Create new registered user
+                $user = User::create([
+                    'first_name' => $data['first_name'],
+                    'last_name' => $data['last_name'],
+                    'mobile' => $data['mobile'],
+                    'email' => $data['email'] ?? null,
+                    'password' => md5($data['password']),
+                    'is_guest' => false,
+                    'app_version' => $data['app_version'],
+                    'old_id' => 0,
+                ]);
 
                 return [
                     'status' => true,
-                    'message' => __('auth::messages.guest_registered_successfully'),
-                    'data' => $this->loginSanctum($currentUser),
-                ];
-            } else {
-                // User is already registered
-                return [
-                    'status' => false,
-                    'message' => __('auth::messages.user_already_registered'),
-                    'data' => null,
+                    'message' => __('auth::messages.register_successfully'),
+                    'data' => $this->loginSanctum($user),
                 ];
             }
-        } else {
-            // Create new registered user
-            $user = User::create([
-                'first_name' => $data['first_name'],
-                'last_name' => $data['last_name'],
-                'mobile' => $data['mobile'],
-                'email' => $data['email'] ?? null,
-                'password' => md5($data['password']),
-                'is_guest' => false,
-                'app_version' => $data['app_version'],
-                'old_id' => 0,
-            ]);
 
+            DB::commit();
             return [
                 'status' => true,
                 'message' => __('auth::messages.register_successfully'),
-                'data' => $this->loginSanctum($user),
+                'data' => $user,
+            ];
+        } catch (\Throwable $th) {
+            dd($th->getMessage());
+            Log::error('Failed to register user', ['error' => $th->getMessage()]);
+            DB::rollBack();
+            return [
+                'status' => false,
+                'message' => __('auth::messages.failed_to_register'),
+                'data' => null,
             ];
         }
     }

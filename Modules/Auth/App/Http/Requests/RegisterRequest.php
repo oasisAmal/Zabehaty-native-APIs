@@ -78,13 +78,13 @@ class RegisterRequest extends FormRequest
     public function attributes()
     {
         return [
-            'first_name' => __('auth::attributes.first_name'),
-            'last_name' => __('auth::attributes.last_name'),
-            'email' => __('auth::attributes.email'),
-            'mobile' => __('auth::attributes.mobile'),
-            'mobile_country_code' => __('auth::attributes.mobile_country_code'),
-            'password' => __('auth::attributes.password'),
-            'device_brand' => __('auth::attributes.device_brand'),
+            'first_name' => __('auth::messages.attributes.first_name'),
+            'last_name' => __('auth::messages.attributes.last_name'),
+            'email' => __('auth::messages.attributes.email'),
+            'mobile' => __('auth::messages.attributes.mobile'),
+            'mobile_country_code' => __('auth::messages.attributes.mobile_country_code'),
+            'password' => __('auth::messages.attributes.password'),
+            'device_brand' => __('auth::messages.attributes.device_brand'),
         ];
     }
 

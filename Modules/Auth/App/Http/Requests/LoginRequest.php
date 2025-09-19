@@ -64,10 +64,10 @@ class LoginRequest extends FormRequest
     public function attributes()
     {
         return [
-            'mobile' => __('auth::attributes.mobile'),
-            'mobile_country_code' => __('auth::attributes.mobile_country_code'),
-            'password' => __('auth::attributes.password'),
-            'device_brand' => __('auth::attributes.device_brand'),
+            'mobile' => __('auth::messages.attributes.mobile'),
+            'mobile_country_code' => __('auth::messages.attributes.mobile_country_code'),
+            'password' => __('auth::messages.attributes.password'),
+            'device_brand' => __('auth::messages.attributes.device_brand'),
         ];
     }
 

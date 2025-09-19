@@ -41,6 +41,8 @@ return [
     'email_required' => 'Email is required',
     'email_email' => 'Email must be a valid email',
     'email_unique' => 'Email must be unique',
+    'failed_to_register' => 'Failed to register user',
+    'register_successfully' => 'Register successfully',
     'attributes' => [
         'mobile' => 'Mobile',
         'mobile_country_code' => 'Mobile country code',
