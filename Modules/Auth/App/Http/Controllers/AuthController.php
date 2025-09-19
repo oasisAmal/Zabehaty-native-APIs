@@ -32,7 +32,7 @@ class AuthController extends Controller
     {
         $result = $this->authService->register($request->validated());
         if ($result['status']) {
-            return responseSuccessData($result);
+            return responseSuccessData($result['data'], $result['message']);
         }
         return responseErrorMessage(__('auth::messages.failed_to_register'), 422);
     }
@@ -47,7 +47,7 @@ class AuthController extends Controller
             if (!$result['status']) {
                 return responseErrorMessage($result['message'], 422);
             }
-            return responseSuccessData($result);
+            return responseSuccessData($result['data'], $result['message']);
         } catch (\Exception $e) {
             return responseErrorMessage($e->getMessage(), 422);
         }
@@ -84,7 +84,7 @@ class AuthController extends Controller
     {
         $result = $this->authService->logout($request->user());
         if ($result['status']) {
-            return responseSuccessData($result);
+            return responseSuccessData($result['data'], $result['message']);
         }
         return responseErrorMessage(__('auth::messages.failed_to_logout'), 422);
     }
@@ -96,7 +96,7 @@ class AuthController extends Controller
     {
         $result = $this->authService->refreshToken($request->bearerToken());
         if ($result['status']) {
-            return responseSuccessData($result);
+            return responseSuccessData($result['data'], $result['message']);
         }
         return responseErrorMessage(__('auth::messages.failed_to_refresh_token'), 422);
     }
@@ -111,7 +111,7 @@ class AuthController extends Controller
     {
         $result = $this->authService->changePassword($request->validated());
         if ($result['status']) {
-            return responseSuccessData($result);
+            return responseSuccessData($result['data'], $result['message']);
         }
         return responseErrorMessage(__('auth::messages.failed_to_change_password'), 422);
     }
@@ -126,7 +126,7 @@ class AuthController extends Controller
     {
         $result = $this->authService->deleteAccount($request->user());
         if ($result['status']) {
-            return responseSuccessData($result);
+            return responseSuccessData($result['data'], $result['message']);
         }
         return responseErrorMessage(__('auth::messages.failed_to_delete_account'), 422);
     }
@@ -141,7 +141,7 @@ class AuthController extends Controller
     {
         $result = $this->authService->createGuest($request->all());
         if ($result['status']) {
-            return responseSuccessData($result);
+            return responseSuccessData($result['data'], $result['message']);
         }
         return responseErrorMessage($result['message'], 422);
     }

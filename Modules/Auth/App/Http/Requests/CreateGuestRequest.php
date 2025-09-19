@@ -56,7 +56,7 @@ class CreateGuestRequest extends FormRequest
     public function attributes()
     {
         return [
-            'device_brand' => __('auth::attributes.device_brand'),
+            'device_brand' => __('auth::messages.attributes.device_brand'),
         ];
     }
 
