@@ -28,6 +28,5 @@ class PullCommand extends Command
     {
         shell_exec("git status 2>&1");
         $pull = shell_exec("git pull 2>&1");
-        Log::info("Git pull: $pull");
     }
 }

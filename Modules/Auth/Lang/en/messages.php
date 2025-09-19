@@ -43,6 +43,8 @@ return [
     'email_unique' => 'Email must be unique',
     'failed_to_register' => 'Failed to register user',
     'register_successfully' => 'Register successfully',
+    'profile_get_successfully' => 'Profile get successfully',
+    'failed_to_get_profile' => 'Failed to get profile',
     'attributes' => [
         'mobile' => 'Mobile',
         'mobile_country_code' => 'Mobile country code',

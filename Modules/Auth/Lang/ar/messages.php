@@ -43,6 +43,8 @@ return [
     'email_unique' => 'البريد الإلكتروني يجب أن يكون فريد',
     'failed_to_register' => 'فشل في تسجيل المستخدم',
     'register_successfully' => 'تم تسجيل المستخدم بنجاح',
+    'profile_get_successfully' => 'تم الحصول على الملف الشخصي بنجاح',
+    'failed_to_get_profile' => 'فشل في الحصول على الملف الشخصي',
     'attributes' => [
         'mobile' => 'الهاتف',
         'mobile_country_code' => 'رمز الدولة',
