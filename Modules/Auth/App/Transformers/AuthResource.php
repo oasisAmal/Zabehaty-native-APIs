@@ -20,7 +20,7 @@ class AuthResource extends JsonResource
             'mobile' => $this->mobile,
             'is_guest' => $this->is_guest,
             'is_verified' => (bool) $this->is_verified,
-            'rating' => $this->rating ?? 0,
+            'rating' => (float) $this->rating ?? 0,
             'image_url' => $this->image_url,
             'created_at' => $this->created_at,
         ];
