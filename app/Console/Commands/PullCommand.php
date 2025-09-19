@@ -11,14 +11,14 @@ class PullCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'pull';
+    protected $signature = 'git:pull';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Pull the latest changes from the remote repository';
+    protected $description = 'Pull the latest changes from the remote repository using git';
 
     /**
      * Execute the console command.
