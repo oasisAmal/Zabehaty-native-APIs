@@ -117,6 +117,18 @@ class AuthController extends Controller
     }
 
     /**
+     * Profile
+     */
+    public function profile(Request $request)
+    {
+        $result = $this->authService->profile($request->user());
+        if ($result['status']) {
+            return responseSuccessData($result['data'], $result['message']);
+        }
+        return responseErrorMessage(__('auth::messages.failed_to_get_profile'), 422);
+    }
+
+    /**
      * Delete Account
      * 
      * @param Request $request
