@@ -67,10 +67,10 @@ class ChangePasswordRequest extends FormRequest
     public function attributes()
     {
         return [
-            'mobile' => __('auth::attributes.mobile'),
-            'mobile_country_code' => __('auth::attributes.mobile_country_code'),
-            'new_password' => __('auth::attributes.new_password'),
-            'confirm_password' => __('auth::attributes.confirm_password'),
+            'mobile' => __('auth::messages.attributes.mobile'),
+            'mobile_country_code' => __('auth::messages.attributes.mobile_country_code'),
+            'new_password' => __('auth::messages.attributes.new_password'),
+            'confirm_password' => __('auth::messages.attributes.confirm_password'),
         ];
     }
 

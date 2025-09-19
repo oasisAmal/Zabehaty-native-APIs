@@ -386,8 +386,10 @@ php artisan route:clear
 #### Force Update Middleware Configuration
 The `ForceUpdateMiddleware` is automatically applied to all API routes. To configure:
 
-1. **Update minimum versions** in `app/Http/Middleware/ForceUpdateMiddleware.php`
-2. **Update app store URLs** in the same file
+1. **Update minimum versions** in `app/Http/Middleware/ForceUpdateMiddleware.php` (currently set to 2.0 for both iOS and Android)
+2. **Update app store URLs** in the same file:
+   - iOS: `https://apps.apple.com/us/app/zabehaty-%D8%B0%D8%A8%D9%8A%D8%AD%D8%AA%D9%8A/id1227769641`
+   - Android: `https://play.google.com/store/apps/details?id=com.atp.zabehati&hl=en`
 3. **Clear cache** after changes: `php artisan config:clear`
 
 #### Selective Middleware Application
@@ -419,6 +421,8 @@ The API includes a `ForceUpdateMiddleware` that automatically checks app version
 - **Platform Support**: Only iOS and Android platforms are supported
 - **Version Logic**: Compares current version with latest available version
 
+**Note**: While all three headers (`App-Version`, `App-Platform`, `App-Country`) are required for API requests, the `ForceUpdateMiddleware` specifically handles version checking for `App-Version` and `App-Platform`. The `App-Country` header is validated by the `CountryMiddleware` which also sets up the appropriate database connection for the specified country.
+
 **Required Headers Validation:**
 If any of the required headers are missing, the middleware returns HTTP 400:
 ```json
@@ -445,9 +449,9 @@ If an unsupported platform is provided, returns HTTP 400:
   "status": "error",
   "message": "Please update to the latest version to continue using the app",
   "data": {
-    "latest_version": "2.0.0",
+    "latest_version": "2.0",
     "force_update": true,
-    "update_url": "https://apps.apple.com/app/zabehaty/id123456789",
+    "update_url": "https://apps.apple.com/us/app/zabehaty-%D8%B0%D8%A8%D9%8A%D8%AD%D8%AA%D9%8A/id1227769641",
     "current_version": "1.0.0"
   }
 }
@@ -558,7 +562,7 @@ php artisan country:db status --all
 
 ### 2. Database Management
 - Use `country:db` commands to manage databases
-- Make sure to add `App-Country` header in all requests
+- Make sure to add `App-Country` header in all requests (handled by `CountryMiddleware`)
 
 ### 3. Development with Modules
 - Use `php artisan module:make` to create new modules
