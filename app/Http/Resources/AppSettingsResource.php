@@ -56,7 +56,7 @@ class AppSettingsResource extends JsonResource
 
     private function getGuestMode($settings)
     {
-        return $settings['guest_mode'] ?? false;
+        return (bool) $settings['guest_mode'] ?? false;
     }
 
     private function getLoginScreenSettings($settings)
