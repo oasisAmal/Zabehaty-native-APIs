@@ -41,12 +41,6 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
             if ($request->is('api/*')) {
-                Log::error([
-                    'message' => $e->getMessage(),
-                    'route' => $request->route(),
-                    'route_url' => $request->url(),
-                    'request' => $request->all(),
-                ]);
                 return responseErrorMessage(__('messages.not_found'), 404);
             }
         });
@@ -59,6 +53,12 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (Throwable $e, Request $request) {
             if ($request->is('api/*')) {
+                Log::error('Exception in API', [
+                    'message' => $e->getMessage(),
+                    'route' => $request->route(),
+                    'route_url' => $request->url(),
+                    'request' => $request->all(),
+                ]);
                 return responseErrorMessage($e->getMessage(), 500);
             }
         });
