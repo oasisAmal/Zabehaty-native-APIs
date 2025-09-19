@@ -21,7 +21,7 @@ class AuthResource extends JsonResource
             'is_verified' => (bool) $this->is_verified,
             'rating' => (float) $this->rating ?? 0,
             'image_url' => $this->image_url,
-            'created_at' => $this->created_at,
+            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
         ];
     }
 }
