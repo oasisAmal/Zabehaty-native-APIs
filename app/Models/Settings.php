@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Settings extends Model
 {
     use CountryDatabaseTrait;
+    
     /**
      * The table associated with the model.
      *
@@ -28,6 +29,6 @@ class Settings extends Model
      * @var array<string, string>
      */
     protected $casts = [
-        'value' => 'array',
+        // 'value' => 'array',
     ];
 }

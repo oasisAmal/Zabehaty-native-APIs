@@ -24,6 +24,6 @@ class OnboardingAdsResource extends JsonResource
         if ($onboardingAds == null || empty($onboardingAds->value)) {
             return [];
         }
-        return $onboardingAds->value;
+        return json_decode($onboardingAds->value, true);
     }
 }
