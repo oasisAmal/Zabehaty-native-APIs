@@ -11,6 +11,7 @@ use Modules\Auth\App\Http\Requests\SendOtpRequest;
 use Modules\Auth\App\Http\Requests\RegisterRequest;
 use Modules\Auth\App\Http\Requests\VerifyOtpRequest;
 use Modules\Auth\App\Http\Requests\CreateGuestRequest;
+use Modules\Auth\App\Http\Requests\SocialLoginRequest;
 use Modules\Auth\App\Http\Requests\ChangePasswordRequest;
 
 class AuthController extends Controller
@@ -44,6 +45,22 @@ class AuthController extends Controller
     {
         try {
             $result = $this->authService->login($request->validated());
+            if (!$result['status']) {
+                return responseErrorMessage($result['message'], 422);
+            }
+            return responseSuccessData($result['data'], $result['message']);
+        } catch (\Exception $e) {
+            return responseErrorMessage($e->getMessage(), 422);
+        }
+    }
+
+    /**
+     * Social Login
+     */
+    public function socialLogin(SocialLoginRequest $request)
+    {
+        try {
+            $result = $this->authService->socialLogin($request->validated());
             if (!$result['status']) {
                 return responseErrorMessage($result['message'], 422);
             }
