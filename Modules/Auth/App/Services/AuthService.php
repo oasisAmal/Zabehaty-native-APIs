@@ -108,7 +108,7 @@ class AuthService
         DB::beginTransaction();
         try {
             // Format mobile number to database, to avoid issues with phone number validation
-            $data['mobile'] = format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']);
+            $data['mobile'] = $data['validate_mobile'];
 
             // Check if user is already authenticated (guest user with token)
             $currentUser = User::find(auth('api')->id());
