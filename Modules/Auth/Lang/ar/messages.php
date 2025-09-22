@@ -51,6 +51,8 @@ return [
     'social_token_required' => 'رمز التسجيل الاجتماعي مطلوب',
     'invalid_social_token' => 'رمز التسجيل الاجتماعي غير صالح',
     'social_login_successfully' => 'تم تسجيل الدخول بنجاح باستخدام التسجيل الاجتماعي',
+    'confirm_password_required' => 'تأكيد كلمة المرور مطلوب',
+    'confirm_password_same' => 'تأكيد كلمة المرور يجب أن يتطابق مع كلمة المرور الجديدة',
     'attributes' => [
         'mobile' => 'الهاتف',
         'mobile_country_code' => 'رمز الدولة',
@@ -66,5 +68,6 @@ return [
         'social_type' => 'نوع التسجيل الاجتماعي',
         'social_profile_id' => 'معرف المستخدم في التسجيل الاجتماعي',
         'social_token' => 'رمز التسجيل الاجتماعي',
+        'confirm_password' => 'تأكيد كلمة المرور',
     ],
 ];
