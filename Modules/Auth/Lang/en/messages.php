@@ -51,6 +51,8 @@ return [
     'social_token_required' => 'Social token is required',
     'invalid_social_token' => 'Invalid social token',
     'social_login_successfully' => 'Social login successfully',
+    'confirm_password_required' => 'Confirm password is required',
+    'confirm_password_same' => 'Confirm password must be same as new password',
     'attributes' => [
         'mobile' => 'Mobile',
         'mobile_country_code' => 'Mobile country code',
@@ -66,5 +68,6 @@ return [
         'social_type' => 'Social type',
         'social_profile_id' => 'Social profile id',
         'social_token' => 'Social token',
+        'confirm_password' => 'Confirm password',
     ],
 ];

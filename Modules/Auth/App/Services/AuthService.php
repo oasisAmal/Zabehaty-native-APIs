@@ -127,6 +127,8 @@ class AuthService
                     $currentUser->old_id = 0;
                     $currentUser->save();
 
+                    DB::commit();
+
                     return [
                         'status' => true,
                         'message' => __('auth::messages.guest_registered_successfully'),
@@ -153,19 +155,14 @@ class AuthService
                     'old_id' => 0,
                 ]);
 
+                DB::commit();
+
                 return [
                     'status' => true,
                     'message' => __('auth::messages.register_successfully'),
                     'data' => $this->loginSanctum($user),
                 ];
             }
-
-            DB::commit();
-            return [
-                'status' => true,
-                'message' => __('auth::messages.register_successfully'),
-                'data' => $user,
-            ];
         } catch (\Throwable $th) {
             Log::error('Failed to register user', ['error' => $th->getMessage()]);
             DB::rollBack();

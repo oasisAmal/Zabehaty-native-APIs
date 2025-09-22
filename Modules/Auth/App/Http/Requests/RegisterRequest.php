@@ -24,6 +24,7 @@ class RegisterRequest extends FormRequest
             'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
             'mobile_country_code' => 'required|string|max:255',
             'password' => 'required|string|max:255',
+            // 'confirm_password' => 'required|string|max:255|same:password',
             'device_token' => ['required'],
             'device_type' => ['required', Rule::in(DeviceTokenType::ANDROID, DeviceTokenType::IOS)],
             'device_brand' => 'nullable|string|max:255',
@@ -67,6 +68,8 @@ class RegisterRequest extends FormRequest
             'device_brand.required' => __('auth::messages.device_brand_required'),
             'device_brand.string' => __('auth::messages.device_brand_string'),
             'device_brand.max' => __('auth::messages.device_brand_max'),
+            'confirm_password.required' => __('auth::messages.confirm_password_required'),
+            'confirm_password.same' => __('auth::messages.confirm_password_same'),
         ];
     }
 
@@ -85,6 +88,7 @@ class RegisterRequest extends FormRequest
             'mobile_country_code' => __('auth::messages.attributes.mobile_country_code'),
             'password' => __('auth::messages.attributes.password'),
             'device_brand' => __('auth::messages.attributes.device_brand'),
+            'confirm_password' => __('auth::messages.attributes.confirm_password'),
         ];
     }
 
