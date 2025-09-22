@@ -24,6 +24,7 @@ class LoginRequest extends FormRequest
             'device_token' => ['required'],
             'device_type' => ['required', Rule::in(DeviceTokenType::ANDROID, DeviceTokenType::IOS)],
             'device_brand' => 'nullable|string|max:255',
+            'app_version' => 'required|string|max:255',
         ];
     }
 
@@ -36,6 +37,7 @@ class LoginRequest extends FormRequest
     {
         $this->merge([
             'mobile' => format_mobile_number($this->mobile),
+            'app_version' => $this->app_version,
         ]);
     }
 

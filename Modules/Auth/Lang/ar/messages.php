@@ -45,6 +45,12 @@ return [
     'register_successfully' => 'تم تسجيل المستخدم بنجاح',
     'profile_get_successfully' => 'تم الحصول على الملف الشخصي بنجاح',
     'failed_to_get_profile' => 'فشل في الحصول على الملف الشخصي',
+    'social_type_required' => 'نوع التسجيل الاجتماعي مطلوب',
+    'social_type_invalid' => 'نوع التسجيل الاجتماعي غير صالح',
+    'social_profile_id_required' => 'معرف المستخدم في التسجيل الاجتماعي مطلوب',
+    'social_token_required' => 'رمز التسجيل الاجتماعي مطلوب',
+    'invalid_social_token' => 'رمز التسجيل الاجتماعي غير صالح',
+    'social_login_successfully' => 'تم تسجيل الدخول بنجاح باستخدام التسجيل الاجتماعي',
     'attributes' => [
         'mobile' => 'الهاتف',
         'mobile_country_code' => 'رمز الدولة',
@@ -57,5 +63,8 @@ return [
         'first_name' => 'الاسم الأول',
         'last_name' => 'الاسم الأخير',
         'email' => 'البريد الإلكتروني',
+        'social_type' => 'نوع التسجيل الاجتماعي',
+        'social_profile_id' => 'معرف المستخدم في التسجيل الاجتماعي',
+        'social_token' => 'رمز التسجيل الاجتماعي',
     ],
 ];

@@ -45,6 +45,12 @@ return [
     'register_successfully' => 'Register successfully',
     'profile_get_successfully' => 'Profile get successfully',
     'failed_to_get_profile' => 'Failed to get profile',
+    'social_type_required' => 'Social type is required',
+    'social_type_invalid' => 'Social type is invalid',
+    'social_profile_id_required' => 'Social profile id is required',
+    'social_token_required' => 'Social token is required',
+    'invalid_social_token' => 'Invalid social token',
+    'social_login_successfully' => 'Social login successfully',
     'attributes' => [
         'mobile' => 'Mobile',
         'mobile_country_code' => 'Mobile country code',
@@ -57,5 +63,8 @@ return [
         'first_name' => 'First name',
         'last_name' => 'Last name',
         'email' => 'Email',
+        'social_type' => 'Social type',
+        'social_profile_id' => 'Social profile id',
+        'social_token' => 'Social token',
     ],
 ];
