@@ -53,6 +53,8 @@ return [
     'social_login_successfully' => 'Social login successfully',
     'confirm_password_required' => 'Confirm password is required',
     'confirm_password_same' => 'Confirm password must be same as new password',
+    'validate_mobile_required' => 'Mobile is required',
+    'validate_mobile_unique' => 'Mobile must be unique',
     'attributes' => [
         'mobile' => 'Mobile',
         'mobile_country_code' => 'Mobile country code',
@@ -69,5 +71,6 @@ return [
         'social_profile_id' => 'Social profile id',
         'social_token' => 'Social token',
         'confirm_password' => 'Confirm password',
+        'validate_mobile' => 'Mobile',
     ],
 ];

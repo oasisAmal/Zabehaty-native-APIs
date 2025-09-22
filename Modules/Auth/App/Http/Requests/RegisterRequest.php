@@ -20,8 +20,9 @@ class RegisterRequest extends FormRequest
         return [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|email|unique:user,email',
+            'email' => 'nullable|email|unique:user,email',
             'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
+            'validate_mobile' => ['required', 'unique:user,mobile'],
             'mobile_country_code' => 'required|string|max:255',
             'password' => 'required|string|max:255',
             // 'confirm_password' => 'required|string|max:255|same:password',
@@ -41,6 +42,7 @@ class RegisterRequest extends FormRequest
     {
         $this->merge([
             'mobile' => format_mobile_number($this->mobile),
+            'validate_mobile' => format_mobile_number_to_database($this->mobile, $this->mobile_country_code),
             'app_version' => $this->app_version,
         ]);
     }
@@ -70,6 +72,8 @@ class RegisterRequest extends FormRequest
             'device_brand.max' => __('auth::messages.device_brand_max'),
             'confirm_password.required' => __('auth::messages.confirm_password_required'),
             'confirm_password.same' => __('auth::messages.confirm_password_same'),
+            'validate_mobile.required' => __('auth::messages.validate_mobile_required'),
+            'validate_mobile.unique' => __('auth::messages.validate_mobile_unique'),
         ];
     }
 
@@ -89,6 +93,7 @@ class RegisterRequest extends FormRequest
             'password' => __('auth::messages.attributes.password'),
             'device_brand' => __('auth::messages.attributes.device_brand'),
             'confirm_password' => __('auth::messages.attributes.confirm_password'),
+            'validate_mobile' => __('auth::messages.attributes.validate_mobile'),
         ];
     }
 

@@ -53,6 +53,8 @@ return [
     'social_login_successfully' => 'تم تسجيل الدخول بنجاح باستخدام التسجيل الاجتماعي',
     'confirm_password_required' => 'تأكيد كلمة المرور مطلوب',
     'confirm_password_same' => 'تأكيد كلمة المرور يجب أن يتطابق مع كلمة المرور الجديدة',
+    'validate_mobile_required' => 'الهاتف مطلوب',
+    'validate_mobile_unique' => 'الهاتف مستخدم بالفعل',
     'attributes' => [
         'mobile' => 'الهاتف',
         'mobile_country_code' => 'رمز الدولة',
@@ -69,5 +71,6 @@ return [
         'social_profile_id' => 'معرف المستخدم في التسجيل الاجتماعي',
         'social_token' => 'رمز التسجيل الاجتماعي',
         'confirm_password' => 'تأكيد كلمة المرور',
+        'validate_mobile' => 'الهاتف',
     ],
 ];
