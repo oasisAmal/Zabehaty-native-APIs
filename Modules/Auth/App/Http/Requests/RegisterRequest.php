@@ -24,7 +24,7 @@ class RegisterRequest extends FormRequest
             'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
             'mobile_country_code' => 'required|string|max:255',
             'password' => 'required|string|max:255',
-            'confirm_password' => 'required|string|max:255|same:password',
+            // 'confirm_password' => 'required|string|max:255|same:password',
             'device_token' => ['required'],
             'device_type' => ['required', Rule::in(DeviceTokenType::ANDROID, DeviceTokenType::IOS)],
             'device_brand' => 'nullable|string|max:255',
