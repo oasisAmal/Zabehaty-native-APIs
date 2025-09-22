@@ -98,5 +98,20 @@ return [
     's3' => [
         'url' => env('S3_URL', 'https://zabehaty.s3.us-east-2.amazonaws.com'),
     ],
-    
+
+    /**
+     * Social Login
+     */
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+    ],
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID', '634005859736527'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET', 'a9c1f7e7e38896b7aefca2c71be7060e'),
+    ],
+    'apple' => [
+        'client_id' => env('APPLE_CLIENT_ID'),
+        'client_secret' => env('APPLE_CLIENT_SECRET'),
+    ],
 ];

@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Modules\Users\App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Laravel\Sanctum\PersonalAccessToken;
+use Laravel\Socialite\Facades\Socialite;
 use App\Services\Integrations\SMS\SMSService;
 use Modules\Auth\App\Transformers\AuthResource;
 
@@ -39,11 +40,61 @@ class AuthService
             ];
         }
 
+        if ($data['app_version'] > $user->app_version) {
+            $user->app_version = $data['app_version'];
+            $user->save();
+        }
+
         return [
             'status' => true,
             'message' => __('auth::messages.login_successfully'),
             'data' => $this->loginSanctum($user),
         ];
+    }
+
+    /**
+     * Social Login
+     *
+     * @param array $data
+     * @return array
+     */
+    public function socialLogin($data): array
+    {
+        try {
+            // $socialUser = Socialite::driver($data['social_type'])->stateless()->userFromToken($data['social_token']);
+            $socialUser = Socialite::driver($data['social_type'])->userFromToken($data['social_token']);
+
+            $user = User::where('social_profile_id', $socialUser->getId())
+                ->where('social_type', $data['social_type'])
+                ->first();
+
+            if (!$user) {
+                $user = User::create([
+                    'first_name' => $socialUser->getName() ?? $socialUser->getNickname(),
+                    'last_name' => $socialUser->getName() ?? $socialUser->getNickname(),
+                    'email' => $data['email'] ?? $socialUser->getEmail(),
+                    'social_type' => $data['social_type'],
+                    'social_profile_id' => $data['social_profile_id'] ?? $socialUser->getId(),
+                    'social_token' => $data['social_token'],
+                    'is_guest' => false,
+                    'old_id' => 0,
+                    'app_version' => $data['app_version'],
+                ]);
+            }
+
+            return [
+                'status' => true,
+                'message' => __('auth::messages.social_login_successfully'),
+                'data' => $this->loginSanctum($user),
+            ];
+        } catch (\Exception $e) {
+            Log::error('Failed to social login', ['error' => $e->getMessage()]);
+            return [
+                'status' => false,
+                'message' => __('auth::messages.invalid_social_token'),
+                'data' => null,
+            ];
+        }
     }
 
     /**

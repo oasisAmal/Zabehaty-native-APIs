@@ -9,6 +9,7 @@ Route::prefix('auth')->as('auth.')->controller(AuthController::class)->group(fun
     });
 
     Route::post('login', 'login');
+    Route::post('social-login', 'socialLogin');
     Route::post('create-guest', 'createGuest');
 
     Route::prefix('otp')->as('otp.')->group(function () {
