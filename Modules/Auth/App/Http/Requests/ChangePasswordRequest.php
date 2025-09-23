@@ -28,8 +28,6 @@ class ChangePasswordRequest extends FormRequest
     public function rules()
     {
         return [
-            'mobile_country_code' => ['required'],
-            'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
             'new_password' => 'required|string|max:255',
             'confirm_password' => 'required|string|max:255|same:new_password',
         ];
@@ -51,8 +49,6 @@ class ChangePasswordRequest extends FormRequest
     public function messages()
     {
         return [
-            'mobile.required' => __('auth::messages.mobile_required'),
-            'mobile_country_code.required' => __('auth::messages.mobile_country_code_required'),
             'new_password.required' => __('auth::messages.new_password_required'),
             'confirm_password.required' => __('auth::messages.confirm_password_required'),
             'confirm_password.same' => __('auth::messages.confirm_password_same'),
@@ -67,8 +63,6 @@ class ChangePasswordRequest extends FormRequest
     public function attributes()
     {
         return [
-            'mobile' => __('auth::messages.attributes.mobile'),
-            'mobile_country_code' => __('auth::messages.attributes.mobile_country_code'),
             'new_password' => __('auth::messages.attributes.new_password'),
             'confirm_password' => __('auth::messages.attributes.confirm_password'),
         ];
