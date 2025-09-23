@@ -4,9 +4,10 @@ namespace App\Http\Middleware;
 
 use Closure;
 use App\Enums\AppCountries;
-use App\Services\Common\DatabaseConnectionService;
 use Illuminate\Http\Request;
+use App\Services\Common\TimezoneService;
 use Symfony\Component\HttpFoundation\Response;
+use App\Services\Common\DatabaseConnectionService;
 
 class CountryMiddleware
 {
@@ -36,8 +37,9 @@ class CountryMiddleware
         $countryCode = $request->header('App-Country');
         $request->merge(['app_country_code' => $countryCode]);
 
-        // Set the database connection for this country
+        // Set the database connection and timezone for this country
         try {
+            TimezoneService::setTimezone($countryCode);
             DatabaseConnectionService::setConnection($countryCode);
         } catch (\Exception $e) {
             return responseErrorMessage('Database connection error for country: ' . $countryCode);
