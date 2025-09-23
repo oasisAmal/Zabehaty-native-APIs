@@ -459,6 +459,7 @@ function addDurationToDateTime($datetime, $duration)
 function getMobileRegexBasedOnCountryCode($country_code)
 {
     $mobileRegex = MobileRegex::ALL_MOBILE_REGEX;
+    $country_code = strtoupper($country_code);
     $regex = $mobileRegex[$country_code] ?? MobileRegex::AE;
     return '/' . $regex . '/';
 }
