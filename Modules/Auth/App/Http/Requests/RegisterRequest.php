@@ -2,6 +2,7 @@
 
 namespace Modules\Auth\App\Http\Requests;
 
+use App\Enums\MobileRegex;
 use App\Enums\DeviceTokenType;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -23,7 +24,7 @@ class RegisterRequest extends FormRequest
             'email' => 'nullable|email|unique:user,email',
             'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
             'validate_mobile' => ['sometimes', 'nullable', 'unique:user,mobile'],
-            'mobile_country_code' => 'required|string|max:255',
+            'mobile_country_code' => ['required', 'string', Rule::in(MobileRegex::getKeys())],
             'password' => 'required|string|max:255',
             // 'confirm_password' => 'required|string|max:255|same:password',
             'device_token' => ['required'],

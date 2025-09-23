@@ -2,6 +2,8 @@
 
 namespace Modules\Auth\App\Http\Requests;
 
+use App\Enums\MobileRegex;
+use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
@@ -17,7 +19,7 @@ class SendOtpRequest extends FormRequest
     {
         return [
             'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
-            'mobile_country_code' => 'required|string|max:255',
+            'mobile_country_code' => ['required', 'string', Rule::in(MobileRegex::getKeys())],
         ];
     }
 
