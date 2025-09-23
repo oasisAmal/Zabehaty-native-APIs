@@ -18,10 +18,11 @@ Route::prefix('auth')->as('auth.')->controller(AuthController::class)->group(fun
     });
 
     Route::group(['middleware' => ['auth-optional:api']], function () {
-        Route::post('change-password', 'changePassword');
+        // Route::post('change-password', 'changePassword');
     });
-
+    
     Route::group(['middleware' => ['auth:api']], function () {
+        Route::post('change-password', 'changePassword');
         Route::post('refresh-token', 'refreshToken');
         Route::post('logout', 'logout');
         Route::get('profile', 'profile');
