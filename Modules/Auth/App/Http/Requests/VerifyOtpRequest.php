@@ -2,6 +2,7 @@
 
 namespace Modules\Auth\App\Http\Requests;
 
+use App\Enums\MobileRegex;
 use App\Enums\DeviceTokenType;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,7 +29,7 @@ class VerifyOtpRequest extends FormRequest
     public function rules()
     {
         return [
-            'mobile_country_code' => ['required'],
+            'mobile_country_code' => ['required', 'string', Rule::in(MobileRegex::getKeys())],
             'mobile' => ['required', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
             'verification_code' => 'required|numeric',
             'device_token' => 'nullable',
