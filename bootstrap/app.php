@@ -37,6 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })
     ->withSchedule(function (Schedule $schedule) {
         $schedule->command('git:pull')->everyTwoMinutes();
+        $schedule->command('sanctum:prune-expired --hours=24')->daily();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (NotFoundHttpException $e, Request $request) {
