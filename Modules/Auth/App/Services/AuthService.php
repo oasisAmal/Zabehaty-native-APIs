@@ -247,7 +247,7 @@ class AuthService
     {
         $user->tokens()->delete();
         return [
-            'token' => $user->createToken('userAuthToken')->plainTextToken,
+            'token' => $user->createToken('userAuthToken', ['*'], now()->addMinutes(config('session.lifetime')))->plainTextToken,
             'expires_at' => config('session.lifetime'),
             'profile' => new AuthResource($user),
         ];
@@ -297,7 +297,7 @@ class AuthService
         return [
             'status' => true,
             'message' => __('auth::messages.refresh_token_successfully'),
-            'data' => ['token' => $user->createToken('userAuthToken')->plainTextToken, 'expires_at' => config('session.lifetime')],
+            'data' => ['token' => $user->createToken('userAuthToken', ['*'], now()->addMinutes(config('session.lifetime')))->plainTextToken, 'expires_at' => config('session.lifetime')],
         ];
     }
 
