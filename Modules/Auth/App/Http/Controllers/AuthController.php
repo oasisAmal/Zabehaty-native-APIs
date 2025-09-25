@@ -10,6 +10,7 @@ use Modules\Auth\App\Http\Requests\LoginRequest;
 use Modules\Auth\App\Http\Requests\SendOtpRequest;
 use Modules\Auth\App\Http\Requests\RegisterRequest;
 use Modules\Auth\App\Http\Requests\VerifyOtpRequest;
+use Modules\Auth\App\Http\Requests\CheckMobileRequest;
 use Modules\Auth\App\Http\Requests\CreateGuestRequest;
 use Modules\Auth\App\Http\Requests\SocialLoginRequest;
 use Modules\Auth\App\Http\Requests\ChangePasswordRequest;
@@ -36,6 +37,18 @@ class AuthController extends Controller
             return responseSuccessData($result['data'], $result['message']);
         }
         return responseErrorMessage(__('auth::messages.failed_to_register'), 422);
+    }
+
+    /**
+     * Check Mobile
+     */
+    public function checkMobile(CheckMobileRequest $request)
+    {
+        $result = $this->authService->checkMobile($request->validated());
+        if ($result['status']) {
+            return responseSuccessData($result['data'], $result['message']);
+        }
+        return responseErrorMessage($result['message'], 422);
     }
 
     /**

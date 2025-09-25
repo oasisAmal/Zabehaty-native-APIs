@@ -55,6 +55,8 @@ return [
     'confirm_password_same' => 'تأكيد كلمة المرور يجب أن يتطابق مع كلمة المرور الجديدة',
     'validate_mobile_required' => 'الهاتف مطلوب',
     'validate_mobile_unique' => 'الهاتف مستخدم بالفعل',
+    'mobile_not_found' => 'الهاتف غير موجود',
+    'mobile_found' => 'الهاتف موجود',
     'attributes' => [
         'mobile' => 'الهاتف',
         'mobile_country_code' => 'رمز الدولة',

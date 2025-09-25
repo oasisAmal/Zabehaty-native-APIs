@@ -8,6 +8,7 @@ Route::prefix('auth')->as('auth.')->controller(AuthController::class)->group(fun
         Route::post('register', 'register');
     });
 
+    Route::post('check-mobile', 'checkMobile');
     Route::post('login', 'login');
     Route::post('social-login', 'socialLogin');
     Route::post('create-guest', 'createGuest');

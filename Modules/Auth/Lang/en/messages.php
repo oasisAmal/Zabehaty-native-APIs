@@ -55,6 +55,8 @@ return [
     'confirm_password_same' => 'Confirm password must be same as new password',
     'validate_mobile_required' => 'Mobile is required',
     'validate_mobile_unique' => 'Mobile must be unique',
+    'mobile_not_found' => 'Mobile not found',
+    'mobile_found' => 'Mobile found',
     'attributes' => [
         'mobile' => 'Mobile',
         'mobile_country_code' => 'Mobile country code',
