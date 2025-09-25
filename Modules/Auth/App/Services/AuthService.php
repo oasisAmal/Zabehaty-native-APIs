@@ -14,6 +14,30 @@ use Modules\Auth\App\Transformers\AuthResource;
 class AuthService
 {
     /**
+     * Check Mobile
+     *
+     * @param array $data
+     * @return array
+     */
+    public function checkMobile($data): array
+    {
+        $user = User::where('mobile', $data['mobile'])
+            ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
+            ->first();
+        if (!$user) {
+            return [
+                'status' => false,
+                'message' => __('auth::messages.mobile_not_found'),
+                'data' => null,
+            ];
+        }
+        return [
+            'status' => true,
+            'message' => __('auth::messages.mobile_found'),
+            'data' => null,
+        ];
+    }
+    /**
      * Login by password
      *
      * @param array $data
@@ -312,7 +336,7 @@ class AuthService
         $user = User::whereId(auth('api')->id())->first();
         $user->password = md5($data['new_password']);
         $user->save();
-        
+
         return [
             'status' => true,
             'message' => __('auth::messages.password_changed_successfully'),
