@@ -2,6 +2,7 @@
 
 namespace Modules\Auth\App\Http\Requests;
 
+use App\Enums\Common;
 use App\Enums\DeviceTokenType;
 use Illuminate\Validation\Rule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,7 +29,7 @@ class ChangePasswordRequest extends FormRequest
     public function rules()
     {
         return [
-            'new_password' => 'required|string|max:255',
+            'new_password' => 'required|string|max:255|regex:' . Common::PASSWORD_REGEX,
             'confirm_password' => 'required|string|max:255|same:new_password',
         ];
     }
