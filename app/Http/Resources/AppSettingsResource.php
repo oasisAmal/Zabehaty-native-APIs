@@ -34,7 +34,7 @@ class AppSettingsResource extends JsonResource
 
     private function getAuthOptions($settings)
     {
-        $settings = isset($settings['auth_options']) ? $settings['auth_options'] : [];
+        $settings = isset($settings['auth_options']) ? $settings['auth_options'] : '';
         $authOptions = json_decode($settings, true);
         if (empty($authOptions)) {
             return '';
