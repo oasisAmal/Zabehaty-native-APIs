@@ -20,13 +20,41 @@ class TelescopeServiceProvider extends TelescopeApplicationServiceProvider
 
         $isLocal = $this->app->environment('local');
 
+        // Add custom tags for Auth and route URI only
+        Telescope::tag(function (IncomingEntry $entry) {
+            $tags = [];
+
+            if ($entry->type === 'request') {
+                $uri = $entry->content['uri'] ?? '';
+                $headers = $entry->content['headers'] ?? [];
+
+                // Tag by authentication status
+                $authHeader = $headers['authorization'] ?? $headers['Authorization'] ?? null;
+                if ($authHeader) {
+                    $tags[] = 'Auth:authenticated';
+                } else {
+                    $tags[] = 'Auth:guest';
+                }
+
+                // Tag by route URI (remove leading slash and query parameters)
+                if ($uri) {
+                    $cleanUri = ltrim($uri, '/');
+                    // Remove query parameters (everything after ?)
+                    $cleanUri = strtok($cleanUri, '?');
+                    $tags[] = 'uri:' . $cleanUri;
+                }
+            }
+
+            return $tags;
+        });
+
         Telescope::filter(function (IncomingEntry $entry) use ($isLocal) {
             return $isLocal ||
-                   $entry->isReportableException() ||
-                   $entry->isFailedRequest() ||
-                   $entry->isFailedJob() ||
-                   $entry->isScheduledTask() ||
-                   $entry->hasMonitoredTag();
+                $entry->isReportableException() ||
+                $entry->isFailedRequest() ||
+                $entry->isFailedJob() ||
+                $entry->isScheduledTask() ||
+                $entry->hasMonitoredTag();
         });
     }
 
