@@ -103,8 +103,8 @@ return [
      * Social Login
      */
     'google' => [
-        'client_id' => env('GOOGLE_CLIENT_ID', '46439986389-8pthcfeijmo81a1mei9be9ths5dd4sn1.apps.googleusercontent.com'),
-        'client_secret' => env('GOOGLE_CLIENT_SECRET', ''),
+        'client_id' => env('GOOGLE_CLIENT_ID', '46439986389-fqt9r0atago27aktu7ken1cllqacsk6e.apps.googleusercontent.com'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET', 'VgU6XuEHrV-gfaQvxemeNVmW'),
     ],
     'facebook' => [
         'client_id' => env('FACEBOOK_CLIENT_ID', '634005859736527'),
