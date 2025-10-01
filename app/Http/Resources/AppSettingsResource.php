@@ -34,7 +34,7 @@ class AppSettingsResource extends JsonResource
 
     private function getAuthOptions($settings)
     {
-        $settings = isset($settings['auth_options']) ? $settings['auth_options'] : [];
+        $settings = isset($settings['auth_options']) ? $settings['auth_options'] : '';
         $authOptions = json_decode($settings, true);
         if (empty($authOptions)) {
             return '';
@@ -57,12 +57,13 @@ class AppSettingsResource extends JsonResource
 
     private function getGuestMode($settings)
     {
-        return (bool) $settings['guest_mode'] ?? false;
+        $settings = isset($settings['guest_mode']) ? $settings['guest_mode'] : '';
+        return (bool) $settings;
     }
 
     private function getLoginScreenSettings($settings)
     {
-        $backgroundImage = $settings['login_screen_settings_image'] ?? '';
+        $backgroundImage = isset($settings['login_screen_settings_image']) ? $settings['login_screen_settings_image'] : '';
         if (isset($settings['login_screen_settings_image']) && $settings['login_screen_settings_image'] == '""') {
             $backgroundImage = '';
         }
@@ -74,7 +75,7 @@ class AppSettingsResource extends JsonResource
 
     private function getForgotScreenSettings($settings)
     {
-        $backgroundImage = $settings['forgot_screen_settings_image'] ?? '';
+        $backgroundImage = isset($settings['forgot_screen_settings_image']) ? $settings['forgot_screen_settings_image'] : '';
         if (isset($settings['forgot_screen_settings_image']) && $settings['forgot_screen_settings_image'] == '""') {
             $backgroundImage = '';
         }
@@ -86,7 +87,7 @@ class AppSettingsResource extends JsonResource
 
     private function getCreateAccountScreenSettings($settings)
     {
-        $backgroundImage = $settings['create_account_screen_settings_image'] ?? '';
+        $backgroundImage = isset($settings['create_account_screen_settings_image']) ? $settings['create_account_screen_settings_image'] : '';
         if (isset($settings['create_account_screen_settings_image']) && $settings['create_account_screen_settings_image'] == '""') {
             $backgroundImage = '';
         }
@@ -98,7 +99,7 @@ class AppSettingsResource extends JsonResource
 
     private function getOtpScreenSettings($settings)
     {
-        $backgroundImage = $settings['otp_screen_settings_image'] ?? '';
+        $backgroundImage = isset($settings['otp_screen_settings_image']) ? $settings['otp_screen_settings_image'] : '';
         if (isset($settings['otp_screen_settings_image']) && $settings['otp_screen_settings_image'] == '""') {
             $backgroundImage = '';
         }
@@ -110,7 +111,7 @@ class AppSettingsResource extends JsonResource
 
     private function getForgotPasswordScreenSettings($settings)
     {
-        $backgroundImage = $settings['forgot_password_screen_settings_image'] ?? '';
+        $backgroundImage = isset($settings['forgot_password_screen_settings_image']) ? $settings['forgot_password_screen_settings_image'] : '';
         if (isset($settings['forgot_password_screen_settings_image']) && $settings['forgot_password_screen_settings_image'] == '""') {
             $backgroundImage = '';
         }

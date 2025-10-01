@@ -35,4 +35,31 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Socialite OAuth Providers
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for OAuth providers used by Laravel Socialite
+    |
+    */
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID', '46439986389-fqt9r0atago27aktu7ken1cllqacsk6e.apps.googleusercontent.com'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET', 'VgU6XuEHrV-gfaQvxemeNVmW'),
+        'redirect' => env('GOOGLE_REDIRECT_URI', 'http://localhost:8080/api/auth/google/callback'),
+    ],
+
+    'facebook' => [
+        'client_id' => env('FACEBOOK_CLIENT_ID'),
+        'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
+        'redirect' => env('FACEBOOK_REDIRECT_URI'),
+    ],
+
+    'apple' => [
+        'client_id' => env('APPLE_CLIENT_ID', 'com.OasisLiveStock.Zabehaty.Web'),
+        'client_secret' => env('APPLE_CLIENT_SECRET'),
+        'redirect' => env('APPLE_REDIRECT_URI'),
+    ],
+
 ];
