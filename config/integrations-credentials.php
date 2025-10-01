@@ -111,7 +111,7 @@ return [
         'client_secret' => env('FACEBOOK_CLIENT_SECRET', 'a9c1f7e7e38896b7aefca2c71be7060e'),
     ],
     'apple' => [
-        'client_id' => env('APPLE_CLIENT_ID', ''),
+        'client_id' => env('APPLE_CLIENT_ID', 'com.OasisLiveStock.Zabehaty.Web'),
         'client_secret' => env('APPLE_CLIENT_SECRET', ''),
     ],
 ];
