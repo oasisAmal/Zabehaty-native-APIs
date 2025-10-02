@@ -13,6 +13,7 @@ use Modules\Auth\App\Http\Requests\VerifyOtpRequest;
 use Modules\Auth\App\Http\Requests\CheckMobileRequest;
 use Modules\Auth\App\Http\Requests\CreateGuestRequest;
 use Modules\Auth\App\Http\Requests\SocialLoginRequest;
+use Modules\Auth\App\Http\Requests\UpdateMobileRequest;
 use Modules\Auth\App\Http\Requests\ChangePasswordRequest;
 
 class AuthController extends Controller
@@ -144,6 +145,21 @@ class AuthController extends Controller
             return responseSuccessData($result['data'], $result['message']);
         }
         return responseErrorMessage(__('auth::messages.failed_to_change_password'), 422);
+    }
+
+    /**
+     * Update Mobile
+     * 
+     * @param UpdateMobileRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateMobile(UpdateMobileRequest $request)
+    {
+        $result = $this->authService->updateMobile($request->validated());
+        if ($result['status']) {
+            return responseSuccessData($result['data'], $result['message']);
+        }
+        return responseErrorMessage(__('auth::messages.failed_to_update_mobile'), 422);
     }
 
     /**

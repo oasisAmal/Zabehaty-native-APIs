@@ -57,6 +57,8 @@ return [
     'validate_mobile_unique' => 'الهاتف مستخدم بالفعل',
     'mobile_not_found' => 'الهاتف غير موجود',
     'mobile_found' => 'الهاتف موجود',
+    'mobile_updated_successfully' => 'تم تحديث الهاتف بنجاح',
+    'failed_to_update_mobile' => 'فشل في تحديث الهاتف',
     'attributes' => [
         'mobile' => 'الهاتف',
         'mobile_country_code' => 'رمز الدولة',

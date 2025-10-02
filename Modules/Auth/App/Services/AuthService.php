@@ -345,6 +345,25 @@ class AuthService
     }
 
     /**
+     * Update Mobile
+     *
+     * @param array $data
+     * @return array
+     */
+    public function updateMobile($data): array
+    {
+        $user = User::find(auth('api')->id());
+        $user->mobile = $data['validate_mobile'];
+        $user->save();
+
+        return [
+            'status' => true,
+            'message' => __('auth::messages.mobile_updated_successfully'),
+            'data' => null,
+        ];
+    }
+
+    /**
      * Profile
      *
      * @param User $user

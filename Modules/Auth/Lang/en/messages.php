@@ -57,6 +57,8 @@ return [
     'validate_mobile_unique' => 'Mobile must be unique',
     'mobile_not_found' => 'Mobile not found',
     'mobile_found' => 'Mobile found',
+    'mobile_updated_successfully' => 'Mobile updated successfully',
+    'failed_to_update_mobile' => 'Failed to update mobile',
     'attributes' => [
         'mobile' => 'Mobile',
         'mobile_country_code' => 'Mobile country code',
