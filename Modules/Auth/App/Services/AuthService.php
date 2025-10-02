@@ -85,8 +85,8 @@ class AuthService
     public function socialLogin($data): array
     {
         try {
-            // $socialUser = Socialite::driver($data['social_type'])->stateless()->userFromToken($data['social_token']);
-            $socialUser = Socialite::driver($data['social_type'])->userFromToken($data['social_token']);
+            $socialUser = Socialite::driver($data['social_type'])->stateless()->userFromToken($data['social_token']);
+            // $socialUser = Socialite::driver($data['social_type'])->userFromToken($data['social_token']);
 
             $user = User::where('social_profile_id', $socialUser->getId())
                 ->where('social_type', $data['social_type'])
