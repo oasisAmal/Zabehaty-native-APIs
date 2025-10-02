@@ -111,7 +111,7 @@ return [
         'client_secret' => env('FACEBOOK_CLIENT_SECRET', 'a9c1f7e7e38896b7aefca2c71be7060e'),
     ],
     'apple' => [
-        'client_id' => env('APPLE_CLIENT_ID', 'com.OasisLiveStock.Zabehaty.Web'),
-        'client_secret' => env('APPLE_CLIENT_SECRET', ''),
+        'client_id' => env('APPLE_CLIENT_ID', 'com.OasisLiveStock.Zabehaty'),
+        'client_secret' => env('APPLE_CLIENT_SECRET', 'eyJraWQiOiJWUjhSS0Y0TjRCIiwiYWxnIjoiRVMyNTYiLCJ0eXAiOiJKV1QifQ.eyJpYXQiOjE3NTkzODcyOTEuNTk4MzQzLCJleHAiOjE3NTkzODc1OTEuNTk4MzQzLCJzdWIiOiJjb20uT2FzaXNMaXZlU3RvY2suWmFiZWhhdHkiLCJhdWQiOiJodHRwczpcL1wvYXBwbGVpZC5hcHBsZS5jb20iLCJpc3MiOiI4VDlGNU1RVlJXIn0.LxSufe7CDXTYWe20koflvwk35AxnaVq4zGf4MMbQgaARJNGuMCZt-JWS_ptkMFSRxdCdl9RcLK5A2Z8ZBr_f9A'),
     ],
 ];
