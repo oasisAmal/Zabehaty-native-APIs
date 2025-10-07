@@ -16,7 +16,7 @@ class AppController extends Controller
         $appCountries = AvailableCountry::active()->get()->map(function ($country) {
             return [
                 'id' => $country->id,
-                'name' => $country->name,
+                'name' => ucfirst($country->name),
                 'flag_url' => $country->flag_url,
                 'country_code' => $country->country_code,
             ];
@@ -29,7 +29,7 @@ class AppController extends Controller
         $mobileCountries = Country::get()->map(function ($country) {
             return [
                 'id' => $country->id,
-                'name' => $country->name,
+                'name' => ucfirst($country->name),
                 'flag_url' => $country->flag_url,
                 'country_code' => $country->code,
                 'mobile_code' => $country->phone_code,
