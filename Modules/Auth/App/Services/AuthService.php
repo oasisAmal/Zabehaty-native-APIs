@@ -3,6 +3,7 @@
 namespace Modules\Auth\App\Services;
 
 use App\Enums\Common;
+use App\Enums\SocialProvider;
 use Illuminate\Support\Facades\DB;
 use Modules\Users\App\Models\User;
 use Illuminate\Support\Facades\Log;
@@ -85,11 +86,27 @@ class AuthService
     public function socialLogin($data): array
     {
         try {
-            $socialUser = Socialite::driver($data['social_type'])->stateless()->userFromToken($data['social_token']);
+            $provider = $data['social_type'];
+            if ($data['social_type'] == SocialProvider::GOOGLE_IOS) {
+                $provider = 'google';
+                // Get credentials based on platform
+                $clientId = config("services.google_ios.client_id");
+                $clientSecret = config("services.google_ios.client_secret");
+                $redirectUri = config("services.google_ios.redirect");
+
+                // Temporarily override Socialite config
+                config([
+                    "services.google.client_id" => $clientId,
+                    "services.google.client_secret" => $clientSecret,
+                    "services.google.redirect" => $redirectUri,
+                ]);
+            }
+
+            $socialUser = Socialite::driver($provider)->stateless()->userFromToken($data['social_token']);
             // $socialUser = Socialite::driver($data['social_type'])->userFromToken($data['social_token']);
 
             $user = User::where('social_profile_id', $socialUser->getId())
-                ->where('social_type', $data['social_type'])
+                ->where('social_type', $provider)
                 ->first();
 
             if (!$user) {
@@ -97,7 +114,7 @@ class AuthService
                     'first_name' => $socialUser->getName() ?? $socialUser->getNickname(),
                     'last_name' => $socialUser->getName() ?? $socialUser->getNickname(),
                     'email' => $data['email'] ?? $socialUser->getEmail(),
-                    'social_type' => $data['social_type'],
+                    'social_type' => $provider,
                     'social_profile_id' => $data['social_profile_id'] ?? $socialUser->getId(),
                     'social_token' => $data['social_token'],
                     'is_guest' => false,

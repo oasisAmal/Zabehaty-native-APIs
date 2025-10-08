@@ -50,6 +50,12 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', 'http://localhost:8080/api/auth/google/callback'),
     ],
 
+    'google_ios' => [
+        'client_id' => env('GOOGLE_IOS_CLIENT_ID', '46439986389-e3usme8r97ndf2h998fj7lsqe9ch8mm4.apps.googleusercontent.com'),
+        'client_secret' => env('GOOGLE_IOS_CLIENT_SECRET', ''),
+        'redirect' => env('GOOGLE_IOS_REDIRECT_URI', 'http://localhost:8080/api/auth/google/callback'),
+    ],
+
     'facebook' => [
         'client_id' => env('FACEBOOK_CLIENT_ID'),
         'client_secret' => env('FACEBOOK_CLIENT_SECRET'),
