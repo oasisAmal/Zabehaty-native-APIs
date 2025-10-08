@@ -102,6 +102,8 @@ class AuthService
                 ]);
             }
 
+            Log::debug('Social Login', ['provider' => $provider, 'data' => $data, 'config' => config("services.google")]);
+
             $socialUser = Socialite::driver($provider)->stateless()->userFromToken($data['social_token']);
             // $socialUser = Socialite::driver($data['social_type'])->userFromToken($data['social_token']);
 
