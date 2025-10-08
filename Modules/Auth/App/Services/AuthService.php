@@ -111,12 +111,13 @@ class AuthService
                 ->first();
 
             if (!$user) {
-                $user = User::create([
+                $user = User::updateOrCreate([
+                    'social_profile_id' => $data['social_profile_id'] ?? $socialUser->getId(),
+                    'email' => $data['email'] ?? $socialUser->getEmail(),
+                ], [
                     'first_name' => $socialUser->getName() ?? $socialUser->getNickname(),
                     'last_name' => $socialUser->getName() ?? $socialUser->getNickname(),
-                    'email' => $data['email'] ?? $socialUser->getEmail(),
                     'social_type' => $provider,
-                    'social_profile_id' => $data['social_profile_id'] ?? $socialUser->getId(),
                     'social_token' => $data['social_token'],
                     'is_guest' => false,
                     'old_id' => 0,
