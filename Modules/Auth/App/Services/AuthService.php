@@ -85,25 +85,24 @@ class AuthService
      */
     public function socialLogin($data): array
     {
-        $provider = $data['social_type'];
-        if ($data['social_type'] == SocialProvider::GOOGLE_IOS) {
-            $provider = 'google';
-            // Get credentials based on platform
-            $clientId = config("services.google_ios.client_id");
-            $clientSecret = config("services.google_ios.client_secret");
-            $redirectUri = config("services.google_ios.redirect");
-
-            // Temporarily override Socialite config
-            config([
-                "services.google.client_id" => $clientId,
-                "services.google.client_secret" => $clientSecret,
-                "services.google.redirect" => $redirectUri,
-            ]);
-        }
-
-        Log::debug('Social Login', ['provider' => $provider, 'data' => $data, 'config' => config("services.google")]);
-
         try {
+            $provider = $data['social_type'];
+            if ($data['social_type'] == SocialProvider::GOOGLE_IOS) {
+                $provider = 'google';
+                // Get credentials based on platform
+                $clientId = config("services.google_ios.client_id");
+                $clientSecret = config("services.google_ios.client_secret");
+                $redirectUri = config("services.google_ios.redirect");
+    
+                // Temporarily override Socialite config
+                config([
+                    "services.google.client_id" => $clientId,
+                    "services.google.client_secret" => $clientSecret,
+                    "services.google.redirect" => $redirectUri,
+                ]);
+            }
+            Log::debug('Social Login', ['provider' => $provider, 'data' => $data, 'config' => config("services.google")]);
+
             $socialUser = Socialite::driver($provider)->stateless()->userFromToken($data['social_token']);
             // $socialUser = Socialite::driver($data['social_type'])->userFromToken($data['social_token']);
 
