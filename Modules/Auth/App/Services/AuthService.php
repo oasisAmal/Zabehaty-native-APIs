@@ -101,13 +101,12 @@ class AuthService
                     "services.google.redirect" => $redirectUri,
                 ]);
             }
-            Log::debug('Social Login', ['provider' => $provider, 'data' => $data, 'config' => config("services.google")]);
 
             $socialUser = Socialite::driver($provider)->stateless()->userFromToken($data['social_token']);
-            // $socialUser = Socialite::driver($data['social_type'])->userFromToken($data['social_token']);
 
-            $user = User::where('social_profile_id', $socialUser->getId())->orWhere('email', $data['email'])->first();
+            $user = User::where('social_profile_id', $socialUser->getId())->orWhere('email', $data['email'] ?? $socialUser->getEmail())->first();
             if (!$user) {
+                Log::debug('Social Login', ['provider' => $provider, 'data' => $data, 'socialUser' => $socialUser]);
                 $user = User::create([
                     'social_profile_id' => $data['social_profile_id'] ?? $socialUser->getId(),
                     'first_name' => $socialUser->getName() ?? $socialUser->getNickname(),
