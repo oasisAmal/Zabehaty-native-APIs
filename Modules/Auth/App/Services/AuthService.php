@@ -93,7 +93,7 @@ class AuthService
                 $clientId = config("services.google_ios.client_id");
                 $clientSecret = config("services.google_ios.client_secret");
                 $redirectUri = config("services.google_ios.redirect");
-    
+
                 // Temporarily override Socialite config
                 config([
                     "services.google.client_id" => $clientId,
@@ -106,23 +106,25 @@ class AuthService
             $socialUser = Socialite::driver($provider)->stateless()->userFromToken($data['social_token']);
             // $socialUser = Socialite::driver($data['social_type'])->userFromToken($data['social_token']);
 
-            $user = User::where('social_profile_id', $socialUser->getId())
-                ->where('social_type', $provider)
-                ->first();
-
+            $user = User::where('social_profile_id', $socialUser->getId())->orWhere('email', $data['email'])->first();
             if (!$user) {
-                $user = User::updateOrCreate([
+                $user = User::create([
                     'social_profile_id' => $data['social_profile_id'] ?? $socialUser->getId(),
-                    'email' => $data['email'] ?? $socialUser->getEmail(),
-                ], [
                     'first_name' => $socialUser->getName() ?? $socialUser->getNickname(),
                     'last_name' => $socialUser->getName() ?? $socialUser->getNickname(),
+                    'email' => $data['email'] ?? $socialUser->getEmail(),
                     'social_type' => $provider,
                     'social_token' => $data['social_token'],
                     'is_guest' => false,
                     'old_id' => 0,
                     'app_version' => $data['app_version'],
                 ]);
+            } else {
+                $user->email = $data['email'] ?? $socialUser->getEmail();
+                $user->social_type = $provider;
+                $user->social_token = $data['social_token'];
+                $user->app_version = $data['app_version'];
+                $user->save();
             }
 
             return [
