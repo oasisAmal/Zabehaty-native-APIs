@@ -120,6 +120,7 @@ class AuthService
                     'app_version' => $data['app_version'],
                 ]);
             } else {
+                $user->social_profile_id = $data['social_profile_id'] ?? $socialUser->getId();
                 $user->email = $data['email'] ?? $socialUser->getEmail();
                 $user->social_type = $provider;
                 $user->social_token = $data['social_token'];
