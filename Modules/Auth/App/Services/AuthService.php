@@ -106,11 +106,12 @@ class AuthService
 
             $user = User::where('social_profile_id', $socialUser->getId())->orWhere('email', $data['email'] ?? $socialUser->getEmail())->first();
             if (!$user) {
-                Log::debug('Social Login', ['provider' => $provider, 'data' => $data, 'socialUser' => $socialUser]);
+                $firstName = $socialUser->getName() ?? $socialUser->getNickname() ?? $data['first_name'] ?? null;
+                $lastName = $socialUser->getName() ?? $socialUser->getNickname() ?? $data['last_name'] ?? null;
                 $user = User::create([
                     'social_profile_id' => $data['social_profile_id'] ?? $socialUser->getId(),
-                    'first_name' => $socialUser->getName() ?? $socialUser->getNickname(),
-                    'last_name' => $socialUser->getName() ?? $socialUser->getNickname(),
+                    'first_name' => $firstName,
+                    'last_name' => $lastName,
                     'email' => $data['email'] ?? $socialUser->getEmail(),
                     'social_type' => $provider,
                     'social_token' => $data['social_token'],
