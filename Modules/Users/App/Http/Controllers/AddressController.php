@@ -2,10 +2,12 @@
 
 namespace Modules\Users\App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
-use Modules\Users\App\Http\Requests\StoreAddressRequest;
 use App\Models\Region;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
 use Modules\Users\App\Models\UserAddress;
+use Modules\Users\App\Http\Requests\StoreAddressRequest;
+use Modules\Users\App\Http\Requests\UpdateAddressRequest;
 use Modules\Users\App\Http\Resources\UserAddressResource;
 
 class AddressController extends Controller
@@ -15,7 +17,7 @@ class AddressController extends Controller
         $data = $request->validated();
 
         $lat = (float) $data['lat'];
-        $lng = (float) $data['lng']; 
+        $lng = (float) $data['lng'];
 
         // Spatial contains check against supported UAE regions
         $region = Region::pointInsideAny($lat, $lng);
@@ -41,5 +43,53 @@ class AddressController extends Controller
         $address = UserAddress::create($data);
 
         return responseSuccessData(UserAddressResource::make($address));
+    }
+
+    public function update(UpdateAddressRequest $request, $id)
+    {
+        $address = UserAddress::where('user_id', $request->user()->id)->find($id);
+        if (!$address) {
+            return responseErrorMessage(__('users::messages.address_not_found'));
+        }
+
+        $data = $request->validated();
+
+        $lat = (float) $data['lat'];
+        $lng = (float) $data['lng'];
+
+
+        // Spatial contains check against supported UAE regions
+        $region = Region::pointInsideAny($lat, $lng);
+        if (!$region) {
+            return responseErrorMessage(__('users::messages.location_not_supported'), 422);
+        }
+
+        $data['region_id'] = $region->id;
+        $data['emirate_id'] = $region->emirate_id;
+        $data['branch_id'] = $region->branch_id;
+
+        if (!$request->has('name')) {
+            $data['name'] = $request->user()->fullname;
+        }
+
+        if ($request->has('mobile') && $request->mobile == null) {
+            unset($data['mobile']);
+        }
+
+        $address->update($data);
+
+        return responseSuccessData(UserAddressResource::make($address->fresh()));
+    }
+
+    public function destroy(Request $request, $id)
+    {
+        $address = UserAddress::where('user_id', $request->user()->id)->find($id);
+        if (!$address) {
+            return responseErrorMessage(__('users::messages.address_not_found'));
+        }
+
+        $address->delete();
+
+        return responseSuccessMessage(__('users::messages.address_deleted'));
     }
 }
