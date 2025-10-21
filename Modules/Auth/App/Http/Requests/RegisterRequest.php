@@ -106,6 +106,25 @@ class RegisterRequest extends FormRequest
      */
     protected function failedValidation(Validator $validator)
     {
-        throw new HttpResponseException(validationErrors($validator->errors()->all()));
+        $errors = $validator->errors()->all();
+
+        $checkErrors = [
+            'validate_mobile' => __('auth::messages.validate_mobile_unique'),
+            'email' => __('auth::messages.email_unique'),
+        ];
+        
+        // Check if the error is related to mobile number conflict (unique validation)
+        $hasMobileConflict = false;
+        foreach ($validator->errors()->getMessages() as $field => $fieldErrors) {
+            if (in_array($fieldErrors[0], $checkErrors)) {
+                $hasMobileConflict = true;
+                break;
+            }
+        }
+        
+        // Return 409 status code for mobile number conflicts, 400 for other validation errors
+        $statusCode = $hasMobileConflict ? 409 : 400;
+        
+        throw new HttpResponseException(validationErrors($errors, $statusCode));
     }
 }
