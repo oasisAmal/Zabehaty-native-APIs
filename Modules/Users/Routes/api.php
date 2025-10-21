@@ -2,9 +2,11 @@
 
 use Illuminate\Support\Facades\Route;
 use Modules\Users\App\Http\Controllers\UsersController;
+use Modules\Users\App\Http\Controllers\AddressController;
 
-Route::prefix('users')->as('users.')->controller(UsersController::class)->group(function () {
-    Route::group(['middleware' => ['auth:api', 'require-registered']], function () {
-        //
-    });
+Route::prefix('users')->as('users.')->middleware(['auth:api', 'require-registered'])->controller(UsersController::class)->group(function () {
+});
+
+Route::prefix('addresses')->as('addresses.')->middleware(['auth:api'])->controller(AddressController::class)->group(function () {
+    Route::post('/store', 'store')->name('store');
 });

@@ -68,4 +68,9 @@ return [
         'redirect' => env('APPLE_REDIRECT_URI'),
     ],
 
+    // Google Maps Server APIs
+    'google_maps' => [
+        'key' => env('GOOGLE_MAPS_API_KEY', 'AIzaSyCncBNNbERieJpjTUvo7VtQWGXMmXUiUu0'),
+    ],
+
 ];
