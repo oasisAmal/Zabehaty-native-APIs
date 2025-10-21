@@ -2,6 +2,7 @@
 
 namespace Modules\Users\App\Http\Resources;
 
+use App\Enums\Common;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class UserAddressResource extends JsonResource
@@ -29,8 +30,8 @@ class UserAddressResource extends JsonResource
             'show_sender_name' => (bool) $this->show_sender_name,
             'is_default' => (bool) $this->is_default,
             'is_active' => (bool) $this->is_active,
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'created_at' => $this->created_at->format(Common::DATE_FORMAT_24),
+            'updated_at' => $this->updated_at->format(Common::DATE_FORMAT_24),
         ];
     }
 }
