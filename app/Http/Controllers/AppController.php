@@ -19,8 +19,8 @@ class AppController extends Controller
                 'name' => ucfirst($country->name),
                 'flag_url' => $country->flag_url,
                 'country_code' => $country->country_code,
-                'lat' => $country->lat,
-                'lng' => $country->lng
+                'lat' => (float) $country->lat,
+                'lng' => (float) $country->lng
             ];
         });
         return responseSuccessData($appCountries);
