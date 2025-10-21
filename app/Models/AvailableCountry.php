@@ -43,6 +43,6 @@ class AvailableCountry extends Model
     public function getFlagUrlAttribute()
     {
         $flag = Str::replace('../', '', $this->flag);
-        return asset('images/' . $flag);
+        return asset('Images/' . $flag);
     }
 }
