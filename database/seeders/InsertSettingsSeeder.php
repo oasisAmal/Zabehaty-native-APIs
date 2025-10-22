@@ -53,6 +53,17 @@ class InsertSettingsSeeder extends Seeder
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
+            'key' => 'story_section_available',
+        ], [
+            'alias' => 'القسم القصصي متاح للتطبيق',
+            'value' => true,
+            'type' => 3,
+            'category' => 3,
+            'lang' => 'ar',
+            'header_id' => $headerId,
+        ]);
+
+        Settings::forCountry('ae')->updateOrCreate([
             'key' => 'login_screen_settings_image',
         ], [
             'alias' => 'صورة الشاشة التسجيل للتطبيق',
