@@ -13,6 +13,7 @@ use Modules\Auth\App\Http\Requests\VerifyOtpRequest;
 use Modules\Auth\App\Http\Requests\CheckMobileRequest;
 use Modules\Auth\App\Http\Requests\CreateGuestRequest;
 use Modules\Auth\App\Http\Requests\SocialLoginRequest;
+use Modules\Auth\App\Http\Requests\UpdateMobileRequest;
 use Modules\Auth\App\Http\Requests\ChangePasswordRequest;
 
 class AuthController extends Controller
@@ -89,10 +90,11 @@ class AuthController extends Controller
     public function sendOtp(SendOtpRequest $request)
     {
         $result = $this->authService->sendOtp($request->validated());
-        if ($result) {
-            return responseSuccessMessage(__('auth::messages.otp_sent_successfully'));
+        if ($result['status']) {
+            return responseSuccessMessage($result['message'], $result['status_code']);
         }
-        return responseErrorMessage(__('auth::messages.failed_to_send_otp'), 422);
+        
+        return responseErrorData($result['data'], $result['message'], $result['status_code']);
     }
 
     /**
@@ -101,10 +103,11 @@ class AuthController extends Controller
     public function verifyOtp(VerifyOtpRequest $request)
     {
         $result = $this->authService->verifyOtp($request->validated());
-        if ($result) {
-            return responseSuccessData($result);
+        if ($result['status']) {
+            return responseSuccessData($result['data'], $result['message'], $result['status_code']);
         }
-        return responseErrorMessage(__('auth::messages.failed_to_verify_otp'), 422);
+
+        return responseErrorData($result['data'], $result['message'], $result['status_code']);
     }
 
     /**
@@ -144,6 +147,21 @@ class AuthController extends Controller
             return responseSuccessData($result['data'], $result['message']);
         }
         return responseErrorMessage(__('auth::messages.failed_to_change_password'), 422);
+    }
+
+    /**
+     * Update Mobile
+     * 
+     * @param UpdateMobileRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateMobile(UpdateMobileRequest $request)
+    {
+        $result = $this->authService->updateMobile($request->validated());
+        if ($result['status']) {
+            return responseSuccessData($result['data'], $result['message']);
+        }
+        return responseErrorMessage(__('auth::messages.failed_to_update_mobile'), 422);
     }
 
     /**

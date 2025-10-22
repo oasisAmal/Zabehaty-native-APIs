@@ -2,8 +2,10 @@
 
 namespace Modules\Auth\App\Transformers;
 
+use App\Enums\Common;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\Users\App\Http\Resources\UserAddressResource;
 
 class AuthResource extends JsonResource
 {
@@ -21,7 +23,9 @@ class AuthResource extends JsonResource
             'is_verified' => (bool) $this->is_verified,
             'rating' => (float) $this->rating ?? 0,
             'image_url' => $this->image_url,
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
+            'addresses' => UserAddressResource::collection($this->addresses()->active()->get()),
+            'created_at' => $this->created_at->format(Common::DATE_FORMAT_24),
+            'updated_at' => $this->updated_at->format(Common::DATE_FORMAT_24),
         ];
     }
 }

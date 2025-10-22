@@ -10,4 +10,9 @@ trait UserRelationships
     {
         return LogOptions::defaults()->logFillable()->logOnlyDirty();
     }
+
+    public function addresses()
+    {
+        return $this->hasMany(UserAddress::class);
+    }
 }

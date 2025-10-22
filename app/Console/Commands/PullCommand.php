@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Artisan;
 
 class PullCommand extends Command
 {
@@ -28,5 +29,7 @@ class PullCommand extends Command
     {
         shell_exec("git status 2>&1");
         $pull = shell_exec("git pull 2>&1");
+
+        Artisan::call('migrate');
     }
 }
