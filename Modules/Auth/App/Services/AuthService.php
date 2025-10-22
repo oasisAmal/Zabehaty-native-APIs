@@ -224,26 +224,71 @@ class AuthService
      * Send Otp
      *
      * @param array $data
-     * @return bool
+     * @return array|bool
      */
-    public function sendOtp($data): bool
+    public function sendOtp($data): array|bool
     {
         $user = User::where('mobile', $data['mobile'])
             ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
             ->first();
         if (!$user) {
-            return false;
+            return [
+                'status' => false,
+                'status_code' => 422,
+                'message' => __('auth::messages.mobile_not_found'),
+                'data' => null,
+            ];
         }
+
+        // Check if user is blocked using database
+        $blockRecord = DB::table('otp_blocks')
+            ->where('mobile', $data['mobile'])
+            ->where('blocked_until', '>', now())
+            ->first();
+        
+        if ($blockRecord) {
+            $minutesRemaining = now()->diffInMinutes($blockRecord->blocked_until, false);
+            if ($minutesRemaining > 0) {
+                return [
+                    'status' => false,
+                    'status_code' => 429,
+                    'message' => __('auth::messages.otp_blocked', ['minutes' => ceil($minutesRemaining)]),
+                    'data' => [
+                        'attempts_remaining' => 0,
+                        'blocked_until' => $blockRecord->blocked_until
+                    ]
+                ];
+            } else {
+                // Block expired, remove it
+                DB::table('otp_blocks')->where('mobile', $data['mobile'])->delete();
+            }
+        }
+
+        // Reset verification attempt counter when sending new OTP
+        DB::table('otp_attempts')->where('mobile', $data['mobile'])->delete();
 
         // $user->verification_code = generateRandomNumber(Common::RANDOM_AUTH_CODE_LENGTH);
         $user->verification_code = '0000';
-        $user->updated_at = now()->addMinutes(10);
+        $user->updated_at = now()->addMinutes(Common::OTP_EXPIRATION_MINUTES);
         $user->save();
+        
         $message = __('auth::messages.otp_code', ['code' => $user->verification_code]);
 
-        return true;
+        // if (!app(SMSService::class)->send($message, $user->mobile, $data['mobile_country_code'])) {
+        //     return [
+        //         'status' => false,
+        //         'status_code' => 422,
+        //         'message' => __('auth::messages.failed_to_send_otp'),
+        //         'data' => null,
+        //     ];
+        // }
 
-        return app(SMSService::class)->send($message, $user->mobile, $data['mobile_country_code']);
+        return [
+            'status' => true,
+            'status_code' => 200,
+            'message' => __('auth::messages.otp_sent_successfully'),
+            'data' => null,
+        ];
     }
 
     /**
@@ -258,14 +303,107 @@ class AuthService
             ->orWhere('mobile', format_mobile_number_to_database($data['mobile'], $data['mobile_country_code']))
             ->first();
         if (!$user) {
-            return false;
+            return [
+                'status' => false,
+                'status_code' => 422,
+                'message' => __('auth::messages.mobile_not_found'),
+                'data' => null,
+            ];
         }
+
+        // Check if user is blocked using database
+        $blockRecord = DB::table('otp_blocks')
+            ->where('mobile', $data['mobile'])
+            ->where('blocked_until', '>', now())
+            ->first();
+        
+        if ($blockRecord) {
+            $minutesRemaining = now()->diffInMinutes($blockRecord->blocked_until, false);
+            if ($minutesRemaining > 0) {
+                return [
+                    'status' => false,
+                    'status_code' => 429,
+                    'message' => __('auth::messages.otp_blocked', ['minutes' => ceil($minutesRemaining)]),
+                    'data' => [
+                        'attempts_remaining' => 0,
+                        'blocked_until' => $blockRecord->blocked_until
+                    ]
+                ];
+            } else {
+                // Block expired, remove it
+                DB::table('otp_blocks')->where('mobile', $data['mobile'])->delete();
+            }
+        }
+
+        // Check OTP validity
         if ($user->verification_code != $data['verification_code']) {
-            return false;
+            // Get current attempts from database
+            $currentAttempts = DB::table('otp_attempts')
+                ->where('mobile', $data['mobile'])
+                ->where('created_at', '>', now()->subMinutes(Common::OTP_ATTEMPT_COUNTER_MINUTES))
+                ->count();
+            
+            $attempts = $currentAttempts + 1;
+            
+            if ($attempts > Common::OTP_ATTEMPT_MAX_ATTEMPTS) {
+                // Set 15-minute block in database
+                $blockedUntil = now()->addMinutes(Common::OTP_ATTEMPT_BLOCK_MINUTES);
+                DB::table('otp_blocks')->updateOrInsert(
+                    ['mobile' => $data['mobile']],
+                    [
+                        'mobile' => $data['mobile'],
+                        'blocked_until' => $blockedUntil,
+                        'created_at' => now(),
+                        'updated_at' => now()
+                    ]
+                );
+                
+                return [
+                    'status' => false,
+                    'status_code' => 429,
+                    'message' => __('auth::messages.otp_attempts_exceeded', ['minutes' => Common::OTP_ATTEMPT_BLOCK_MINUTES]),
+                    'data' => [
+                        'attempts_remaining' => 0,
+                        'blocked_until' => $blockedUntil->format('Y-m-d H:i:s')
+                    ]
+                ];
+            } else {
+                // Store attempt in database
+                DB::table('otp_attempts')->insert([
+                    'mobile' => $data['mobile'],
+                    'attempts' => $attempts,
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+                
+                $remainingAttempts = Common::OTP_ATTEMPT_MAX_ATTEMPTS - $attempts;
+                
+                return [
+                    'status' => false,
+                    'status_code' => 422,
+                    'message' => __('auth::messages.otp_invalid_attempts_remaining', ['attempts' => $remainingAttempts]),
+                    'data' => [
+                        'attempts_remaining' => $remainingAttempts,
+                        'blocked_until' => null
+                    ]
+                ];
+            }
         }
-        if ($user->updated_at < now()->subMinutes(10)) {
-            return false;
+
+        // Check if OTP is expired
+        if ($user->updated_at < now()->subMinutes(Common::OTP_EXPIRATION_MINUTES)) {
+            return [
+                'status' => false,
+                'status_code' => 422,
+                'message' => __('auth::messages.otp_expired', ['minutes' => ceil(now()->diffInMinutes($user->updated_at, false))]),
+                'data' => null,
+            ];
         }
+
+        // OTP is correct - clear all counters and block status from database
+        DB::table('otp_attempts')->where('mobile', $data['mobile'])->delete();
+        DB::table('otp_blocks')->where('mobile', $data['mobile'])->delete();
+
         if ($data['device_token'] && $data['device_type']) {
             $user->device_token = $data['device_token'];
             $user->device_type = $data['device_type'];
@@ -277,10 +415,20 @@ class AuthService
         $user->save();
 
         if ($data['return_token'] ?? false) {
-            return $this->loginSanctum($user);
+            return [
+                'status' => true,
+                'status_code' => 200,
+                'message' => __('auth::messages.otp_verified_successfully'),
+                'data' => $this->loginSanctum($user),
+            ];
         }
 
-        return true;
+        return [
+            'status' => true,
+            'status_code' => 200,
+            'message' => __('auth::messages.otp_verified_successfully'),
+            'data' => null,
+        ];
     }
 
     /**

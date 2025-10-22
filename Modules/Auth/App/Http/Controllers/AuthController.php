@@ -90,10 +90,11 @@ class AuthController extends Controller
     public function sendOtp(SendOtpRequest $request)
     {
         $result = $this->authService->sendOtp($request->validated());
-        if ($result) {
-            return responseSuccessMessage(__('auth::messages.otp_sent_successfully'));
+        if ($result['status']) {
+            return responseSuccessMessage($result['message'], $result['status_code']);
         }
-        return responseErrorMessage(__('auth::messages.failed_to_send_otp'), 422);
+        
+        return responseErrorData($result['data'], $result['message'], $result['status_code']);
     }
 
     /**
@@ -102,10 +103,11 @@ class AuthController extends Controller
     public function verifyOtp(VerifyOtpRequest $request)
     {
         $result = $this->authService->verifyOtp($request->validated());
-        if ($result) {
-            return responseSuccessData($result);
+        if ($result['status']) {
+            return responseSuccessData($result['data'], $result['message'], $result['status_code']);
         }
-        return responseErrorMessage(__('auth::messages.failed_to_verify_otp'), 422);
+
+        return responseErrorData($result['data'], $result['message'], $result['status_code']);
     }
 
     /**

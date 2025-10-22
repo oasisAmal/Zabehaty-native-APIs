@@ -59,6 +59,10 @@ return [
     'mobile_found' => 'Mobile found',
     'mobile_updated_successfully' => 'Mobile updated successfully',
     'failed_to_update_mobile' => 'Failed to update mobile',
+    'otp_attempts_exceeded' => 'Too many incorrect attempts. Try again after :minutes minutes',
+    'otp_blocked' => 'Your account is temporarily blocked. Try again in :minutes minutes',
+    'otp_invalid_attempts_remaining' => 'Invalid OTP. You have :attempts attempts remaining',
+    'otp_expired' => 'OTP expired. You have :minutes minutes remaining',
     'attributes' => [
         'mobile' => 'Mobile',
         'mobile_country_code' => 'Mobile country code',

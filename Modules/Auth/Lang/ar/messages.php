@@ -59,6 +59,10 @@ return [
     'mobile_found' => 'الهاتف موجود',
     'mobile_updated_successfully' => 'تم تحديث الهاتف بنجاح',
     'failed_to_update_mobile' => 'فشل في تحديث الهاتف',
+    'otp_attempts_exceeded' => 'محاولات كثيرة خاطئة. حاول مرة أخرى بعد :minutes دقائق',
+    'otp_blocked' => 'حسابك محظور مؤقتاً. حاول مرة أخرى خلال :minutes دقائق',
+    'otp_invalid_attempts_remaining' => 'رمز التحقق غير صحيح. لديك :attempts محاولات متبقية',
+    'otp_expired' => 'رمز التحقق قد انتهى. لديك :minutes دقيقة متبقية',
     'attributes' => [
         'mobile' => 'الهاتف',
         'mobile_country_code' => 'رمز الدولة',

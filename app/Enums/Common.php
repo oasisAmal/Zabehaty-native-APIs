@@ -17,4 +17,9 @@ final class Common extends Enum
 
     const PASSWORD_REGEX = "/^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$/"; // Minimum 8 characters, at least one uppercase letter, one lowercase letter, one number, and one special character
     const EMAIL_REGEX = "/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/";
+
+    const OTP_ATTEMPT_BLOCK_MINUTES = 15; // 15 minutes
+    const OTP_ATTEMPT_COUNTER_MINUTES = 5; // 5 minutes
+    const OTP_ATTEMPT_MAX_ATTEMPTS = 3; // 3 attempts
+    const OTP_EXPIRATION_MINUTES = 10; // 10 minutes
 }
