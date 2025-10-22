@@ -32,7 +32,7 @@ return [
     'show_sender_name_boolean' => 'Show sender name must be a boolean',
     'is_default_boolean' => 'Is default must be a boolean',
     'is_active_boolean' => 'Is active must be a boolean',
-    'location_not_supported' => 'The location is not supported',
+    'location_not_supported' => 'This location is not supported',
     'address_deleted' => 'Address deleted successfully',
     'address_not_found' => 'Address not found',
     'name_max' => 'Name must be less than 191 characters',
