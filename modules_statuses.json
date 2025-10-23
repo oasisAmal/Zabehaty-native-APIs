@@ -1,5 +1,6 @@
 {
     "Auth": true,
     "Users": true,
-    "Notifications": true
+    "Notifications": true,
+    "HomePage": true
 }

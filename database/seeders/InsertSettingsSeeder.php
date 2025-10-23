@@ -15,7 +15,7 @@ class InsertSettingsSeeder extends Seeder
     public function run(): void
     {
         $headerId = null;
-        DatabaseHelpers::forCountry('ae', function() use (&$headerId) {
+        DatabaseHelpers::forCountry('ae', function () use (&$headerId) {
             $headerId = DB::table('settings_header')->where('name', 'خصائص التطبيق')->first()->id;
             if (!$headerId) {
                 $headerId = DB::table('settings_header')->insert([
@@ -184,6 +184,17 @@ class InsertSettingsSeeder extends Seeder
             'header_id' => $headerId,
             'is_json' => 1,
             'in_api' => 1,
-        ]);    
+        ]);
+
+        Settings::forCountry('ae')->updateOrCreate([
+            'key' => 'homepage_background_url',
+        ], [
+            'alias' => 'صورة خلفية الصفحة الرئيسية',
+            'value' => '',
+            'type' => 5,
+            'category' => 3,
+            'lang' => 'ar',
+            'header_id' => $headerId,
+        ]);
     }
 }
