@@ -97,6 +97,7 @@ class CacheService
      */
     public function isCacheEnabled(): bool
     {
-        return config('cache.default') !== 'null' && !App::environment('testing');
+        // return config('cache.default') !== 'null' && !App::environment('local');
+        return config('cache.default') !== 'null';
     }
 }

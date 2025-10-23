@@ -44,7 +44,7 @@ class HomePageService
         // Build data
         $data = [
             'header' => $this->headerBuilder->build(),
-            'sections' => $this->sectionBuilder->buildAll(),
+            // 'sections' => $this->sectionBuilder->buildAll(), // until we have sections in the database
         ];
 
         // Store in cache

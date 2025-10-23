@@ -7,6 +7,13 @@ use App\Models\Settings;
 
 class HeaderBuilder
 {
+    protected array $settings;
+
+    public function __construct()
+    {
+        $this->settings = Settings::pluck('value', 'key')->toArray();
+    }
+
     /**
      * Build header data
      *
@@ -17,6 +24,7 @@ class HeaderBuilder
         return [
             'background_url' => $this->getBackgroundUrl(),
             'main_categories' => $this->getMainCategories(),
+            'story_section_available' => $this->storySectionAvailable(),
             'user_stories' => $this->getUserStories(),
         ];
     }
@@ -28,18 +36,12 @@ class HeaderBuilder
      */
     private function getBackgroundUrl(): string
     {
-        $backgroundUrl = Settings::where('key', 'homepage_background_url')->value('value');
-
-        if (!$backgroundUrl || $backgroundUrl === '""') {
-            return "";
+        $backgroundImage = isset($this->settings['homepage_background_url']) ? $this->settings['homepage_background_url'] : '';
+        if (isset($this->settings['homepage_background_url']) && $this->settings['homepage_background_url'] == '""') {
+            $backgroundImage = '';
         }
 
-        // If it's already a full URL, return as is
-        if (filter_var($backgroundUrl, FILTER_VALIDATE_URL)) {
-            return $backgroundUrl;
-        }
-
-        return "";
+        return $backgroundImage;
     }
 
     /**
@@ -58,6 +60,16 @@ class HeaderBuilder
                     'icon_url' => $category->icon_path,
                 ];
             })->toArray();
+    }
+
+    /**
+     * Check if user stories are enabled
+     *
+     * @return bool
+     */
+    private function storySectionAvailable(): bool
+    {
+        return isset($this->settings['story_section_available']) ? (bool) $this->settings['story_section_available'] : false;
     }
 
     /**
