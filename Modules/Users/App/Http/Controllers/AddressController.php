@@ -95,7 +95,7 @@ class AddressController extends Controller
 
     public function index(Request $request)
     {
-        $address = UserAddress::where('user_id', $request->user()->id)->get();
-        return responseSuccessData(UserAddressResource::collection($address));
+        $address = UserAddress::where('user_id', $request->user()->id)->paginate(10);
+        return responsePaginate(UserAddressResource::collection($address));
     }
 }
