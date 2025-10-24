@@ -3,12 +3,11 @@
 namespace Modules\HomePage\App\Services\Cache;
 
 use App\Enums\AppCountries;
-use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 
 class CacheService
 {
-    protected int $defaultTtl = 3600; // 1 hour
+    protected int $defaultTtl = 300; // 300 seconds = 5 minutes
 
     /**
      * Get cache key for homepage data

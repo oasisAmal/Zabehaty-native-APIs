@@ -23,7 +23,7 @@ class AuthResource extends JsonResource
             'is_verified' => (bool) $this->is_verified,
             'rating' => (float) $this->rating ?? 0,
             'image_url' => $this->image_url,
-            'addresses' => UserAddressResource::collection($this->addresses()->active()->get()),
+            'addresses' => UserAddressResource::make($this->addresses()->default()->active()->first()),
             'created_at' => $this->created_at->format(Common::DATE_FORMAT_24),
             'updated_at' => $this->updated_at->format(Common::DATE_FORMAT_24),
         ];
