@@ -3,6 +3,7 @@
 namespace Modules\Users\App\Http\Controllers;
 
 use App\Models\Region;
+use App\Enums\Pagination;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Modules\Users\App\Models\UserAddress;
@@ -95,7 +96,7 @@ class AddressController extends Controller
 
     public function index(Request $request)
     {
-        $address = UserAddress::where('user_id', $request->user()->id)->paginate(10);
+        $address = UserAddress::where('user_id', $request->user()->id)->paginate(Pagination::PER_PAGE);
         return responsePaginate(UserAddressResource::collection($address));
     }
 }
