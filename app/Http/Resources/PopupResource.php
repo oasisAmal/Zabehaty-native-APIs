@@ -18,7 +18,7 @@ class PopupResource extends JsonResource
             'id' => $this->id,
             'target_page' => $this->target_page,
             'size' => $this->size,
-            'image_url' => $this->image_url,
+            'image_url' => request()->app_lang == 'ar' ? $this->image_ar_url : $this->image_en_url,
             'thumbnail_url' => $this->thumbnail_url,
             'video_url' => $this->video_url,
             'link' => $this->link,
