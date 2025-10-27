@@ -55,6 +55,6 @@ class Popup extends Model
         if ($this->video_url) {
             return 'video';
         }
-        return 'image';
+        return $this->image_ar_url ? 'image' : ($this->image_en_url ? 'image' : 'none');
     }
 }
