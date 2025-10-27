@@ -15,7 +15,8 @@ class Popup extends Model
     protected $fillable = [
         'target_page',
         'size',
-        'image_url',
+        'image_ar_url',
+        'image_en_url',
         'thumbnail_url',
         'video_url',
         'link',

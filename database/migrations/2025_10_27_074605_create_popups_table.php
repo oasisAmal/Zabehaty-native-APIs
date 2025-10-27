@@ -15,7 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('target_page')->comment('home_page, product_details, shop_details, category_details');
             $table->string('size')->comment('small, medium, fullscreen');
-            $table->string('image_url')->nullable();
+            $table->string('image_ar_url')->nullable();
+            $table->string('image_en_url')->nullable();
             $table->string('thumbnail_url')->nullable();
             $table->string('video_url')->nullable();
             $table->string('link')->nullable();
