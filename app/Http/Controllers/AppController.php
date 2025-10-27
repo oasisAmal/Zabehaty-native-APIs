@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Popup;
 use App\Models\Country;
 use App\Enums\MobileRegex;
 use Illuminate\Http\Request;
 use App\Models\AvailableCountry;
+use App\Http\Resources\PopupResource;
 use App\Http\Resources\AppSettingsResource;
 use App\Http\Resources\OnboardingAdsResource;
 
@@ -49,6 +51,12 @@ class AppController extends Controller
     public function getOnboardingAds(Request $request)
     {
         return responseSuccessData(OnboardingAdsResource::make([]));
+    }
+
+    public function getPopups(Request $request)
+    {
+        $popups = Popup::active()->get();
+        return responseSuccessData(PopupResource::collection($popups));
     }
 
 }
