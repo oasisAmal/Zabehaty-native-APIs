@@ -3,6 +3,7 @@
 namespace Modules\Users\App\Http\Controllers;
 
 use App\Models\Region;
+use App\Enums\Pagination;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Modules\Users\App\Models\UserAddress;
@@ -91,5 +92,11 @@ class AddressController extends Controller
         $address->delete();
 
         return responseSuccessMessage(__('users::messages.address_deleted'));
+    }
+
+    public function index(Request $request)
+    {
+        $address = UserAddress::where('user_id', $request->user()->id)->paginate(Pagination::PER_PAGE);
+        return responsePaginate(UserAddressResource::collection($address));
     }
 }
