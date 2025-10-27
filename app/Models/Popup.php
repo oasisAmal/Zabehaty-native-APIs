@@ -42,17 +42,19 @@ class Popup extends Model
         return $query->where('is_active', true);
     }
 
-    public function getItemDataAttribute()
+    public function getMediaUrlAttribute()
     {
-        if (!$this->item_type || !$this->item_id) {
-            return null;
+        if ($this->video_url) {
+            return $this->video_url;
         }
+        return request()->app_lang == 'ar' ? $this->image_ar_url : $this->image_en_url;
+    }
 
-        return match ($this->item_type) {
-            // PopupDataTypes::PRODUCT => ProductResource::make(Product::find($this->item_id)),
-            // PopupDataTypes::SHOP => ShopResource::make(Shop::find($this->item_id)),
-            // PopupDataTypes::CATEGORY => CategoryResource::make(Category::find($this->item_id)),
-            default => null,
-        };
+    public function getMediaTypeAttribute()
+    {
+        if ($this->video_url) {
+            return 'video';
+        }
+        return 'image';
     }
 }
