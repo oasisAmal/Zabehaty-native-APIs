@@ -43,6 +43,10 @@ return [
     'notes_max' => 'Notes must be less than 500 characters',
     'address_type_max' => 'Address type must be less than 191 characters',
     'receiver_name_max' => 'Receiver name must be less than 191 characters',
+    'address_id_required' => 'Address ID is required',
+    'address_id_numeric' => 'Address ID must be a number',
+    'address_id_exists' => 'Address ID not found',
+    'address_id' => 'Address ID',
     'attributes' => [
         'lat' => 'Latitude',
         'lng' => 'Longitude',
