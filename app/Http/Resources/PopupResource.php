@@ -15,15 +15,14 @@ class PopupResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
             'target_page' => $this->target_page,
             'size' => $this->size,
-            'image_url' => $this->image_url,
-            'thumbnail_url' => $this->thumbnail_url,
-            'video_url' => $this->video_url,
-            'link' => $this->link,
-            'item_data' => $this->item_data,
-            'item_type' => $this->item_type
+            'media_type' => $this->media_type,
+            'media_url' => $this->media_url,
+            'thumbnail_url' => $this->thumbnail_url ?? '',
+            // 'link' => $this->link ?? '',
+            'item_id' => $this->item_id ?? 0,
+            'item_type' => $this->item_type ?? '',
         ];
     }
 }

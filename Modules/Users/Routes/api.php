@@ -11,6 +11,7 @@ Route::prefix('addresses')->as('addresses.')->middleware(['auth:api'])->controll
     Route::group(['middleware' => ['auth:api', 'require-registered']], function () {
         Route::post('update/{id}', 'update')->name('update');
         Route::delete('delete/{id}', 'destroy')->name('destroy');
+        Route::post('set-default', 'setDefault')->name('set-default');
         Route::get('get', 'index')->name('index');
     });
 });

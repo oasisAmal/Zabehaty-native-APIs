@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use Modules\Users\App\Models\UserAddress;
 use Modules\Users\App\Http\Requests\StoreAddressRequest;
 use Modules\Users\App\Http\Requests\UpdateAddressRequest;
+use Modules\Users\App\Http\Requests\SetDefaultAddressRequest;
 use Modules\Users\App\Http\Resources\UserAddressResource;
 
 class AddressController extends Controller
@@ -41,7 +42,11 @@ class AddressController extends Controller
             unset($data['mobile']);
         }
 
-        $address = UserAddress::create($data);
+        if ($request->user()->isGuest()) {
+            $address = UserAddress::updateOrCreate(['user_id' => $data['user_id']], $data);
+        } else {
+            $address = UserAddress::create($data);
+        }
 
         return responseSuccessData(UserAddressResource::make($address));
     }
@@ -98,5 +103,16 @@ class AddressController extends Controller
     {
         $address = UserAddress::where('user_id', $request->user()->id)->paginate(Pagination::PER_PAGE);
         return responsePaginate(UserAddressResource::collection($address));
+    }
+
+    public function setDefault(SetDefaultAddressRequest $request)
+    {
+        $address = UserAddress::where('user_id', $request->user()->id)->find($request->address_id);
+        if (!$address) {
+            return responseErrorMessage(__('users::messages.address_not_found'));
+        }
+        UserAddress::where('user_id', $request->user()->id)->default()->update(['is_default' => false]);
+        $address->update(['is_default' => true]);
+        return responseSuccessData(UserAddressResource::make($address->fresh()));
     }
 }
