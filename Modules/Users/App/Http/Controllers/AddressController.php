@@ -42,7 +42,11 @@ class AddressController extends Controller
             unset($data['mobile']);
         }
 
-        $address = UserAddress::create($data);
+        if ($request->user()->isGuest()) {
+            $address = UserAddress::updateOrCreate(['user_id' => $data['user_id']], $data);
+        } else {
+            $address = UserAddress::create($data);
+        }
 
         return responseSuccessData(UserAddressResource::make($address));
     }
