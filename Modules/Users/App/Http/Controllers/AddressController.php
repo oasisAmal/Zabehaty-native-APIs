@@ -31,7 +31,7 @@ class AddressController extends Controller
         $data['region_id'] = $region->id;
         $data['emirate_id'] = $region->emirate_id;
         $data['branch_id'] = $region->branch_id;
-        $data['is_default'] = UserAddress::where('user_id', $data['user_id'])->count() === 0 ? 1 : 0;
+        $data['is_default'] = UserAddress::where('user_id', $data['user_id'])->count() > 1 ? 0 : 1;
         $data['is_active'] = 1;
 
         if (!$request->has('name')) {
