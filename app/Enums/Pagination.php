@@ -6,5 +6,5 @@ use BenSampo\Enum\Enum;
 
 final class Pagination extends Enum
 {
-    const PER_PAGE = 2;
+    const PER_PAGE = 20;
 }
