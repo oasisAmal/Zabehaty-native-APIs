@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('image_en_url')->nullable();
             $table->string('thumbnail_url')->nullable();
             $table->string('video_url')->nullable();
+            $table->string('video_source_type')->nullable();
             $table->string('link')->nullable();
             $table->string('item_type')->nullable()->comment('product, shop, category');
             $table->unsignedBigInteger('item_id')->nullable()->comment('product_id, shop_id, category_id');
