@@ -19,6 +19,7 @@ class Popup extends Model
         'image_en_url',
         'thumbnail_url',
         'video_url',
+        'video_source_type',
         'link',
         'item_type',
         'item_id',
