@@ -110,7 +110,7 @@ class RegisterRequest extends FormRequest
 
         $checkErrors = [
             'validate_mobile' => __('auth::messages.validate_mobile_unique'),
-            'email' => __('auth::messages.email_unique'),
+            // 'email' => __('auth::messages.email_unique'),
         ];
         
         // Check if the error is related to mobile number conflict (unique validation)

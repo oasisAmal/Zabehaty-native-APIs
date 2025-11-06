@@ -20,7 +20,7 @@ class PopupResource extends JsonResource
             'media_type' => $this->media_type,
             'media_url' => $this->media_url,
             'thumbnail_url' => $this->thumbnail_url ?? '',
-            // 'link' => $this->link ?? '',
+            'external_link' => $this->link ?? '',
             'item_id' => $this->item_id ?? 0,
             'item_type' => $this->item_type ?? '',
         ];
