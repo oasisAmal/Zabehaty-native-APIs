@@ -55,7 +55,14 @@ class AppController extends Controller
 
     public function getPopups(Request $request)
     {
-        $popups = Popup::active()->get();
+        $popups = Popup::active()
+            ->get()
+            ->groupBy('target_page')
+            ->map(function ($group) {
+                return $group->random();
+            })
+            ->values();
+        
         return responseSuccessData(PopupResource::collection($popups));
     }
 
