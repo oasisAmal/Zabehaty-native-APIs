@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('popups', function (Blueprint $table) {
             $table->id();
+            $table->integer('emirate_id')->nullable();
+            $table->json('region_ids')->nullable();
             $table->string('target_page')->comment('home_page, product_details, shop_details, category_details');
             $table->string('size')->comment('small, medium, fullscreen');
             $table->string('image_ar_url')->nullable();
