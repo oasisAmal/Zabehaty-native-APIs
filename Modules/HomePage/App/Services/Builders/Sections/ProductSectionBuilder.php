@@ -17,24 +17,21 @@ class ProductSectionBuilder implements SectionBuilderInterface
     {
         $products = $section->getActiveProducts();
 
-        return [
-            'products' => $products->map(function ($sectionProduct) {
-                $product = $sectionProduct->product;
-                
-                if (!$product) {
-                    return null;
-                }
+        return  $products->map(function ($sectionProduct) {
+            $product = $sectionProduct->product;
 
-                return [
-                    'id' => $product->id,
-                    'name' => $product->name,
-                    'price' => $product->price,
-                    'image_url' => $product->image_url ?? null,
-                    'discount_percentage' => $product->discount_percentage ?? 0,
-                    'is_featured' => $product->is_featured ?? false,
-                ];
-            })->filter(),
-            'settings' => $section->settings ?? [],
-        ];
+            if (!$product) {
+                return null;
+            }
+
+            return [
+                'id' => $product->id,
+                'name' => $product->name,
+                'price' => $product->price,
+                'image_url' => $product->image_url ?? null,
+                'discount_percentage' => $product->discount_percentage ?? 0,
+                'is_featured' => $product->is_featured ?? false,
+            ];
+        })->filter()->toArray();
     }
 }

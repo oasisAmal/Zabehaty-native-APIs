@@ -6,13 +6,10 @@ use BenSampo\Enum\Enum;
 
 final class HomeSectionType extends Enum
 {
-    const BANNER = 'banner';
+    const BANNERS = 'banners';
+    // const OFFERS = 'offers';
+    const SHOPS = 'shops';
     const PRODUCTS = 'products';
     const CATEGORIES = 'categories';
-    const FEATURED = 'featured';
-    const OFFERS = 'offers';
-    const STORIES = 'stories';
-    const BANNERS = 'banners';
-    const NEW_ARRIVALS = 'new_arrivals';
-    const BEST_SELLERS = 'best_sellers';
+    const LIMITED_TIME_OFFERS = 'limited_time_offers';
 }

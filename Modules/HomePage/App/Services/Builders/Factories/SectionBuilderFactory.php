@@ -7,8 +7,8 @@ use Modules\HomePage\App\Services\Builders\Sections\BannerSectionBuilder;
 use Modules\HomePage\App\Services\Builders\Interfaces\SectionBuilderInterface;
 use Modules\HomePage\App\Services\Builders\Sections\CategorySectionBuilder;
 use Modules\HomePage\App\Services\Builders\Sections\DefaultSectionBuilder;
-use Modules\HomePage\App\Services\Builders\Sections\FeaturedSectionBuilder;
 use Modules\HomePage\App\Services\Builders\Sections\ProductSectionBuilder;
+use Modules\HomePage\App\Services\Builders\Sections\ShopSectionBuilder;
 
 class SectionBuilderFactory
 {
@@ -21,14 +21,12 @@ class SectionBuilderFactory
     public function create(HomeSectionType $type): SectionBuilderInterface
     {
         return match ($type) {
-            HomeSectionType::BANNER => new BannerSectionBuilder(),
-            HomeSectionType::BANNERS => new BannerSectionBuilder(),
-            HomeSectionType::PRODUCTS => new ProductSectionBuilder(),
+            HomeSectionType::BANNERS => new BannerSectionBuilder(), // TODO: Add banner section builder on next sprint
+            HomeSectionType::SHOPS => new ShopSectionBuilder(), // TODO: Add shop section builder on next sprint
             HomeSectionType::CATEGORIES => new CategorySectionBuilder(),
-            HomeSectionType::FEATURED => new FeaturedSectionBuilder(),
-            HomeSectionType::OFFERS => new ProductSectionBuilder(),
-            HomeSectionType::NEW_ARRIVALS => new ProductSectionBuilder(),
-            HomeSectionType::BEST_SELLERS => new ProductSectionBuilder(),
+            HomeSectionType::LIMITED_TIME_OFFERS,
+            // HomeSectionType::OFFERS,
+            HomeSectionType::PRODUCTS => new ProductSectionBuilder(),
             default => new DefaultSectionBuilder(),
         };
     }

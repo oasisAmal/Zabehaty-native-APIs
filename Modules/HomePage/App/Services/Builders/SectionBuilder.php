@@ -44,10 +44,12 @@ class SectionBuilder
         
         return [
             'id' => $section->id,
-            'type' => $section->type->value,
+            'type' => $section->type,
             'title' => $section->title,
             'title_image_url' => $section->title_image_url,
-            'data' => $builder->build($section),
+            'backgroud_image_url' => $section->background_image_url,
+            // 'banner_size' => $section->banner_size,
+            'items' => $builder->build($section),
         ];
     }
 }

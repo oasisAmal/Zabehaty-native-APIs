@@ -35,7 +35,6 @@ class HomeSection extends Model
         'is_active' => 'boolean',
         'position' => 'integer',
         'settings' => 'array',
-        'type' => HomeSectionType::class,
     ];
 
     /**

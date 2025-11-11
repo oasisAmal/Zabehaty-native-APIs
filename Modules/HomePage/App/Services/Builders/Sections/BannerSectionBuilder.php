@@ -17,15 +17,12 @@ class BannerSectionBuilder implements SectionBuilderInterface
     {
         $banners = $section->getActiveBanners();
 
-        return [
-            'banners' => $banners->map(function ($banner) {
-                return [
-                    'id' => $banner->id,
-                    'image_url' => $banner->full_image_url,
-                    'link' => $banner->link,
-                ];
-            }),
-            'settings' => $section->settings ?? [],
-        ];
+        return $banners->map(function ($banner) {
+            return [
+                'id' => $banner->id,
+                'image_url' => $banner->full_image_url,
+                'link' => $banner->link,
+            ];
+        })->toArray();
     }
 }

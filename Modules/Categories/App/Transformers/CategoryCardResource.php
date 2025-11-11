@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Categories\Transformers;
+namespace Modules\Categories\App\Transformers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -12,6 +12,10 @@ class CategoryCardResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return parent::toArray($request);
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'image_url' => $this->icon,
+        ];
     }
 }

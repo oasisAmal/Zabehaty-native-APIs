@@ -15,9 +15,6 @@ class DefaultSectionBuilder implements SectionBuilderInterface
      */
     public function build(HomeSection $section): array
     {
-        return [
-            'message' => 'Section type not implemented yet',
-            'settings' => $section->settings ?? [],
-        ];
+        return [];
     }
 }
