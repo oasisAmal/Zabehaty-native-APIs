@@ -49,6 +49,7 @@ class SectionBuilder
             'title_image_url' => $section->title_image_url,
             'backgroud_image_url' => $section->background_image_url,
             // 'banner_size' => $section->banner_size,
+            'sorting' => $section->sorting,
             'items' => $builder->build($section),
         ];
     }

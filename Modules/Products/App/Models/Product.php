@@ -6,9 +6,13 @@ use App\Traits\TraitLanguage;
 use App\Traits\CountryDatabaseTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\Products\App\Models\Attributes\ProductAttributes;
+use Modules\Products\App\Models\Relationships\ProductRelationships;
+use Modules\Products\App\Models\Scopes\ProductScopes;
 
 class Product extends Model
 {
+    use ProductAttributes, ProductRelationships, ProductScopes;
     use CountryDatabaseTrait, TraitLanguage, SoftDeletes;
 
     /**
