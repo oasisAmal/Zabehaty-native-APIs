@@ -46,6 +46,7 @@ class SectionBuilder
             'id' => $section->id,
             'type' => $section->type->value,
             'title' => $section->title,
+            'title_image_url' => $section->title_image_url,
             'data' => $builder->build($section),
         ];
     }
