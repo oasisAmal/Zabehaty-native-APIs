@@ -15,10 +15,10 @@ class SectionBuilderFactory
     /**
      * Create appropriate section builder based on type
      *
-     * @param HomeSectionType $type
+     * @param string $type
      * @return SectionBuilderInterface
      */
-    public function create(HomeSectionType $type): SectionBuilderInterface
+    public function create($type): SectionBuilderInterface
     {
         return match ($type) {
             HomeSectionType::BANNERS => new BannerSectionBuilder(), // TODO: Add banner section builder on next sprint

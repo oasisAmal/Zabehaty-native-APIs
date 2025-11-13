@@ -2,7 +2,7 @@
 
 namespace Modules\HomePage\App\Services\Builders\Sections;
 
-use App\Models\HomeSection;
+use Modules\HomePage\App\Models\HomePage;
 use Modules\HomePage\App\Services\Builders\Interfaces\SectionBuilderInterface;
 
 class ShopSectionBuilder implements SectionBuilderInterface
@@ -10,25 +10,20 @@ class ShopSectionBuilder implements SectionBuilderInterface
     /**
      * Build shop section data
      *
-     * @param HomeSection $section
+     * @param HomePage $homePage
      * @return array
      */
-    public function build(HomeSection $section): array
+    public function build(HomePage $homePage): array
     {
-        $shops = $section->getActiveShops();
-
-        return $shops->map(function ($sectionShop) {
-            $shop = $sectionShop->shop;
+        return $homePage->items()->with('item')->get()->map(function ($item) {
+            $shop = $item->item;
 
             if (!$shop) {
                 return null;
             }
 
-            return [
-                'id' => $shop->id,
-                'name' => $shop->name,
-                'image_url' => $shop->image_url ?? null,
-            ];
-        })->filter()->toArray();
+            // return new ShopCardResource($shop);
+            return $shop;
+        })->toArray();
     }
 }

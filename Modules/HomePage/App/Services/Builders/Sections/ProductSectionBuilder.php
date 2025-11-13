@@ -2,7 +2,9 @@
 
 namespace Modules\HomePage\App\Services\Builders\Sections;
 
-use App\Models\HomeSection;
+use App\Enums\Pagination;
+use Modules\HomePage\App\Models\HomePage;
+use Modules\Products\App\Transformers\ProductCardResource;
 use Modules\HomePage\App\Services\Builders\Interfaces\SectionBuilderInterface;
 
 class ProductSectionBuilder implements SectionBuilderInterface
@@ -10,28 +12,18 @@ class ProductSectionBuilder implements SectionBuilderInterface
     /**
      * Build product section data
      *
-     * @param HomeSection $section
+     * @param HomePage $homePage
      * @return array
      */
-    public function build(HomeSection $section): array
+    public function build(HomePage $homePage): array
     {
-        $products = $section->getActiveProducts();
-
-        return  $products->map(function ($sectionProduct) {
-            $product = $sectionProduct->product;
-
+        return $homePage->items()->with('item')->limit(Pagination::PER_PAGE)->get()->map(function ($item) {
+            $product = $item->item;
             if (!$product) {
                 return null;
             }
 
-            return [
-                'id' => $product->id,
-                'name' => $product->name,
-                'price' => $product->price,
-                'image_url' => $product->image_url ?? null,
-                'discount_percentage' => $product->discount_percentage ?? 0,
-                'is_featured' => $product->is_featured ?? false,
-            ];
-        })->filter()->toArray();
+            return new ProductCardResource($product);
+        })->toArray();
     }
 }

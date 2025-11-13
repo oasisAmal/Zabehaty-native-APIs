@@ -2,7 +2,7 @@
 
 namespace Modules\HomePage\App\Services\Builders\Sections;
 
-use App\Models\HomeSection;
+use Modules\HomePage\App\Models\HomePage;
 use Modules\HomePage\App\Services\Builders\Interfaces\SectionBuilderInterface;
 
 class BannerSectionBuilder implements SectionBuilderInterface
@@ -10,19 +10,20 @@ class BannerSectionBuilder implements SectionBuilderInterface
     /**
      * Build banner section data
      *
-     * @param HomeSection $section
+     * @param HomePage $homePage
      * @return array
      */
-    public function build(HomeSection $section): array
+    public function build(HomePage $homePage): array
     {
-        $banners = $section->getActiveBanners();
+        return $homePage->items()->with('item')->get()->map(function ($item) {
+            $banner = $item->item;
 
-        return $banners->map(function ($banner) {
-            return [
-                'id' => $banner->id,
-                'image_url' => $banner->full_image_url,
-                'link' => $banner->link,
-            ];
+            if (!$banner) {
+                return null;
+            }
+
+            // return new BannerCardResource($banner);
+            return $banner;
         })->toArray();
     }
 }

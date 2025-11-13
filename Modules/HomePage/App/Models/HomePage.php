@@ -3,16 +3,17 @@
 namespace Modules\HomePage\App\Models;
 
 use App\Models\Emirate;
+use App\Traits\TraitLanguage;
 use App\Traits\CountryDatabaseTrait;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HomePage extends Model
 {
-    use CountryDatabaseTrait;
+    use CountryDatabaseTrait, TraitLanguage;
 
-        /**
+    /**
      * The table associated with the model.
      *
      * @var string
@@ -50,6 +51,15 @@ class HomePage extends Model
     ];
 
     /**
+     * Translatable attributes for TraitLanguage
+     *
+     * @var array<string>
+     */
+    protected $translatable = [
+        'title',
+    ];
+
+    /**
      * Get the emirate that owns the home page section.
      */
     public function emirate(): BelongsTo
@@ -71,5 +81,15 @@ class HomePage extends Model
     public function scopeOrdered($query)
     {
         return $query->orderBy('sorting');
+    }
+
+    /**
+     * Get the title image URL attribute.
+     *
+     * @return string|null
+     */
+    public function getTitleImageUrlAttribute(): string|null
+    {
+        return $this->getAttribute('title_image_' . request()->app_lang . '_url') ?? null;
     }
 }
