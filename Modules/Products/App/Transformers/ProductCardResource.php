@@ -22,7 +22,7 @@ class ProductCardResource extends JsonResource
             'currency' => CountryCurrencies::getCurrency(),
             'price' => (float) $this->price,
             'price_before_discount' => (float) $this->old_price ?? null,
-            'discount_percentage' => (float) $this->discount_percentage,
+            'discount_percentage' => (float) $this->discount_percentage ?? null,
             'limited_offer_expired_at' => $this->limited_offer_expired_at ? $this->limited_offer_expired_at->timestamp : null,
             'is_top_selling' => (bool) $this->is_top_selling ?? false,
             'is_favorite' => (bool) $this->is_favorite ?? false,
