@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Users\App\Models;
+namespace Modules\Users\App\Models\Attributes;
 
 use Illuminate\Support\Facades\DB;
 

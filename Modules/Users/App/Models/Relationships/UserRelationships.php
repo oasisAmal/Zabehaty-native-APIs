@@ -1,8 +1,9 @@
 <?php
 
-namespace Modules\Users\App\Models;
+namespace Modules\Users\App\Models\Relationships;
 
 use Spatie\Activitylog\LogOptions;
+use Modules\Users\App\Models\UserAddress;
 
 trait UserRelationships
 {
@@ -14,5 +15,10 @@ trait UserRelationships
     public function addresses()
     {
         return $this->hasMany(UserAddress::class);
+    }
+
+    public function defaultAddress()
+    {
+        return $this->hasOne(UserAddress::class)->where('is_default', true);
     }
 }

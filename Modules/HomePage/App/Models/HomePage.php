@@ -2,15 +2,17 @@
 
 namespace Modules\HomePage\App\Models;
 
-use App\Models\Emirate;
 use App\Traits\TraitLanguage;
 use App\Traits\CountryDatabaseTrait;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Modules\HomePage\App\Models\Scopes\HomePageScopes;
+use Modules\HomePage\App\Models\Attributes\HomePageAttributes;
+use Modules\HomePage\App\Models\Scopes\MatchedDefaultAddressScope;
+use Modules\HomePage\App\Models\Relationships\HomePageRelationships;
 
 class HomePage extends Model
 {
+    use HomePageAttributes, HomePageRelationships, HomePageScopes;
     use CountryDatabaseTrait, TraitLanguage;
 
     /**
@@ -60,36 +62,13 @@ class HomePage extends Model
     ];
 
     /**
-     * Get the emirate that owns the home page section.
-     */
-    public function emirate(): BelongsTo
-    {
-        return $this->belongsTo(Emirate::class);
-    }
-
-    /**
-     * Get the items that belong to the home page section.
-     */
-    public function items(): HasMany
-    {
-        return $this->hasMany(HomePageItem::class, 'home_page_id');
-    }
-
-    /**
-     * Scope to order by sorting.
-     */
-    public function scopeOrdered($query)
-    {
-        return $query->orderBy('sorting');
-    }
-
-    /**
-     * Get the title image URL attribute.
+     * The "booting" method of the model.
      *
-     * @return string|null
+     * @return void
      */
-    public function getTitleImageUrlAttribute(): string|null
+    protected static function boot()
     {
-        return $this->getAttribute('title_image_' . request()->app_lang . '_url') ?? null;
+        parent::boot();
+        // static::addGlobalScope(new MatchedDefaultAddressScope());
     }
 }
