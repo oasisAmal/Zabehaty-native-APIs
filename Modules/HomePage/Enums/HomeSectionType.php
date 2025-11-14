@@ -7,7 +7,6 @@ use BenSampo\Enum\Enum;
 final class HomeSectionType extends Enum
 {
     const BANNERS = 'banners';
-    // const OFFERS = 'offers';
     const SHOPS = 'shops';
     const PRODUCTS = 'products';
     const CATEGORIES = 'categories';

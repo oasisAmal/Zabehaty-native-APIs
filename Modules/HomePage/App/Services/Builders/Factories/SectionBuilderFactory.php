@@ -25,7 +25,6 @@ class SectionBuilderFactory
             HomeSectionType::SHOPS => new ShopSectionBuilder(), // TODO: Add shop section builder on next sprint
             HomeSectionType::CATEGORIES => new CategorySectionBuilder(),
             HomeSectionType::LIMITED_TIME_OFFERS,
-            // HomeSectionType::OFFERS,
             HomeSectionType::PRODUCTS => new ProductSectionBuilder(),
             default => new DefaultSectionBuilder(),
         };
