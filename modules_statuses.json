@@ -4,5 +4,6 @@
     "Notifications": true,
     "HomePage": true,
     "Products": true,
-    "Categories": true
+    "Categories": true,
+    "Shops": true
 }
