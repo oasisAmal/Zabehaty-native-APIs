@@ -2,7 +2,7 @@
 
 namespace Modules\Products\App\Models\Relationships;
 
-use Modules\Shops\Models\Shop;
+use Modules\Shops\App\Models\Shop;
 use Modules\Categories\App\Models\Category;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
