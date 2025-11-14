@@ -4,6 +4,7 @@ namespace Modules\HomePage\App\Services\Cache;
 
 use App\Enums\AppCountries;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 
 class CacheService
 {
@@ -96,7 +97,7 @@ class CacheService
      */
     public function isCacheEnabled(): bool
     {
-        // return config('cache.default') !== 'null' && !App::environment('local');
-        return config('cache.default') !== 'null';
+        return config('cache.default') !== 'null' && !config('app.env') === 'local';
+        // return config('cache.default') !== 'null';
     }
 }

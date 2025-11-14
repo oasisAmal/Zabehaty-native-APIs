@@ -2,5 +2,7 @@
     "Auth": true,
     "Users": true,
     "Notifications": true,
-    "HomePage": true
+    "HomePage": true,
+    "Products": true,
+    "Categories": true
 }

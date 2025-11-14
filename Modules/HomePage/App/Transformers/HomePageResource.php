@@ -16,7 +16,7 @@ class HomePageResource extends JsonResource
     {
         return [
             'header' => $this->resource['header'],
-            // 'sections' => $this->resource['sections'],
+            'sections' => $this->resource['sections'],
         ];
     }
 }

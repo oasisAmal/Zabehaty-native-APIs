@@ -30,7 +30,7 @@ class HomePageService
      */
     public function getHomePageData($request): array
     {
-        $countryCode = strtolower($request->get('app_country_code', 'ae'));
+        $countryCode = strtolower($request->get('app_country_code', 'AE'));
         $lang = app()->getLocale();
 
         // Check cache first
@@ -44,7 +44,7 @@ class HomePageService
         // Build data
         $data = [
             'header' => $this->headerBuilder->build(),
-            // 'sections' => $this->sectionBuilder->buildAll(), // until we have sections in the database
+            'sections' => $this->sectionBuilder->buildAll(),
         ];
 
         // Store in cache

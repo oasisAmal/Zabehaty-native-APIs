@@ -2,8 +2,9 @@
 
 namespace Modules\HomePage\App\Services\Builders\Sections;
 
-use App\Models\HomeSection;
-use App\Models\MainCategory;
+use App\Enums\Pagination;
+use Modules\HomePage\App\Models\HomePage;
+use Modules\Categories\App\Transformers\CategoryCardResource;
 use Modules\HomePage\App\Services\Builders\Interfaces\SectionBuilderInterface;
 
 class CategorySectionBuilder implements SectionBuilderInterface
@@ -11,28 +12,18 @@ class CategorySectionBuilder implements SectionBuilderInterface
     /**
      * Build category section data
      *
-     * @param HomeSection $section
+     * @param HomePage $homePage
      * @return array
      */
-    public function build(HomeSection $section): array
+    public function build(HomePage $homePage): array
     {
-        // Get categories based on section settings or all active categories
-        $limit = $section->settings['limit'] ?? 10;
-        
-        $categories = MainCategory::active()
-            ->ordered()
-            ->limit($limit)
-            ->get();
+        return $homePage->items()->with('item')->limit(Pagination::PER_PAGE)->get()->map(function ($item) {
+            $category = $item->item;
+            if (!$category) {
+                return null;
+            }
 
-        return [
-            'categories' => $categories->map(function ($category) {
-                return [
-                    'slug' => $category->slug,
-                    'name' => $category->name,
-                    'icon_url' => $category->icon_path,
-                ];
-            })->toArray(),
-            'settings' => $section->settings ?? [],
-        ];
+            return new CategoryCardResource($category);
+        })->toArray();
     }
 }

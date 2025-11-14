@@ -13,6 +13,8 @@ class Popup extends Model
      * @var array<int, string>
      */
     protected $fillable = [
+        'emirate_id',
+        'region_ids',
         'target_page',
         'size',
         'image_ar_url',
@@ -33,6 +35,7 @@ class Popup extends Model
      */
     protected $casts = [
         'is_active' => 'boolean',
+        'region_ids' => 'array',
     ];
 
     /**

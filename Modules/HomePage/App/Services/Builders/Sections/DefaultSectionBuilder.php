@@ -2,7 +2,7 @@
 
 namespace Modules\HomePage\App\Services\Builders\Sections;
 
-use App\Models\HomeSection;
+use Modules\HomePage\App\Models\HomePage;
 use Modules\HomePage\App\Services\Builders\Interfaces\SectionBuilderInterface;
 
 class DefaultSectionBuilder implements SectionBuilderInterface
@@ -10,14 +10,11 @@ class DefaultSectionBuilder implements SectionBuilderInterface
     /**
      * Build default section data
      *
-     * @param HomeSection $section
+     * @param HomePage $homePage
      * @return array
      */
-    public function build(HomeSection $section): array
+    public function build(HomePage $homePage): array
     {
-        return [
-            'message' => 'Section type not implemented yet',
-            'settings' => $section->settings ?? [],
-        ];
+        return [];
     }
 }

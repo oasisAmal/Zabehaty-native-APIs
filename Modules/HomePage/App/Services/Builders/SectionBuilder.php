@@ -2,7 +2,8 @@
 
 namespace Modules\HomePage\App\Services\Builders;
 
-use App\Models\HomeSection;
+use Modules\HomePage\App\Models\HomePage;
+use Modules\HomePage\Enums\HomeSectionType;
 use Modules\HomePage\App\Services\Builders\Factories\SectionBuilderFactory;
 
 class SectionBuilder
@@ -21,32 +22,35 @@ class SectionBuilder
      */
     public function buildAll(): array
     {
-        return []; //Until we have sections in the database
-
-        $sections = HomeSection::active()
-            ->ordered()
-            ->get();
-
-        return $sections->map(function ($section) {
-            return $this->buildSection($section);
+        return HomePage::ordered()->has('items.item')->with('items.item')->get()->map(function ($homePage) {
+            return $this->buildSection($homePage);
         })->toArray();
     }
 
     /**
      * Build a single section
      *
-     * @param HomeSection $section
+     * @param HomePage $homePage
      * @return array
      */
-    public function buildSection(HomeSection $section): array
+    public function buildSection(HomePage $homePage): array
     {
-        $builder = $this->sectionBuilderFactory->create($section->type);
-        
+        $builder = $this->sectionBuilderFactory->create($homePage->type);
+
+        $type = $homePage->type;
+        if ($type == HomeSectionType::LIMITED_TIME_OFFERS) {
+            $type = HomeSectionType::PRODUCTS;
+        }
+
         return [
-            'id' => $section->id,
-            'type' => $section->type->value,
-            'title' => $section->title,
-            'data' => $builder->build($section),
+            'id' => $homePage->id,
+            'type' => $type,
+            'title' => $homePage->title,
+            'title_image_url' => $homePage->title_image_url,
+            'backgroud_image_url' => $homePage->background_image_url,
+            // 'banner_size' => $homePage->banner_size,
+            'sorting' => $homePage->sorting,
+            'items' => $builder->build($homePage),
         ];
     }
 }
