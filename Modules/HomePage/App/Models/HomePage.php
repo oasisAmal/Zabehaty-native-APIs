@@ -69,6 +69,6 @@ class HomePage extends Model
     protected static function boot()
     {
         parent::boot();
-        // static::addGlobalScope(new MatchedDefaultAddressScope());
+        static::addGlobalScope(new MatchedDefaultAddressScope());
     }
 }
