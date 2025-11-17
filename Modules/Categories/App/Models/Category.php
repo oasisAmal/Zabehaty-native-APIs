@@ -5,6 +5,7 @@ namespace Modules\Categories\App\Models;
 use App\Traits\TraitLanguage;
 use App\Traits\CountryDatabaseTrait;
 use Illuminate\Database\Eloquent\Model;
+use Modules\Categories\App\Models\Scopes\ActiveScope;
 use Modules\Categories\App\Models\Scopes\CategoryScopes;
 use Modules\Categories\App\Models\Attributes\CategoryAttributes;
 use Modules\Categories\App\Models\Relationships\CategoryRelationships;
@@ -34,4 +35,10 @@ class Category extends Model
     protected $translatable = [
         'name',
     ];
+
+    protected static function booted()
+    {
+        parent::booted();
+        static::addGlobalScope(new ActiveScope());
+    }
 }

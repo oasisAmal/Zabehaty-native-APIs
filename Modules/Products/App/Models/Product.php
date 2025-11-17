@@ -6,9 +6,11 @@ use App\Traits\TraitLanguage;
 use App\Traits\CountryDatabaseTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Modules\Products\App\Models\Attributes\ProductAttributes;
-use Modules\Products\App\Models\Relationships\ProductRelationships;
+use Modules\Products\App\Models\Scopes\ActiveScope;
 use Modules\Products\App\Models\Scopes\ProductScopes;
+use Modules\Products\App\Models\Attributes\ProductAttributes;
+use Modules\Products\App\Models\Scopes\MatchedDefaultAddressScope;
+use Modules\Products\App\Models\Relationships\ProductRelationships;
 
 class Product extends Model
 {
@@ -46,4 +48,11 @@ class Product extends Model
     protected $casts = [
         'limited_offer_expired_at' => 'datetime',
     ];
+
+    protected static function booted()
+    {
+        parent::booted();
+        static::addGlobalScope(new ActiveScope());
+        static::addGlobalScope(new MatchedDefaultAddressScope());
+    }
 }

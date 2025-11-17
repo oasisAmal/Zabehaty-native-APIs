@@ -3,31 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Enums\PopupDataTypes;
 
 class Popup extends Model
 {
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'emirate_id',
-        'region_ids',
-        'target_page',
-        'size',
-        'image_ar_url',
-        'image_en_url',
-        'thumbnail_url',
-        'video_url',
-        'video_source_type',
-        'link',
-        'item_type',
-        'item_id',
-        'is_active',
-    ];
-
     /**
      * The attributes that should be cast.
      *
