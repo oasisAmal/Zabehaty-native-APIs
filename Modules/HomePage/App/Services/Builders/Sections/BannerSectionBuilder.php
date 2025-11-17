@@ -24,6 +24,6 @@ class BannerSectionBuilder implements SectionBuilderInterface
 
             // return new BannerCardResource($banner);
             return $banner;
-        })->toArray();
+        })->filter()->toArray();
     }
 }

@@ -24,6 +24,6 @@ class ShopSectionBuilder implements SectionBuilderInterface
 
             // return new ShopCardResource($shop);
             return $shop;
-        })->toArray();
+        })->filter()->toArray();
     }
 }
