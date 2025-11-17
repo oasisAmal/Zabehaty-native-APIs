@@ -8,20 +8,6 @@ class Branch extends Model
 {
     protected $table = 'branches';
 
-    protected $fillable = [
-        'checkout_settings_id',
-        'name',
-        'name_en',
-        'emirate_id',
-        'region_id',
-        'maslakh_id',
-        'is_default',
-        'delivery',
-        'sort',
-        'allow_fast_delivery',
-        'minimum_cart',
-    ];
-
     protected $casts = [
         'is_default' => 'boolean',
         'allow_fast_delivery' => 'boolean',

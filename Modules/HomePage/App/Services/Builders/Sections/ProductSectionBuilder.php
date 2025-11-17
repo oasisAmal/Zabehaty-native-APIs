@@ -24,6 +24,6 @@ class ProductSectionBuilder implements SectionBuilderInterface
             }
 
             return new ProductCardResource($product);
-        })->toArray();
+        })->filter()->toArray();
     }
 }

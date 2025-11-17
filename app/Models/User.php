@@ -46,4 +46,13 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * The attributes that should be loaded by default.
+     *
+     * @var array<string>
+     */
+    protected $with = [
+        'defaultAddress',
+    ];
 }

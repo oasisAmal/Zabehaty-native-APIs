@@ -4,11 +4,15 @@ namespace Modules\HomePage\App\Services\Cache;
 
 use App\Enums\AppCountries;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Config;
 
 class CacheService
 {
-    protected int $defaultTtl = 300; // 300 seconds = 5 minutes
+    protected int $defaultTtl = 0;
+
+    public function __construct()
+    {
+        $this->defaultTtl = config('homepage.cache.default_ttl');
+    }
 
     /**
      * Get cache key for homepage data
@@ -97,7 +101,6 @@ class CacheService
      */
     public function isCacheEnabled(): bool
     {
-        return config('cache.default') !== 'null' && !config('app.env') === 'local';
-        // return config('cache.default') !== 'null';
+        return config('homepage.cache.enabled');
     }
 }
