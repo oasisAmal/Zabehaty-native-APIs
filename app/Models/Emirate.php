@@ -8,28 +8,6 @@ class Emirate extends Model
 {
     protected $table = 'emirates';
 
-    protected $fillable = [
-        'name',
-        'name_en',
-        'cargoo_name',
-        'google_name',
-        'delivery',
-        'delivery_animals',
-        'animals',
-        'prices',
-        'payments',
-        'is_active',
-        'delivery_time_nextday',
-        'delivery_delay',
-        'delivery_times',
-        'delivery_times_ramadan',
-        'delivery_times_3eed',
-        'sort',
-        'hours_before_order',
-        'parent_id',
-        'supplier_id',
-    ];
-
     protected $casts = [
         'is_active' => 'boolean',
         'delivery_time_nextday' => 'boolean',

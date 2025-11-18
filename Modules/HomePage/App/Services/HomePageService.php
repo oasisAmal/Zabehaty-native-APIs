@@ -30,12 +30,18 @@ class HomePageService
      */
     public function getHomePageData($request): array
     {
-        $countryCode = strtolower($request->get('app_country_code', 'AE'));
+        $emirateId = 0;
+        $regionId = 0;
+        $defaultAddress = auth('api')->user()->defaultAddress;
+        if ($defaultAddress) {
+            $emirateId = $defaultAddress->emirate_id;
+            $regionId = $defaultAddress->region_id;
+        }
         $lang = app()->getLocale();
 
         // Check cache first
         if ($this->cacheService->isCacheEnabled()) {
-            $cachedData = $this->cacheService->getHomePageData($countryCode, $lang);
+            $cachedData = $this->cacheService->getHomePageData(emirateId: $emirateId, regionId: $regionId, lang: $lang);
             if ($cachedData) {
                 return $cachedData;
             }
@@ -49,7 +55,7 @@ class HomePageService
 
         // Store in cache
         if ($this->cacheService->isCacheEnabled()) {
-            $this->cacheService->storeHomePageData($countryCode, $data, $lang);
+            $this->cacheService->storeHomePageData(emirateId: $emirateId, regionId: $regionId, data: $data, lang: $lang);
         }
 
         return $data;

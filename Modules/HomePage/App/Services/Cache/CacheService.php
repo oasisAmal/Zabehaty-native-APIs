@@ -2,7 +2,7 @@
 
 namespace Modules\HomePage\App\Services\Cache;
 
-use App\Enums\AppCountries;
+use App\Models\Emirate;
 use Illuminate\Support\Facades\Cache;
 
 class CacheService
@@ -17,61 +17,65 @@ class CacheService
     /**
      * Get cache key for homepage data
      *
-     * @param string $countryCode
+     * @param int $emirateId
+     * @param int $regionId
      * @param string $lang
      * @return string
      */
-    public function getHomePageCacheKey(string $countryCode, string $lang = 'en'): string
+    public function getHomePageCacheKey(int $emirateId, int $regionId, string $lang = 'en'): string
     {
-        return "homepage:country:{$countryCode}:lang:{$lang}";
+        return "homepage:emirate_id:{$emirateId}:region_id:{$regionId}:lang:{$lang}";
     }
 
     /**
      * Get homepage data from cache
      *
-     * @param string $countryCode
+     * @param int $emirateId
+     * @param int $regionId
      * @param string $lang
      * @return mixed
      */
-    public function getHomePageData(string $countryCode, string $lang = 'en')
+    public function getHomePageData(int $emirateId, int $regionId, string $lang = 'en')
     {
-        $key = $this->getHomePageCacheKey($countryCode, $lang);
+        $key = $this->getHomePageCacheKey($emirateId, $regionId, $lang);
         return Cache::get($key);
     }
 
     /**
      * Store homepage data in cache
      *
-     * @param string $countryCode
+     * @param int $emirateId
+     * @param int $regionId
      * @param array $data
      * @param string $lang
      * @param int|null $ttl
      * @return void
      */
-    public function storeHomePageData(string $countryCode, array $data, string $lang = 'en', ?int $ttl = null): void
+    public function storeHomePageData(int $emirateId = 0, int $regionId = 0, array $data, string $lang = 'en', ?int $ttl = null): void
     {
-        $key = $this->getHomePageCacheKey($countryCode, $lang);
+        $key = $this->getHomePageCacheKey(emirateId:$emirateId, regionId:$regionId, lang:$lang);
         $ttl = $ttl ?? $this->defaultTtl;
         
-        Cache::put($key, $data, $ttl);
+        Cache::put($key, $data, ttl: $ttl);
     }
 
     /**
      * Clear homepage cache for specific country
      *
-     * @param string $countryCode
+     * @param int $emirateId
+     * @param int $regionId
      * @param string|null $lang
      * @return void
      */
-    public function clearHomePageCache(string $countryCode, ?string $lang = null): void
+    public function clearHomePageCache(int $emirateId = 0, int $regionId = 0, ?string $lang = null): void
     {
         if ($lang) {
-            Cache::forget($this->getHomePageCacheKey($countryCode, $lang));
+            Cache::forget($this->getHomePageCacheKey(emirateId: $emirateId, regionId: $regionId, lang: $lang));
         } else {
             // Clear for all languages
             $languages = ['en', 'ar'];
             foreach ($languages as $lang) {
-                Cache::forget($this->getHomePageCacheKey($countryCode, $lang));
+                Cache::forget($this->getHomePageCacheKey(emirateId: $emirateId, regionId: $regionId, lang: $lang));
             }
         }
     }
@@ -83,13 +87,12 @@ class CacheService
      */
     public function clearAllHomePageCache(): void
     {
-        $countries = AppCountries::getValues();
+        $emirateIds = Emirate::all()->pluck('id')->toArray();
         $languages = ['en', 'ar'];
 
-        foreach ($countries as $country) {
-            $country = strtolower($country);
+        foreach ($emirateIds as $emirateId) {
             foreach ($languages as $lang) {
-                Cache::forget($this->getHomePageCacheKey($country, $lang));
+                Cache::forget($this->getHomePageCacheKey(emirateId: $emirateId, regionId: 0, lang: $lang));
             }
         }
     }
