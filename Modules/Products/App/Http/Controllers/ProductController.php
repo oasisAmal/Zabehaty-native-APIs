@@ -7,7 +7,7 @@ use Modules\Products\App\Http\Requests\ProductIndexRequest;
 use Modules\Products\App\Services\ProductsService;
 use Modules\Products\App\Transformers\ProductCardResource;
 
-class ProductsController extends Controller
+class ProductController extends Controller
 {
     protected ProductsService $productsService;
 
