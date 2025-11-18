@@ -24,6 +24,6 @@ class AppServiceProvider extends ServiceProvider
         Model::automaticallyEagerLoadRelationships();
         
         // Prevent Lazy Loading for all models in production
-        Model::preventLazyLoading(!app()->isProduction());
+        // Model::preventLazyLoading(!app()->isProduction());
     }
 }

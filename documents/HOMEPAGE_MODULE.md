@@ -156,6 +156,7 @@ public function getHomePageData($request): array
 **Responsibilities:**
 - Cache management
 - Coordinating header and section builders
+- Determining location context (resolves `emirate_id` and `region_id` from the authenticated user's default address, falling back to global `0` values)
 - Country and language handling
 
 #### HeaderBuilder
@@ -311,18 +312,18 @@ Manages homepage data caching:
 
 **Cache Keys:**
 ```php
-"homepage:country:{countryCode}:lang:{lang}"
+"homepage:emirate_id:{emirateId}:region_id:{regionId}:lang:{lang}"
 ```
 
 **Methods:**
-- `getHomePageData($countryCode, $lang)` - Retrieve cached data
-- `storeHomePageData($countryCode, $data, $lang, $ttl)` - Store data
-- `clearHomePageCache($countryCode, $lang)` - Clear specific cache
-- `clearAllHomePageCache()` - Clear all country/language caches
-- `isCacheEnabled()` - Check if caching is enabled
+- `getHomePageData(int $emirateId, int $regionId, string $lang)` - Retrieve cached payload for a location/language tuple
+- `storeHomePageData(int $emirateId, int $regionId, array $data, string $lang, ?int $ttl = null)` - Persist rendered data using the configured TTL fallback
+- `clearHomePageCache(int $emirateId, int $regionId, ?string $lang = null)` - Clear cache for a specific location (all languages when `lang` is null)
+- `clearAllHomePageCache()` - Clear cache across all emirates/regions and supported languages
+- `isCacheEnabled()` - Check if caching toggle is turned on (`homepage.cache.enabled`)
 
 **Cache Configuration:**
-- Default TTL: 300 seconds (5 minutes)
+- Default TTL pulled from `homepage.cache.default_ttl` (3600 seconds by default)
 - Cache disabled in local environment
 - Cache enabled when `cache.default !== 'null'`
 
@@ -632,7 +633,7 @@ HOMEPAGE_CACHE_TTL=3600
 The module fully supports the multi-country database system:
 
 - Uses `CountryDatabaseTrait` for automatic database switching
-- Cache keys include country code
+- Cache keys include language code plus the resolved `emirate_id`/`region_id` pair so each country/location combination is isolated
 - Sections can be filtered by emirate and region
 - Each country has separate homepage configuration
 
