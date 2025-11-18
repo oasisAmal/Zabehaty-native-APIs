@@ -1,10 +1,11 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Modules\Categories\Http\Controllers\CategoriesController;
+use Modules\Categories\App\Http\Controllers\CategoryController;
 
-Route::prefix('categories')->as('categories.')->controller(CategoriesController::class)->group(function () {
-    Route::group(['middleware' => ['auth:api', 'require-registered']], function () {
+Route::prefix('categories')->as('categories.')->controller(CategoryController::class)->group(function () {
+    Route::group(['middleware' => ['auth:api']], function () {
+        Route::post('/', 'index');
         //
     });
 });

@@ -6,7 +6,9 @@ use Modules\Shops\App\Models\Shop;
 use Modules\Categories\App\Models\Category;
 use Modules\Products\App\Models\SubProduct;
 use Modules\Products\App\Models\ProductBranch;
+use Modules\HomePage\App\Models\HomePageItem;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 trait ProductRelationships
 {
@@ -35,5 +37,10 @@ trait ProductRelationships
         return $this->hasMany(SubProduct::class, 'product_id')
             ->orderByRaw("CAST(SUBSTRING_INDEX(JSON_UNQUOTE(JSON_EXTRACT(data, '$.weight')), '-', 1) AS UNSIGNED)")
             ->orderBy('price');
+    }
+
+    public function homePageItems(): MorphMany
+    {
+        return $this->morphMany(HomePageItem::class, 'item', 'item_type', 'item_id');
     }
 }

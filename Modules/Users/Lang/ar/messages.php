@@ -47,6 +47,11 @@ return [
     'address_id_numeric' => 'رقم العنوان يجب أن يكون رقمًا',
     'address_id_exists' => 'رقم العنوان غير موجود',
     'address_id' => 'رقم العنوان',
+    'failed_to_create_address' => 'فشل في إنشاء العنوان',
+    'failed_to_update_address' => 'فشل في تحديث العنوان',
+    'failed_to_delete_address' => 'فشل في حذف العنوان',
+    'failed_to_retrieve_addresses' => 'فشل في استرجاع بيانات العنوان',
+    'failed_to_set_default_address' => 'فشل في تعيين العنوان الافتراضي',
     'attributes' => [
         'lat' => 'العنوان الجغرافي',
         'lng' => 'العنوان الجغرافي',

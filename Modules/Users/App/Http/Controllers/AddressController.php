@@ -2,117 +2,96 @@
 
 namespace Modules\Users\App\Http\Controllers;
 
-use App\Models\Region;
-use App\Enums\Pagination;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use Modules\Users\App\Models\UserAddress;
+use Modules\Users\App\Services\UserAddressService;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Modules\Users\App\Http\Requests\StoreAddressRequest;
 use Modules\Users\App\Http\Requests\UpdateAddressRequest;
-use Modules\Users\App\Http\Requests\SetDefaultAddressRequest;
 use Modules\Users\App\Http\Resources\UserAddressResource;
+use Modules\Users\App\Http\Requests\SetDefaultAddressRequest;
 
 class AddressController extends Controller
 {
+    protected UserAddressService $userAddressService;
+
+    public function __construct(UserAddressService $userAddressService)
+    {
+        $this->userAddressService = $userAddressService;
+    }
+
     public function store(StoreAddressRequest $request)
     {
-        $data = $request->validated();
-
-        $lat = (float) $data['lat'];
-        $lng = (float) $data['lng'];
-
-        // Spatial contains check against supported UAE regions
-        $region = Region::pointInsideAny($lat, $lng);
-        if (!$region) {
-            return responseErrorMessage(__('users::messages.location_not_supported'), 422);
+        try {
+            $address = $this->userAddressService->create($request->validated());
+            return responseSuccessData(UserAddressResource::make($address));
+        } catch (HttpResponseException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            return responseErrorMessage(
+                __('users::messages.failed_to_create_address'),
+                500
+            );
         }
-
-        $data['user_id'] = $request->user()->id;
-        $data['region_id'] = $region->id;
-        $data['emirate_id'] = $region->emirate_id;
-        $data['branch_id'] = $region->branch_id;
-        $data['is_default'] = UserAddress::where('user_id', $data['user_id'])->count() > 1 ? 0 : 1;
-        $data['is_active'] = 1;
-
-        if (!$request->has('name')) {
-            $data['name'] = $request->user()->fullname;
-        }
-
-        if ($request->has('mobile') && $request->mobile == null) {
-            unset($data['mobile']);
-        }
-
-        if ($request->user()->isGuest()) {
-            $address = UserAddress::updateOrCreate(['user_id' => $data['user_id']], $data);
-        } else {
-            $address = UserAddress::create($data);
-        }
-
-        return responseSuccessData(UserAddressResource::make($address));
     }
 
     public function update(UpdateAddressRequest $request, $id)
     {
-        $address = UserAddress::where('user_id', $request->user()->id)->find($id);
-        if (!$address) {
-            return responseErrorMessage(__('users::messages.address_not_found'));
+        try {
+            $address = $this->userAddressService->update($request->validated(), $id);
+            return responseSuccessData(UserAddressResource::make($address));
+        } catch (HttpResponseException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            return responseErrorMessage(
+                __('users::messages.failed_to_update_address'),
+                500
+            );
         }
-
-        $data = $request->validated();
-
-        $lat = (float) $data['lat'];
-        $lng = (float) $data['lng'];
-
-
-        // Spatial contains check against supported UAE regions
-        $region = Region::pointInsideAny($lat, $lng);
-        if (!$region) {
-            return responseErrorMessage(__('users::messages.location_not_supported'), 422);
-        }
-
-        $data['region_id'] = $region->id;
-        $data['emirate_id'] = $region->emirate_id;
-        $data['branch_id'] = $region->branch_id;
-
-        if (!$request->has('name')) {
-            $data['name'] = $request->user()->fullname;
-        }
-
-        if ($request->has('mobile') && $request->mobile == null) {
-            unset($data['mobile']);
-        }
-
-        $address->update($data);
-
-        return responseSuccessData(UserAddressResource::make($address->fresh()));
+        return responseSuccessData(UserAddressResource::make($address));
     }
 
     public function destroy(Request $request, $id)
     {
-        $address = UserAddress::where('user_id', $request->user()->id)->find($id);
-        if (!$address) {
-            return responseErrorMessage(__('users::messages.address_not_found'));
+        try {
+            $this->userAddressService->delete($request->validated(), $id);
+            return responseSuccessMessage(__('users::messages.address_deleted'));
+        } catch (HttpResponseException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            return responseErrorMessage(
+                __('users::messages.failed_to_delete_address'),
+                500
+            );
         }
-
-        $address->delete();
-
         return responseSuccessMessage(__('users::messages.address_deleted'));
     }
 
     public function index(Request $request)
     {
-        $address = UserAddress::where('user_id', $request->user()->id)->paginate(Pagination::PER_PAGE);
-        return responsePaginate(UserAddressResource::collection($address));
+        try {
+            $address = $this->userAddressService->paginate($request->all());
+            return responsePaginate(UserAddressResource::collection($address));
+        } catch (\Exception $e) {
+            return responseErrorMessage(
+                __('users::messages.failed_to_retrieve_addresses'),
+                500
+            );
+        }
     }
 
     public function setDefault(SetDefaultAddressRequest $request)
     {
-        $address = UserAddress::where('user_id', $request->user()->id)->find($request->address_id);
-        if (!$address) {
-            return responseErrorMessage(__('users::messages.address_not_found'));
+        try {
+            $address = $this->userAddressService->setDefault($request->validated());
+            return responseSuccessData(UserAddressResource::make($address));
+        } catch (HttpResponseException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            return responseErrorMessage(
+                __('users::messages.failed_to_set_default_address'),
+                500
+            );
         }
-        UserAddress::where('user_id', $request->user()->id)->default()->update(['is_default' => false]);
-        $address->update(['is_default' => true]);
-        return responseSuccessData(UserAddressResource::make($address->fresh()));
     }
 }
