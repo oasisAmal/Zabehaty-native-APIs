@@ -47,6 +47,11 @@ return [
     'address_id_numeric' => 'Address ID must be a number',
     'address_id_exists' => 'Address ID not found',
     'address_id' => 'Address ID',
+    'failed_to_create_address' => 'Failed to create address',
+    'failed_to_update_address' => 'Failed to update address',
+    'failed_to_delete_address' => 'Failed to delete address',
+    'failed_to_retrieve_addresses' => 'Failed to retrieve addresses',
+    'failed_to_set_default_address' => 'Failed to set default address',
     'attributes' => [
         'lat' => 'Latitude',
         'lng' => 'Longitude',
