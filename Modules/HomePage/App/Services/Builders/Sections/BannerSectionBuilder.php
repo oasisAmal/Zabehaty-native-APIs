@@ -15,7 +15,7 @@ class BannerSectionBuilder implements SectionBuilderInterface
      */
     public function build(HomePage $homePage): array
     {
-        return $homePage->items()->with('item')->get()->map(function ($item) {
+        return $homePage->items()->with('item')->limit(10)->get()->map(function ($item) {
             $banner = $item->item;
 
             if (!$banner) {

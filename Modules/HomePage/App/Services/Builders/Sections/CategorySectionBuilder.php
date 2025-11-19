@@ -2,7 +2,6 @@
 
 namespace Modules\HomePage\App\Services\Builders\Sections;
 
-use App\Enums\Pagination;
 use Modules\HomePage\App\Models\HomePage;
 use Modules\Categories\App\Transformers\CategoryCardResource;
 use Modules\HomePage\App\Services\Builders\Interfaces\SectionBuilderInterface;
@@ -17,7 +16,7 @@ class CategorySectionBuilder implements SectionBuilderInterface
      */
     public function build(HomePage $homePage): array
     {
-        return $homePage->items()->with('item')->limit(Pagination::PER_PAGE)->get()->map(function ($item) {
+        return $homePage->items()->with('item')->limit(10)->get()->map(function ($item) {
             $category = $item->item;
             if (!$category) {
                 return null;
