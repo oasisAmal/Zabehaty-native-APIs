@@ -20,24 +20,24 @@ class MatchedDefaultAddressScope implements Scope
             return;
         }
 
-        // $builder->where(function (Builder $q) use ($defaultAddress) {
-        //     $q->whereHas('productBranches.branchModel', function (Builder $q) use ($defaultAddress) {
-        //         return $q->where('emirate_id', $defaultAddress->emirate_id)
-        //             ->where(function (Builder $q) use ($defaultAddress) {
-        //                 $q->whereNull('region_id')
-        //                     ->orWhere('region_id', $defaultAddress->region_id);
-        //             });
-        //     });
+        $builder->where(function (Builder $q) use ($defaultAddress) {
+            $q->whereHas('productBranches.branchModel', function (Builder $q) use ($defaultAddress) {
+                return $q->where('emirate_id', $defaultAddress->emirate_id)
+                    ->where(function (Builder $q) use ($defaultAddress) {
+                        $q->whereNull('region_id')
+                            ->orWhere('region_id', $defaultAddress->region_id);
+                    });
+            });
 
-        //     $q->orWhereHas('productBranches.shopBranchModel', function (Builder $q) use ($defaultAddress) {
-        //         return $q->where('emirate_id', $defaultAddress->emirate_id)
-        //             ->where(function (Builder $q) use ($defaultAddress) {
-        //                 $q->whereNull('region_id')
-        //                     ->orWhere('region_id', $defaultAddress->region_id);
-        //             });
-        //     });
-
-        //     $q->orDoesntHave('productBranches');
-        // });
+            $q->orWhereHas('productBranches.shopBranchModel', function (Builder $q) use ($defaultAddress) {
+                return $q->where('emirate_id', $defaultAddress->emirate_id)
+                    ->where(function (Builder $q) use ($defaultAddress) {
+                        $q->whereNull('region_id')
+                            ->orWhere('region_id', $defaultAddress->region_id);
+                    });
+            });
+            
+            $q->orDoesntHave('productBranches');
+        });
     }
 }
