@@ -24,8 +24,8 @@ class ProductCardResource extends JsonResource
             'price_before_discount' => (float) $this->old_price ?: null,
             'discount_percentage' => (float) $this->discount_percentage ?: null,
             'limited_offer_expired_at' => $this->limited_offer_expired_at ? $this->limited_offer_expired_at->timestamp : null,
-            'is_top_selling' => (bool) $this->is_top_selling ?? false,
-            'is_favorite' => (bool) $this->is_favorite ?? false,
+            'badge' => $this->badge_name ?? null,
+            'is_favorite' => (bool) $this->is_favorite,
         ];
     }
 }

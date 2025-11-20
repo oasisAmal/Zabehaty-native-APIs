@@ -25,11 +25,6 @@ class Product extends Model
     protected $table = 'products';
 
     /**
-     * The attributes that are mass assignable.
-     */
-    protected $fillable = [];
-
-    /**
      * Translatable attributes for TraitLanguage
      *
      * @var array<string>

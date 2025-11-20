@@ -2,13 +2,15 @@
 
 namespace Modules\Products\App\Models\Relationships;
 
+use App\Models\Badge;
 use Modules\Shops\App\Models\Shop;
 use Modules\Categories\App\Models\Category;
 use Modules\Products\App\Models\SubProduct;
-use Modules\Products\App\Models\ProductBranch;
 use Modules\HomePage\App\Models\HomePageItem;
+use Modules\Products\App\Models\ProductBranch;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 trait ProductRelationships
 {
@@ -42,5 +44,10 @@ trait ProductRelationships
     public function homePageItems(): MorphMany
     {
         return $this->morphMany(HomePageItem::class, 'item', 'item_type', 'item_id');
+    }
+
+    public function badges(): BelongsToMany
+    {
+        return $this->belongsToMany(Badge::class, 'product_badges', 'product_id', 'badge_id');
     }
 }
