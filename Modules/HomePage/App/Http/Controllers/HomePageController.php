@@ -28,7 +28,6 @@ class HomePageController extends Controller
             $homePageData = $this->homePageService->getHomePageData($request);
             return responseSuccessData(HomePageResource::make($homePageData));
         } catch (\Exception $e) {
-            dd($e->getMessage());
             return responseErrorMessage(
                 __('homepage::messages.failed_to_retrieve_homepage_data'),
                 500
