@@ -17,14 +17,14 @@ class ShopSectionBuilder implements SectionBuilderInterface
      */
     public function build(HomePage $homePage): array
     {
-        return $homePage->items()->active()->with('item')->limit(Pagination::PER_PAGE)->get()->map(function ($item) {
+        return $homePage->items()->with('item')->limit(Pagination::PER_PAGE)->get()->map(function ($item) {
             $shop = $item->item;
 
             if (!$shop) {
                 return null;
             }
 
-            // return new ShopCardResource($shop);
+            return new ShopCardResource($shop);
         })->filter()->toArray();
     }
 }
