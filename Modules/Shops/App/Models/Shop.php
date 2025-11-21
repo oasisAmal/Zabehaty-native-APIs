@@ -23,11 +23,6 @@ class Shop extends Model
     protected $table = 'shops';
 
     /**
-     * The attributes that are mass assignable.
-     */
-    protected $fillable = [];
-
-    /**
      * Translatable attributes for TraitLanguage
      *
      * @var array<string>

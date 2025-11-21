@@ -48,7 +48,7 @@ class SectionBuilder
             'title' => $homePage->title,
             'title_image_url' => $homePage->title_image_url,
             'background_image_url' => $homePage->background_image_url,
-            // 'banner_size' => $homePage->banner_size,
+            'banner_size' => $homePage->banner_size,
             'sorting' => $homePage->sorting,
             'items' => $builder->build($homePage),
         ];

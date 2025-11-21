@@ -21,8 +21,8 @@ class SectionBuilderFactory
     public function create($type): SectionBuilderInterface
     {
         return match ($type) {
-            HomeSectionType::BANNERS => new BannerSectionBuilder(), // TODO: Add banner section builder on next sprint
-            HomeSectionType::SHOPS => new ShopSectionBuilder(), // TODO: Add shop section builder on next sprint
+            HomeSectionType::BANNERS => new BannerSectionBuilder(),
+            HomeSectionType::SHOPS => new ShopSectionBuilder(),
             HomeSectionType::CATEGORIES => new CategorySectionBuilder(),
             HomeSectionType::LIMITED_TIME_OFFERS,
             HomeSectionType::PRODUCTS => new ProductSectionBuilder(),
