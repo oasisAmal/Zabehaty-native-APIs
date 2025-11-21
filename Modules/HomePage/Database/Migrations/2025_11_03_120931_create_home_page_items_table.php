@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('home_page_id')->constrained('home_page')->onDelete('cascade');
             $table->string('image_ar_url')->nullable();
             $table->string('image_en_url')->nullable();
-            $table->morphs('item');
+            $table->nullableMorphs('item');
+            $table->string('external_link')->nullable();
             $table->timestamps();
         });
     }

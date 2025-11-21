@@ -29,6 +29,7 @@ class HomePageItem extends Model
         'image_en_url',
         'item_id',
         'item_type',
+        'external_link'
     ];
 
     /**
