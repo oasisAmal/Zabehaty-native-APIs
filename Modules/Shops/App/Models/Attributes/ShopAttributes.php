@@ -11,4 +11,9 @@ trait ShopAttributes
             'tabby',
         ];
     }
+
+    public function getFirstParentCategoryAttribute()
+    {
+        return $this->categories()->whereNull('categories.parent_id')->first();
+    }
 }
