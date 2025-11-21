@@ -4,6 +4,7 @@ namespace Modules\HomePage\App\Services\Builders\Sections;
 
 use App\Enums\Pagination;
 use Modules\HomePage\App\Models\HomePage;
+use Modules\Shops\App\Transformers\ShopCardResource;
 use Modules\HomePage\App\Services\Builders\Interfaces\SectionBuilderInterface;
 
 class ShopSectionBuilder implements SectionBuilderInterface
@@ -16,7 +17,7 @@ class ShopSectionBuilder implements SectionBuilderInterface
      */
     public function build(HomePage $homePage): array
     {
-        return $homePage->items()->with('item')->limit(Pagination::PER_PAGE)->get()->map(function ($item) {
+        return $homePage->items()->active()->with('item')->limit(Pagination::PER_PAGE)->get()->map(function ($item) {
             $shop = $item->item;
 
             if (!$shop) {
@@ -24,7 +25,6 @@ class ShopSectionBuilder implements SectionBuilderInterface
             }
 
             // return new ShopCardResource($shop);
-            return $shop;
         })->filter()->toArray();
     }
 }
