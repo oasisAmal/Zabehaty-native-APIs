@@ -4,6 +4,7 @@ namespace Modules\HomePage\App\Services\Builders\Sections;
 
 use App\Enums\Pagination;
 use Modules\HomePage\App\Models\HomePage;
+use Modules\HomePage\App\Transformers\HomeBannerResource;
 use Modules\HomePage\App\Services\Builders\Interfaces\SectionBuilderInterface;
 
 class BannerSectionBuilder implements SectionBuilderInterface
@@ -17,14 +18,7 @@ class BannerSectionBuilder implements SectionBuilderInterface
     public function build(HomePage $homePage): array
     {
         return $homePage->items()->with('item')->limit(Pagination::PER_PAGE)->get()->map(function ($item) {
-            $banner = $item->item;
-
-            if (!$banner) {
-                return null;
-            }
-
-            // return new BannerCardResource($banner);
-            return $banner;
+            return new HomeBannerResource($item);
         })->filter()->toArray();
     }
 }
