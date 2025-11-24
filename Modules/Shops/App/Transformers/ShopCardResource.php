@@ -16,9 +16,9 @@ class ShopCardResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'image_url' => $this->homesection_image ?? '',
-            'logo_url' => $this->image,
+            'logo_url' => $this->image ?? '',
             'rating' => $this->rating ? (float) $this->rating : null,
-            'category' => $this->first_parent_category?->name ?? null,
+            'category' => $this->first_parent_category?->name ?? '',
             'payment_badges' => $this->payment_badges ?? [],
         ];
     }
