@@ -18,4 +18,9 @@ trait ProductAttributes
     {
         return (bool) false;
     }
+
+    public function getDiscountPercentageAttribute()
+    {
+        return (float) discountCalc($this->old_price, $this->price);
+    }
 }
