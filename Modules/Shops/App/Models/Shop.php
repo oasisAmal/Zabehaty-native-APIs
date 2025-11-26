@@ -10,6 +10,7 @@ use Modules\Shops\App\Models\Scopes\ShopScopes;
 use Modules\Shops\App\Models\Scopes\ActiveScope;
 use Modules\Shops\App\Models\Attributes\ShopAttributes;
 use Modules\Shops\App\Models\Relationships\ShopRelationships;
+use Modules\Shops\App\Models\Scopes\MatchedDefaultAddressScope;
 
 class Shop extends Model
 {
@@ -38,5 +39,6 @@ class Shop extends Model
     {
         parent::booted();
         static::addGlobalScope(new ActiveScope());
+        // static::addGlobalScope(new MatchedDefaultAddressScope());
     }
 }

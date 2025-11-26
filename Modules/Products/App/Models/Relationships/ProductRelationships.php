@@ -8,6 +8,8 @@ use Modules\Categories\App\Models\Category;
 use Modules\Products\App\Models\SubProduct;
 use Modules\HomePage\App\Models\HomePageItem;
 use Modules\Products\App\Models\ProductBranch;
+use Modules\Products\App\Models\ProductVisibility;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -49,5 +51,10 @@ trait ProductRelationships
     public function badges(): BelongsToMany
     {
         return $this->belongsToMany(Badge::class, 'product_badges', 'product_id', 'badge_id');
+    }
+
+    public function productVisibilities(): HasMany
+    {
+        return $this->hasMany(ProductVisibility::class);
     }
 }
