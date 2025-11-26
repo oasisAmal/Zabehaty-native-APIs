@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Products\App\Models\Scopes;
+namespace Modules\Categories\App\Models\Scopes;
 
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -21,17 +21,7 @@ class MatchedDefaultAddressScope implements Scope
             return;
         }
 
-        $visibilityConstraint = $this->buildVisibilityConstraint($defaultAddress);
-
-        $builder->where(function (Builder $query) use ($visibilityConstraint) {
-            $query->whereHas('productVisibilities', $visibilityConstraint)
-                ->whereHas('shop', function (Builder $shopQuery) use ($visibilityConstraint) {
-                    $shopQuery->whereHas('shopVisibilities', $visibilityConstraint);
-                })
-                ->whereHas('category', function (Builder $categoryQuery) use ($visibilityConstraint) {
-                    $categoryQuery->whereHas('categoryVisibilities', $visibilityConstraint);
-                });
-        });
+        $builder->whereHas('categoryVisibilities', $this->buildVisibilityConstraint($defaultAddress));
     }
 
     private function buildVisibilityConstraint(object $defaultAddress): Closure

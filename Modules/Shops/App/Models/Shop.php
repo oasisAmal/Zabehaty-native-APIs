@@ -6,9 +6,11 @@ use App\Traits\TraitLanguage;
 use App\Traits\CountryDatabaseTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Modules\Shops\App\Models\Scopes\ShopScopes;
+use Modules\Shops\App\Models\Scopes\ActiveScope;
 use Modules\Shops\App\Models\Attributes\ShopAttributes;
 use Modules\Shops\App\Models\Relationships\ShopRelationships;
-use Modules\Shops\App\Models\Scopes\ShopScopes;
+use Modules\Shops\App\Models\Scopes\MatchedDefaultAddressScope;
 
 class Shop extends Model
 {
@@ -23,11 +25,6 @@ class Shop extends Model
     protected $table = 'shops';
 
     /**
-     * The attributes that are mass assignable.
-     */
-    protected $fillable = [];
-
-    /**
      * Translatable attributes for TraitLanguage
      *
      * @var array<string>
@@ -37,4 +34,11 @@ class Shop extends Model
         'description',
         'address',
     ];
+
+    protected static function booted()
+    {
+        parent::booted();
+        static::addGlobalScope(new ActiveScope());
+        // static::addGlobalScope(new MatchedDefaultAddressScope());
+    }
 }

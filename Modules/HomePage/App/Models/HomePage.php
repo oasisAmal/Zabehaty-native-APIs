@@ -23,26 +23,6 @@ class HomePage extends Model
     protected $table = 'home_page';
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'emirate_id',
-        'region_ids',
-        'title_en',
-        'title_ar',
-        'image_ar_url',
-        'image_en_url',
-        'background_image_url',
-        'title_image_ar_url',
-        'title_image_en_url',
-        'type',
-        'banner_size',
-        'sorting',
-    ];
-
-    /**
      * The attributes that should be cast.
      *
      * @var array<string, string>

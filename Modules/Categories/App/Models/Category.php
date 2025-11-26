@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Modules\Categories\App\Models\Scopes\ActiveScope;
 use Modules\Categories\App\Models\Scopes\CategoryScopes;
 use Modules\Categories\App\Models\Attributes\CategoryAttributes;
+use Modules\Categories\App\Models\Scopes\MatchedDefaultAddressScope;
 use Modules\Categories\App\Models\Relationships\CategoryRelationships;
 
 class Category extends Model
@@ -40,5 +41,6 @@ class Category extends Model
     {
         parent::booted();
         static::addGlobalScope(new ActiveScope());
+        // static::addGlobalScope(new MatchedDefaultAddressScope());
     }
 }

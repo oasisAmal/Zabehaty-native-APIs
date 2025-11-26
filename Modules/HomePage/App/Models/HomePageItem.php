@@ -19,19 +19,6 @@ class HomePageItem extends Model
     protected $table = 'home_page_items';
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'home_page_id',
-        'image_ar_url',
-        'image_en_url',
-        'item_id',
-        'item_type',
-    ];
-
-    /**
      * Get the home page section that owns the item.
      */
     public function homePage(): BelongsTo

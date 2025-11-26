@@ -41,6 +41,7 @@ class HomePageService
 
         // Check cache first
         if ($this->cacheService->isCacheEnabled()) {
+            $this->cacheService->clearHomePageCache(emirateId: $emirateId, regionId: $regionId, lang: $lang);
             $cachedData = $this->cacheService->getHomePageData(emirateId: $emirateId, regionId: $regionId, lang: $lang);
             if ($cachedData) {
                 return $cachedData;

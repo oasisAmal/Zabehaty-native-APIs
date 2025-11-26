@@ -2,35 +2,27 @@
 
 namespace Modules\Shops\App\Models\Relationships;
 
+use Modules\Categories\App\Models\Category;
+use Modules\HomePage\App\Models\HomePageItem;
+use Modules\Shops\App\Models\ShopVisibility;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 trait ShopRelationships
 {
-    public function emirate()
+    public function categories(): BelongsToMany
     {
-        return $this->belongsTo(Emirate::class, 'emirate_id');
+        return $this->belongsToMany(Category::class, 'shop_categories', 'shop_id', 'category_id');
     }
 
-    public function region()
+    public function homePageItems(): MorphMany
     {
-        return $this->belongsTo(Region::class, 'region_id');
+        return $this->morphMany(HomePageItem::class, 'item', 'item_type', 'item_id');
     }
 
-    public function shop()
+    public function shopVisibilities(): HasMany
     {
-        return $this->belongsTo(Shop::class, 'shop_id');
-    }
-
-    public function supplier()
-    {
-        return $this->belongsTo(Supplier::class, 'supplier_id');
-    }
-
-    public function maslakh()
-    {
-        return $this->belongsTo(Maslakh::class, 'maslakh_id');
-    }
-
-    public function checkoutSettings()
-    {
-        return $this->morphMany(CheckoutSettingsPivot::class, 'parent');
+        return $this->hasMany(ShopVisibility::class);
     }
 }
