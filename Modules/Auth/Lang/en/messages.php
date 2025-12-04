@@ -29,6 +29,7 @@ return [
     'guest_created_successfully' => 'Guest account created successfully',
     'failed_to_create_guest' => 'Failed to create guest account',
     'guest_registered_successfully' => 'Guest registered successfully',
+    'guest_mode_not_allowed' => 'Guest mode is not allowed',
     'failed_to_register_guest' => 'Failed to register guest',
     'user_already_registered' => 'User is already registered',
     'guest_cannot_create_order' => 'Registration required',

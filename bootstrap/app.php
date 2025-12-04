@@ -11,6 +11,7 @@ use App\Http\Middleware\ForceUpdateMiddleware;
 use App\Http\Middleware\AuthOptionalMiddleware;
 use App\Http\Middleware\LocalizationMiddleware;
 use App\Providers\SocialiteAppleServiceProvider;
+use App\Http\Middleware\CheckGuestModeMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\RequireRegisteredUserMiddleware;
@@ -32,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             CountryMiddleware::class,
             AppNameMiddleware::class,
             ForceUpdateMiddleware::class,
+            CheckGuestModeMiddleware::class,
         ]);
 
         $middleware->alias([
