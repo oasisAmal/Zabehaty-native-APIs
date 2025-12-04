@@ -72,6 +72,53 @@ Route::group(['middleware' => ['auth:api', 'require-registered']], function () {
 });
 ```
 
+#### `CheckGuestModeMiddleware` (Automatic)
+Automatically loaded on all API routes. Enforces guest mode settings by checking if guest mode is enabled in the Settings table (`key = 'guest_mode'`). 
+
+**How it works:**
+- Registered in `bootstrap/app.php` as a global API middleware
+- Automatically runs on all API routes (no need to add manually)
+- If a guest user tries to access any API route when guest mode is disabled:
+  - The guest user is force deleted
+  - Returns a 401 error with message "guest_mode_not_allowed"
+
+**Registration:**
+```php
+// bootstrap/app.php
+$middleware->api(prepend: [
+    // ... other middleware
+    CheckGuestModeMiddleware::class,
+]);
+```
+
+### 5. Guest Mode Setting
+
+A new setting has been added to control guest mode functionality:
+
+- **Key**: `guest_mode`
+- **Type**: Boolean
+- **Default**: `false` (if not set)
+- **Location**: `settings` table
+
+**How it works:**
+- When `guest_mode = true`: Guest users can access API routes normally
+- When `guest_mode = false`: Guest users are blocked and deleted when accessing any API route (automatically enforced by `CheckGuestModeMiddleware`)
+
+**To enable/disable guest mode:**
+```php
+// Enable guest mode
+Settings::updateOrCreate(
+    ['key' => 'guest_mode'],
+    ['value' => true]
+);
+
+// Disable guest mode
+Settings::updateOrCreate(
+    ['key' => 'guest_mode'],
+    ['value' => false]
+);
+```
+
 ## How to Use
 
 ### 1. Add Product to Cart (Allowed for Guests)
@@ -124,6 +171,7 @@ public function createOrder(Request $request)
 
 ```php
 // Cart operations (allowed for guests)
+// Note: CheckGuestModeMiddleware runs automatically on all API routes
 Route::group(['middleware' => ['auth-optional:api']], function () {
     Route::post('add-to-cart', 'addToCart');
     Route::get('cart', 'getCart');
@@ -169,11 +217,13 @@ The following messages have been added:
 - `guest_created_successfully`: "تم إنشاء حساب ضيف بنجاح"
 - `guest_registered_successfully`: "تم تسجيل الضيف بنجاح"
 - `guest_cannot_create_order`: "يجب التسجيل أولاً"
+- `guest_mode_not_allowed`: "وضع الضيف غير مسموح به"
 
 ### English
 - `guest_created_successfully`: "Guest account created successfully"
 - `guest_registered_successfully`: "Guest registered successfully"
 - `guest_cannot_create_order`: "Registration required"
+- `guest_mode_not_allowed`: "Guest mode is not allowed"
 
 ## Usage Examples
 
@@ -259,6 +309,8 @@ curl -X POST http://localhost:8080/api/orders/create \
 4. **Compatibility**: The system is compatible with the current system and doesn't affect registered users
 5. **Default Behavior**: New users are created as registered users (`is_guest = false`) by default
 6. **Guest Creation**: Guest users are explicitly created with `is_guest = true` when needed
+7. **Guest Mode Setting**: The `guest_mode` setting controls whether guest users can access the application. When disabled, guest users are automatically deleted when they try to access any API route
+8. **Automatic Middleware**: `CheckGuestModeMiddleware` is automatically loaded on all API routes via `bootstrap/app.php`. No need to manually add it to route groups
 
 ## Troubleshooting
 
@@ -273,3 +325,12 @@ curl -X POST http://localhost:8080/api/orders/create \
 ```bash
 docker-compose exec app php artisan country:db migrate --all
 ```
+
+### Issue: Guest user gets deleted when accessing API routes
+**Solution**: Check if `guest_mode` setting is enabled in the Settings table. If `guest_mode = false`, guest users will be automatically deleted when accessing any API route (enforced by the automatic `CheckGuestModeMiddleware`).
+
+### Issue: Guest mode setting not working
+**Solution**: 
+1. Verify the setting exists in the `settings` table with `key = 'guest_mode'`
+2. Ensure the value is set correctly (`true` or `false`)
+3. Verify `CheckGuestModeMiddleware` is registered in `bootstrap/app.php` in the API middleware prepend array

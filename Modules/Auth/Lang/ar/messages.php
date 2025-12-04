@@ -27,6 +27,7 @@ return [
     'account_deleted_successfully' => 'تم حذف الحساب بنجاح',
     'failed_to_delete_account' => 'فشل في حذف الحساب',
     'guest_created_successfully' => 'تم إنشاء حساب ضيف بنجاح',
+    'guest_mode_not_allowed' => 'الوضع الضيف غير مسموح به',
     'failed_to_create_guest' => 'فشل في إنشاء حساب ضيف',
     'guest_registered_successfully' => 'تم تسجيل الضيف بنجاح',
     'failed_to_register_guest' => 'فشل في تسجيل الضيف',
