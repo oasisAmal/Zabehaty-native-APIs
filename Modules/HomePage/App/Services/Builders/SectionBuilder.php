@@ -22,11 +22,18 @@ class SectionBuilder
      */
     public function buildAll(): array
     {
-        return HomePage::ordered()->whereHas('items', function ($query) {
-            $query->has('item')->orWhereNotNull('external_link');
-        })->with('items.item')->get()->map(function ($homePage) {
-            return $this->buildSection($homePage);
-        })->toArray();
+        return HomePage::ordered()
+            ->whereHas('items')
+            ->with('items.item')
+            ->get()
+            ->map(function ($homePage) {
+                return $this->buildSection($homePage);
+            })
+            ->filter(function ($section) {
+                return !empty($section['items']);
+            })
+            ->values()
+            ->toArray();
     }
 
     /**
