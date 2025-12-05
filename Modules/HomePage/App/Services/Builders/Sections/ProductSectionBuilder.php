@@ -18,12 +18,15 @@ class ProductSectionBuilder implements SectionBuilderInterface
     public function build(HomePage $homePage): array
     {
         return $homePage->items()
-            ->whereHas('item')
+            // ->whereHas('item')
             ->with('item')
             ->limit(Pagination::PER_PAGE)
             ->get()
             ->map(function ($item) {
-                return new ProductCardResource($item->item);
+                if ($item->item) {
+                    return new ProductCardResource($item->item);
+                }
+                return null;
             })
             ->filter()
             ->values()
