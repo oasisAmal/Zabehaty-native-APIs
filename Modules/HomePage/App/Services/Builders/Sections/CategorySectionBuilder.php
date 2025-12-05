@@ -18,11 +18,14 @@ class CategorySectionBuilder implements SectionBuilderInterface
     public function build(HomePage $homePage): array
     {
         return $homePage->items()
-            ->has('item')
+            // ->has('item')
             ->with('item')
             ->limit(Pagination::PER_PAGE)
             ->get()
             ->map(function ($item) {
+                if(!$item->item) {
+                    return null;
+                }
                 return new CategoryCardResource($item->item);
             })
             ->filter()
