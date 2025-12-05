@@ -24,7 +24,7 @@ class SectionBuilder
     {
         return HomePage::ordered()->whereHas('items', function ($query) {
             $query->has('item')->orWhereNotNull('external_link');
-        })->with('items')->get()->map(function ($homePage) {
+        })->with('items.item')->get()->map(function ($homePage) {
             return $this->buildSection($homePage);
         })->toArray();
     }
