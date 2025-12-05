@@ -17,19 +17,15 @@ class ProductSectionBuilder implements SectionBuilderInterface
      */
     public function build(HomePage $homePage): array
     {
-        $items = $homePage->relationLoaded('items')
-            ? $homePage->items
-            : $homePage->items()->with('item')->get();
+        return $homePage->items()
+            ->with('item')
+            ->take(Pagination::PER_PAGE)->get()->map(function ($item) {
+                $product = $item->item;
+                if (!$product) {
+                    return null;
+                }
 
-        return $items
-            ->filter(function ($item) {
-                return $item->item !== null;
-            })
-            ->take(Pagination::PER_PAGE)
-            ->map(function ($item) {
-                return new ProductCardResource($item->item);
-            })
-            ->values()
-            ->toArray();
+                return new ProductCardResource($product);
+            })->values()->toArray();
     }
 }

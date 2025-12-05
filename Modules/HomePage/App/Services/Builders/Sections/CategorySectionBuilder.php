@@ -17,19 +17,13 @@ class CategorySectionBuilder implements SectionBuilderInterface
      */
     public function build(HomePage $homePage): array
     {
-        $items = $homePage->relationLoaded('items')
-            ? $homePage->items
-            : $homePage->items()->with('item')->get();
+        return $homePage->items()->with('item')->take(Pagination::PER_PAGE)->get()->map(function ($item) {
+            $category = $item->item;
+            if (!$category) {
+                return null;
+            }
 
-        return $items
-            ->filter(function ($item) {
-                return $item->item !== null;
-            })
-            ->take(Pagination::PER_PAGE)
-            ->map(function ($item) {
-                return new CategoryCardResource($item->item);
-            })
-            ->values()
-            ->toArray();
+            return new CategoryCardResource($category);
+        })->filter()->toArray();
     }
 }
