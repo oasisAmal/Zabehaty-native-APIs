@@ -26,7 +26,7 @@ class CategorySectionBuilder implements SectionBuilderInterface
                 return new CategoryCardResource($item->item);
             })
             ->filter()
-            ->values()
+            // ->values()
             ->toArray();
     }
 }
