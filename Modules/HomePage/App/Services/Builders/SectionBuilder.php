@@ -22,15 +22,10 @@ class SectionBuilder
      */
     public function buildAll(): array
     {
-        $homePages = HomePage::ordered()
+        return HomePage::ordered()
             ->whereHas('items')
-            ->with('items')
-            ->get();
-
-        // Load all items and group by type for efficient loading
-        $this->loadPolymorphicItems($homePages);
-
-        return $homePages
+            ->with('items.item')
+            ->get()
             ->map(function ($homePage) {
                 return $this->buildSection($homePage);
             })
@@ -39,67 +34,6 @@ class SectionBuilder
             })
             ->values()
             ->toArray();
-    }
-
-    /**
-     * Efficiently load polymorphic items by type
-     *
-     * @param \Illuminate\Database\Eloquent\Collection $homePages
-     * @return void
-     */
-    protected function loadPolymorphicItems($homePages): void
-    {
-        $itemsByType = [
-            'Modules\\Products\\App\\Models\\Product' => [],
-            'Modules\\Categories\\App\\Models\\Category' => [],
-            'Modules\\Shops\\App\\Models\\Shop' => [],
-        ];
-
-        // Group item IDs by type
-        foreach ($homePages as $homePage) {
-            foreach ($homePage->items as $item) {
-                if ($item->item_type && $item->item_id) {
-                    $type = $item->item_type;
-                    if (isset($itemsByType[$type])) {
-                        $itemsByType[$type][$item->item_id] = $item;
-                    }
-                }
-            }
-        }
-
-        // Load each type separately and map back
-        foreach ($itemsByType as $type => $items) {
-            if (empty($items)) {
-                continue;
-            }
-
-            $ids = array_keys($items);
-            $models = $this->loadModelsByType($type, $ids);
-
-            // Map models back to items
-            foreach ($models as $model) {
-                if (isset($items[$model->id])) {
-                    $items[$model->id]->setRelation('item', $model);
-                }
-            }
-        }
-    }
-
-    /**
-     * Load models by type
-     *
-     * @param string $type
-     * @param array $ids
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    protected function loadModelsByType(string $type, array $ids): \Illuminate\Database\Eloquent\Collection
-    {
-        return match ($type) {
-            'Modules\\Products\\App\\Models\\Product' => \Modules\Products\App\Models\Product::whereIn('id', $ids)->get()->keyBy('id'),
-            'Modules\\Categories\\App\\Models\\Category' => \Modules\Categories\App\Models\Category::whereIn('id', $ids)->get()->keyBy('id'),
-            'Modules\\Shops\\App\\Models\\Shop' => \Modules\Shops\App\Models\Shop::whereIn('id', $ids)->get()->keyBy('id'),
-            default => collect(),
-        };
     }
 
     /**
