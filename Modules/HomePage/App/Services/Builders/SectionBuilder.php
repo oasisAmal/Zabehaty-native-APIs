@@ -23,7 +23,7 @@ class SectionBuilder
     public function buildAll(): array
     {
         return HomePage::ordered()
-            ->has('items.item')
+            ->has('items')
             ->with('items.item')
             ->get()
             ->map(function ($homePage) {
