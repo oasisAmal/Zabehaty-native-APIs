@@ -23,7 +23,7 @@ class SectionBuilder
     public function buildAll(): array
     {
         return HomePage::ordered()->whereHas('items', function ($query) {
-            $query->whereHas('item')->orWhereNotNull('external_link');
+            $query->has('item')->orWhereNotNull('external_link');
         })->with('items')->get()->map(function ($homePage) {
             return $this->buildSection($homePage);
         })->toArray();

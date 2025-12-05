@@ -17,13 +17,8 @@ class ProductSectionBuilder implements SectionBuilderInterface
      */
     public function build(HomePage $homePage): array
     {
-        return $homePage->items()->with('item')->limit(Pagination::PER_PAGE)->get()->map(function ($item) {
-            $product = $item->item;
-            if (!$product) {
-                return null;
-            }
-
-            return new ProductCardResource($product);
+        return $homePage->items()->has('item')->with('item')->limit(Pagination::PER_PAGE)->get()->map(function ($item) {
+            return new ProductCardResource($item->item);
         })->filter()->toArray();
     }
 }
