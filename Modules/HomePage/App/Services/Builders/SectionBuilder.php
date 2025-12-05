@@ -27,21 +27,22 @@ class SectionBuilder
     {
         return HomePage::ordered()
             ->has('items')
-            ->with(['items' => function ($query) {
-                $query->where(function ($q) {
-                    $q->whereHas('item', function ($q2) {
-                        switch ($q2->getModel()->getTable()) {
-                            case 'products':
-                                return $q2->withoutGlobalScope(ProductMatchedDefaultAddressScope::class);
-                            case 'categories':
-                                return $q2->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class);
-                            case 'shops':
-                                return $q2->withoutGlobalScope(ShopMatchedDefaultAddressScope::class);
-                        }
-                        return $q2;
-                    })->orWhereNotNull('external_link'); // also include items with external_link
-                });
-            }, 'items.item'])
+            // ->with(['items' => function ($query) {
+            //     $query->where(function ($q) {
+            //         $q->whereHas('item', function ($q2) {
+            //             switch ($q2->getModel()->getTable()) {
+            //                 case 'products':
+            //                     return $q2->withoutGlobalScope(ProductMatchedDefaultAddressScope::class);
+            //                 case 'categories':
+            //                     return $q2->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class);
+            //                 case 'shops':
+            //                     return $q2->withoutGlobalScope(ShopMatchedDefaultAddressScope::class);
+            //             }
+            //             return $q2;
+            //         })->orWhereNotNull('external_link'); // also include items with external_link
+            //     });
+            // }, 'items.item'])
+            ->with('items.item')
             ->get()
             ->map(function ($homePage) {
                 return $this->buildSection($homePage);
