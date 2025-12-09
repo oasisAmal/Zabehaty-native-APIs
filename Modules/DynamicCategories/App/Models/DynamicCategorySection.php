@@ -5,9 +5,9 @@ namespace Modules\DynamicCategories\App\Models;
 use App\Traits\TraitLanguage;
 use App\Traits\CountryDatabaseTrait;
 use Illuminate\Database\Eloquent\Model;
+use Modules\DynamicCategories\App\Models\Scopes\MatchedDefaultAddressScope;
 use Modules\DynamicCategories\App\Models\Scopes\DynamicCategorySectionScopes;
 use Modules\DynamicCategories\App\Models\Attributes\DynamicCategorySectionAttributes;
-use Modules\DynamicCategories\App\Models\Scopes\MatchedDefaultAddressScope;
 use Modules\DynamicCategories\App\Models\Relationships\DynamicCategorySectionRelationships;
 
 class DynamicCategorySection extends Model
