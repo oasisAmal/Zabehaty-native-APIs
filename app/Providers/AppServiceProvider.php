@@ -21,7 +21,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         // Automatically eager load relations for all models
-        Model::automaticallyEagerLoadRelationships();
+        // Model::automaticallyEagerLoadRelationships();
         
         // Prevent Lazy Loading for all models in production
         // Model::preventLazyLoading(!app()->isProduction());

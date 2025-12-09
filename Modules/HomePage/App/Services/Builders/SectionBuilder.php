@@ -5,6 +5,12 @@ namespace Modules\HomePage\App\Services\Builders;
 use Modules\HomePage\App\Models\HomePage;
 use Modules\HomePage\Enums\HomeSectionType;
 use Modules\HomePage\App\Services\Builders\Factories\SectionBuilderFactory;
+use Modules\Products\App\Models\Product;
+use Modules\Shops\App\Models\Shop;
+use Modules\Categories\App\Models\Category;
+use Modules\Products\App\Models\Scopes\MatchedDefaultAddressScope as ProductMatchedDefaultAddressScope;
+use Modules\Shops\App\Models\Scopes\MatchedDefaultAddressScope as ShopMatchedDefaultAddressScope;
+use Modules\Categories\App\Models\Scopes\MatchedDefaultAddressScope as CategoryMatchedDefaultAddressScope;
 
 class SectionBuilder
 {
@@ -22,11 +28,24 @@ class SectionBuilder
      */
     public function buildAll(): array
     {
-        return HomePage::ordered()->whereHas('items', function ($query) {
-            $query->whereHas('item')->orWhereNotNull('external_link');
-        })->with('items')->get()->map(function ($homePage) {
-            return $this->buildSection($homePage);
-        })->toArray();
+        $homePages = HomePage::ordered()
+            ->has('items')
+            ->with('items')
+            ->get();
+
+        $homePages->loadMorph('items.item', [
+            Product::class => fn ($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
+            Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
+            Category::class => fn ($query) => $query->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class),
+        ]);
+
+        return $homePages
+            ->map(function ($homePage) {
+                return $this->buildSection($homePage);
+            })
+            ->filter(fn($section) => !empty($section['items']))
+            ->values()
+            ->toArray();
     }
 
     /**

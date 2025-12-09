@@ -3,9 +3,12 @@
 namespace Modules\HomePage\App\Services\Builders\Sections;
 
 use App\Enums\Pagination;
+use Illuminate\Support\Collection;
+use Modules\Products\App\Models\Product;
 use Modules\HomePage\App\Models\HomePage;
 use Modules\Products\App\Transformers\ProductCardResource;
 use Modules\HomePage\App\Services\Builders\Interfaces\SectionBuilderInterface;
+use Modules\Products\App\Models\Scopes\MatchedDefaultAddressScope as ProductMatchedDefaultAddressScope;
 
 class ProductSectionBuilder implements SectionBuilderInterface
 {
@@ -17,13 +20,36 @@ class ProductSectionBuilder implements SectionBuilderInterface
      */
     public function build(HomePage $homePage): array
     {
-        return $homePage->items()->with('item')->limit(Pagination::PER_PAGE)->get()->map(function ($item) {
-            $product = $item->item;
-            if (!$product) {
-                return null;
-            }
+        return $this->resolveItems($homePage)
+            ->take(Pagination::PER_PAGE)
+            ->map(function ($item) {
+                $product = $item->item;
+                return $product ? new ProductCardResource($product) : null;
+            })
+            ->filter()
+            ->values()
+            ->toArray();
+    }
 
-            return new ProductCardResource($product);
-        })->filter()->toArray();
+    /**
+     * Ensure items are loaded without the costly visibility scope.
+     */
+    private function resolveItems(HomePage $homePage): Collection
+    {
+        if ($homePage->relationLoaded('items')) {
+            $items = $homePage->items;
+
+            if ($items->isEmpty() || $items->first()->relationLoaded('item')) {
+                return $items;
+            }
+        }
+
+        $homePage->load('items');
+
+        $homePage->loadMorph('items.item', [
+            Product::class => fn ($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
+        ]);
+
+        return $homePage->items;
     }
 }

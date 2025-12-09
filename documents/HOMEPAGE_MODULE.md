@@ -182,26 +182,36 @@ public function build(): array
 
 #### SectionBuilder
 
-Builds all homepage sections using factory pattern:
+Builds all homepage sections using factory pattern, and preloads morph items without the heavy `MatchedDefaultAddressScope` to improve performance:
 
 ```php
 public function buildAll(): array
 {
-    return HomePage::ordered()
-        ->has('items.item')
-        ->with('items.item')
-        ->get()
-        ->map(function ($homePage) {
-            return $this->buildSection($homePage);
-        })->toArray();
+    $homePages = HomePage::ordered()
+        ->has('items')
+        ->with('items')
+        ->get();
+
+    $homePages->loadMorph('items.item', [
+        Product::class => fn ($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
+        Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
+        Category::class => fn ($query) => $query->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class),
+    ]);
+
+    return $homePages
+        ->map(fn ($homePage) => $this->buildSection($homePage))
+        ->filter(fn ($section) => !empty($section['items']))
+        ->values()
+        ->toArray();
 }
 ```
 
 **Process:**
-1. Fetches ordered sections with items
-2. Uses factory to get appropriate builder
-3. Builds each section data
-4. Returns array of sections
+1. Fetch ordered sections with items
+2. `loadMorph` items to drop `MatchedDefaultAddressScope` on products/shops/categories
+3. Uses factory to get appropriate builder
+4. Builds each section data, filters empty sections
+5. Returns array of sections
 
 #### SectionBuilderFactory
 
@@ -240,35 +250,81 @@ interface SectionBuilderInterface
 
 #### ProductSectionBuilder
 
-Builds product sections with pagination:
+Builds product sections with pagination, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs:
 
 ```php
 public function build(HomePage $homePage): array
 {
-    return $homePage->items()
-        ->with('item')
-        ->limit(Pagination::PER_PAGE)
-        ->get()
+    return $this->resolveItems($homePage)
+        ->take(Pagination::PER_PAGE)
         ->map(function ($item) {
-            return new ProductCardResource($item->item);
-        })->toArray();
+            $product = $item->item;
+            return $product ? new ProductCardResource($product) : null;
+        })
+        ->filter()
+        ->values()
+        ->toArray();
+}
+
+private function resolveItems(HomePage $homePage): Collection
+{
+    if ($homePage->relationLoaded('items')) {
+        $items = $homePage->items;
+
+        if ($items->isEmpty() || $items->first()->relationLoaded('item')) {
+            return $items;
+        }
+    }
+
+    $homePage->load('items');
+
+    $homePage->loadMorph('items.item', [
+        Product::class => fn ($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
+    ]);
+
+    return $homePage->items;
 }
 ```
 
 #### CategorySectionBuilder
 
-Builds category sections:
+Builds category sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs:
 
 ```php
 public function build(HomePage $homePage): array
 {
-    return $homePage->items()
-        ->with('item')
-        ->limit(Pagination::PER_PAGE)
-        ->get()
+    return $this->resolveItems($homePage)
+        ->take(Pagination::PER_PAGE)
         ->map(function ($item) {
-            return new CategoryCardResource($item->item);
-        })->toArray();
+            $category = $item->item;
+            if (!$category) {
+                return null;
+            }
+
+            return new CategoryCardResource($category);
+        })
+        ->filter()
+        ->values()
+        ->toArray();
+}
+
+private function resolveItems(HomePage $homePage): Collection
+{
+    if ($homePage->relationLoaded('items')) {
+        $items = $homePage->items;
+
+        if ($items->isEmpty() || $items->first()->relationLoaded('item')) {
+            return $items;
+        }
+    }
+
+    $homePage->load('items');
+
+    $homePage->loadMorph('items.item', [
+        Category::class => fn ($query) => $query->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class),
+    ]);
+
+    return $homePage->items;
 }
 ```
 
@@ -290,17 +346,43 @@ public function build(HomePage $homePage): array
 
 #### ShopSectionBuilder
 
-Builds shop sections (returns raw shop data):
+Builds shop sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs:
 
 ```php
 public function build(HomePage $homePage): array
 {
-    return $homePage->items()
-        ->with('item')
-        ->get()
+    return $this->resolveItems($homePage)
+        ->take(Pagination::PER_PAGE)
         ->map(function ($item) {
-            return $item->item;
-        })->toArray();
+            $shop = $item->item;
+            if (!$shop) {
+                return null;
+            }
+
+            return new ShopCardResource($shop);
+        })
+        ->filter()
+        ->values()
+        ->toArray();
+}
+
+private function resolveItems(HomePage $homePage): Collection
+{
+    if ($homePage->relationLoaded('items')) {
+        $items = $homePage->items;
+
+        if ($items->isEmpty() || $items->first()->relationLoaded('item')) {
+            return $items;
+        }
+    }
+
+    $homePage->load('items');
+
+    $homePage->loadMorph('items.item', [
+        Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
+    ]);
+
+    return $homePage->items;
 }
 ```
 
