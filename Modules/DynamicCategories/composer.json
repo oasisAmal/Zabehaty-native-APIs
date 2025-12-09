@@ -1,0 +1,30 @@
+{
+    "name": "nwidart/dynamiccategories",
+    "description": "",
+    "authors": [
+        {
+            "name": "Nicolas Widart",
+            "email": "n.widart@gmail.com"
+        }
+    ],
+    "extra": {
+        "laravel": {
+            "providers": [],
+            "aliases": {
+
+            }
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Modules\\DynamicCategories\\": "App/",
+            "Modules\\DynamicCategories\\Database\\Factories\\": "database/factories/",
+            "Modules\\DynamicCategories\\Database\\Seeders\\": "database/seeders/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Modules\\DynamicCategories\\Tests\\": "tests/"
+        }
+    }
+}
