@@ -1,0 +1,11 @@
+{
+    "name": "DynamicCategories",
+    "alias": "dynamiccategories",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\DynamicCategories\\App\\Providers\\DynamicCategoriesServiceProvider"
+    ],
+    "files": []
+}
