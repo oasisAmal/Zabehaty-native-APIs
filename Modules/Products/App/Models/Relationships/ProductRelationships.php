@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Modules\DynamicCategories\App\Models\DynamicCategorySectionItem;
 
 trait ProductRelationships
 {
@@ -46,6 +47,11 @@ trait ProductRelationships
     public function homePageItems(): MorphMany
     {
         return $this->morphMany(HomePageItem::class, 'item', 'item_type', 'item_id');
+    }
+
+    public function dynamicCategorySectionItems(): MorphMany
+    {
+        return $this->morphMany(DynamicCategorySectionItem::class, 'item', 'item_type', 'item_id');
     }
 
     public function badges(): BelongsToMany

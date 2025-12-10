@@ -3,11 +3,12 @@
 namespace Modules\Shops\App\Models\Relationships;
 
 use Modules\Categories\App\Models\Category;
-use Modules\HomePage\App\Models\HomePageItem;
 use Modules\Shops\App\Models\ShopVisibility;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Modules\HomePage\App\Models\HomePageItem;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Modules\DynamicCategories\App\Models\DynamicCategorySectionItem;
 
 trait ShopRelationships
 {
@@ -19,6 +20,11 @@ trait ShopRelationships
     public function homePageItems(): MorphMany
     {
         return $this->morphMany(HomePageItem::class, 'item', 'item_type', 'item_id');
+    }
+
+    public function dynamicCategorySectionItems(): MorphMany
+    {
+        return $this->morphMany(DynamicCategorySectionItem::class, 'item', 'item_type', 'item_id');
     }
 
     public function shopVisibilities(): HasMany
