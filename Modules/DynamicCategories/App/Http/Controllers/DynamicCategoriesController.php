@@ -3,15 +3,36 @@
 namespace Modules\DynamicCategories\App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use Modules\DynamicCategories\App\Http\Requests\DynamicCategoriesIndexRequest;
+use Modules\DynamicCategories\App\Services\DynamicCategoriesService;
+use Modules\DynamicCategories\App\Transformers\DynamicCategoriesResource;
 
 class DynamicCategoriesController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
+    protected DynamicCategoriesService $dynamicCategoriesService;
+
+    public function __construct(DynamicCategoriesService $dynamicCategoriesService)
     {
-        return responseSuccessData([]);
+        $this->dynamicCategoriesService = $dynamicCategoriesService;
+    }
+
+    /**
+     * Get dynamic categories data
+     *
+     * @param DynamicCategoriesIndexRequest $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index(DynamicCategoriesIndexRequest $request)
+    {
+        try {
+            $dynamicCategoriesData = $this->dynamicCategoriesService->getDynamicCategoriesData($request);
+            return responseSuccessData(DynamicCategoriesResource::make($dynamicCategoriesData));
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            return responseErrorMessage(
+                __('dynamiccategories::messages.failed_to_retrieve_dynamic_categories_data'),
+                500
+            );
+        }
     }
 }

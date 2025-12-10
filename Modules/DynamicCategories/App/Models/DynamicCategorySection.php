@@ -39,6 +39,7 @@ class DynamicCategorySection extends Model
         'type',
         'display_type',
         'menu_type',
+        'item_type',
         'banner_size',
         'sorting',
     ];
