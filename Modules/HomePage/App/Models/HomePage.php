@@ -28,6 +28,7 @@ class HomePage extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'emirate_ids' => 'array',
         'region_ids' => 'array',
         'sorting' => 'integer',
     ];

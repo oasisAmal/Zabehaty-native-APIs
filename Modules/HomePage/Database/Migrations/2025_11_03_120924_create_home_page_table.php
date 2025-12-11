@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('home_page', function (Blueprint $table) {
             $table->id();
-            $table->integer('emirate_id')->nullable();
+            $table->json('emirate_ids')->nullable();
             $table->json('region_ids')->nullable();
             $table->string('title_en')->nullable();
             $table->string('title_ar')->nullable();
