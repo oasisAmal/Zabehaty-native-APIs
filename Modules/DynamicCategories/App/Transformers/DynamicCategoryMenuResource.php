@@ -16,7 +16,7 @@ class DynamicCategoryMenuResource extends JsonResource
     {
         return [
             'id' => $this->menu_item_parent_id,
-            'title' => $this->title,
+            'name' => $this->title,
             'image_url' => $this->getImageUrl(),
         ];
     }
