@@ -3,7 +3,6 @@
 namespace Modules\HomePage\App\Services\Builders;
 
 use Modules\Shops\App\Models\Shop;
-use Illuminate\Support\Facades\Log;
 use Modules\Products\App\Models\Product;
 use Modules\HomePage\App\Models\HomePage;
 use Modules\Categories\App\Models\Category;
@@ -33,14 +32,13 @@ class SectionBuilder
             ->has('items')
             ->with('items')
             ->get();
-            Log::debug('homePages before loadMorph', $homePages->toArray());
 
         $homePages->loadMorph('items.item', [
-            Product::class => fn ($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
-            Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
-            Category::class => fn ($query) => $query->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class),
+            Product::class => fn($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
+            Shop::class => fn($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
+            Category::class => fn($query) => $query->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class),
         ]);
-        Log::debug('homePages after loadMorph', $homePages->toArray());
+
         return $homePages
             ->map(function ($homePage) {
                 return $this->buildSection($homePage);

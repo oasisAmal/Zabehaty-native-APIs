@@ -5,6 +5,7 @@ namespace Modules\HomePage\App\Services\Builders\Sections;
 use App\Enums\Pagination;
 use Illuminate\Support\Collection;
 use Modules\Shops\App\Models\Shop;
+use Illuminate\Support\Facades\Log;
 use Modules\HomePage\App\Models\HomePage;
 use Modules\Shops\App\Transformers\ShopCardResource;
 use Modules\HomePage\App\Services\Builders\Interfaces\SectionBuilderInterface;
@@ -40,6 +41,8 @@ class ShopSectionBuilder implements SectionBuilderInterface
      */
     private function resolveItems(HomePage $homePage): Collection
     {
+        Log::debug('homePage before resolveItems', $homePage->items->toArray());
+
         if ($homePage->relationLoaded('items')) {
             $items = $homePage->items;
 
@@ -50,9 +53,13 @@ class ShopSectionBuilder implements SectionBuilderInterface
 
         $homePage->load('items');
 
+        Log::debug('homePage after load items', $homePage->items->toArray());
+
         $homePage->loadMorph('items.item', [
             Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
         ]);
+
+        Log::debug('homePage after loadMorph', $homePage->items->toArray());
 
         return $homePage->items;
     }
