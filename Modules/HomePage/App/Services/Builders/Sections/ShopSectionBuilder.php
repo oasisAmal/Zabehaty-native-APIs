@@ -25,7 +25,6 @@ class ShopSectionBuilder implements SectionBuilderInterface
             ->take(Pagination::PER_PAGE)
             ->map(function ($item) {
                 $shop = $item->item;
-                Log::error('shop->'.$item->item_id);
                 if (!$shop) {
                     return null;
                 }
