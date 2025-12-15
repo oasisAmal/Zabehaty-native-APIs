@@ -41,7 +41,7 @@ class ShopSectionBuilder implements SectionBuilderInterface
      */
     private function resolveItems(HomePage $homePage): Collection
     {
-        Log::debug('homePage before resolveItems', $homePage->items->toArray());
+        Log::error('homePage before resolveItems', $homePage->items->toArray());
 
         if ($homePage->relationLoaded('items')) {
             $items = $homePage->items;
@@ -53,13 +53,13 @@ class ShopSectionBuilder implements SectionBuilderInterface
 
         $homePage->load('items');
 
-        Log::debug('homePage after load items', $homePage->items->toArray());
+        Log::error('homePage after load items', $homePage->items->toArray());
 
         $homePage->loadMorph('items.item', [
             Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
         ]);
 
-        Log::debug('homePage after loadMorph', $homePage->items->toArray());
+        Log::error('homePage after loadMorph', $homePage->items->toArray());
 
         return $homePage->items;
     }
