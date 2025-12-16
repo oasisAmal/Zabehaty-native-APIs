@@ -52,6 +52,7 @@ class HeaderBuilder
     private function getMainCategories(): array
     {
         return MainCategory::ordered()
+            ->active()
             ->get()
             ->map(function ($category) {
                 return [
