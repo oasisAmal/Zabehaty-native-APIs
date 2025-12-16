@@ -21,16 +21,13 @@ class ShopSectionBuilder implements SectionBuilderInterface
     public function build(DynamicCategorySection $dynamicCategorySection): array
     {
         return $this->resolveItems($dynamicCategorySection)
+            ->filter(function ($item) {
+                return $item->item !== null;
+            })
             ->take(Pagination::PER_PAGE)
             ->map(function ($item) {
-                $shop = $item->item;
-                if (!$shop) {
-                    return null;
-                }
-
-                return new ShopCardResource($shop);
+                return new ShopCardResource($item->item);
             })
-            ->filter()
             ->values()
             ->toArray();
     }

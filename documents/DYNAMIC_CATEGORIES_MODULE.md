@@ -317,45 +317,47 @@ Each item in the menu items section includes:
 
 #### ProductSectionBuilder
 
-Builds product sections with pagination, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs:
+Builds product sections with pagination, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
 
 ```php
 public function build(DynamicCategorySection $dynamicCategorySection): array
 {
     return $this->resolveItems($dynamicCategorySection)
+        ->filter(function ($item) {
+            return $item->item !== null;
+        })
         ->take(Pagination::PER_PAGE)
         ->map(function ($item) {
-            $product = $item->item;
-            return $product ? new ProductCardResource($product) : null;
+            return new ProductCardResource($item->item);
         })
-        ->filter()
         ->values()
         ->toArray();
 }
 ```
+
+**Performance Note:** Filtering before `take()` ensures that if the first N items have null `item` relationships, the builder will continue searching through the collection to find the required number of valid items, rather than returning fewer items than requested.
 
 #### ShopSectionBuilder
 
-Builds shop sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs:
+Builds shop sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
 
 ```php
 public function build(DynamicCategorySection $dynamicCategorySection): array
 {
     return $this->resolveItems($dynamicCategorySection)
+        ->filter(function ($item) {
+            return $item->item !== null;
+        })
         ->take(Pagination::PER_PAGE)
         ->map(function ($item) {
-            $shop = $item->item;
-            if (!$shop) {
-                return null;
-            }
-
-            return new ShopCardResource($shop);
+            return new ShopCardResource($item->item);
         })
-        ->filter()
         ->values()
         ->toArray();
 }
 ```
+
+**Performance Note:** Filtering before `take()` ensures that if the first N items have null `item` relationships, the builder will continue searching through the collection to find the required number of valid items, rather than returning fewer items than requested.
 
 #### BannerSectionBuilder
 
@@ -820,6 +822,7 @@ $section->sorting = 1; // Lower numbers appear first
 - Filter by `category_id` early in the query
 - **MenuItemsSectionBuilder** uses optimized database-level grouping with `MIN(id)` and `GROUP BY` for efficient menu item grouping
 - Avoid loading all items into memory; use selective queries with `whereIn` when possible
+- **ProductSectionBuilder and ShopSectionBuilder** filter out null items before applying pagination to ensure the correct number of valid items are returned, preventing scenarios where fewer items than requested are returned due to null relationships
 
 ### 3. Error Handling
 
