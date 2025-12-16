@@ -22,16 +22,13 @@ class ShopSectionBuilder implements SectionBuilderInterface
     public function build(HomePage $homePage): array
     {
         return $this->resolveItems($homePage)
+            ->filter(function ($item) {
+                return $item->item !== null;
+            })
             ->take(Pagination::PER_PAGE)
             ->map(function ($item) {
-                $shop = $item->item;
-                if (!$shop) {
-                    return null;
-                }
-
-                return new ShopCardResource($shop);
+                return new ShopCardResource($item->item);
             })
-            ->filter()
             ->values()
             ->toArray();
     }

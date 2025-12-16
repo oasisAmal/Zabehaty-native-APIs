@@ -21,16 +21,13 @@ class CategorySectionBuilder implements SectionBuilderInterface
     public function build(HomePage $homePage): array
     {
         return $this->resolveItems($homePage)
+            ->filter(function ($item) {
+                return $item->item !== null;
+            })
             ->take(Pagination::PER_PAGE)
             ->map(function ($item) {
-                $category = $item->item;
-                if (!$category) {
-                    return null;
-                }
-
-                return new CategoryCardResource($category);
+                return new CategoryCardResource($item->item);
             })
-            ->filter()
             ->values()
             ->toArray();
     }
