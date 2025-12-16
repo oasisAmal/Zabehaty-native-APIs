@@ -31,4 +31,27 @@ class ShopController extends Controller
             );
         }
     }
+
+    /**
+     * Get shop detail
+     */
+    public function detail($id)
+    {
+        try {
+            $shop = $this->shopsService->getShopDetail($id);
+            if (!$shop) {
+                return responseErrorMessage(
+                    __('shops::messages.shop_not_found'),
+                    404
+                );
+            }
+            return responseSuccessData($shop);
+        } catch (\Exception $e) {
+            return responseErrorMessage(
+                __('shops::messages.failed_to_retrieve_shop_details'),
+                500,
+                $e->getMessage()
+            );
+        }
+    }
 }
