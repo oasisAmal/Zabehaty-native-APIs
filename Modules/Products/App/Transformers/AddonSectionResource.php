@@ -2,11 +2,10 @@
 
 namespace Modules\Products\App\Transformers;
 
-use App\Enums\CountryCurrencies;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ProductDetailsResource extends JsonResource
+class AddonSectionResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,8 +14,10 @@ class ProductDetailsResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'addon_sections' => AddonSectionResource::collection($this->addonSectionPivots ?? []),
+            'title' => $this->title,
+            'is_required' => (bool) ($this->pivot->is_required ?? false),
+            'items' => AddonSectionItemResource::collection($this->pivot->itemsPivots ?? collect()),
         ];
     }
 }
+
