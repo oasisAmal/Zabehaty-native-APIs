@@ -40,7 +40,7 @@ class ProductDetailsResource extends JsonResource
             'stock' => $this->stock_settings,
             'sizes' => $this->getSizes(),
             // 'available_shops' => $this->availableShops(),
-            'available_restaurants' => $this->availableRestaurants(),
+            // 'available_restaurants' => $this->availableRestaurants(),
             'addon_sections' => AddonSectionResource::collection($this->addonSectionPivots ?? []),
         ];
     }
