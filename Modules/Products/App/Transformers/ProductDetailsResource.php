@@ -41,7 +41,6 @@ class ProductDetailsResource extends JsonResource
     private function getSizes()
     {
         if (!$this->has_sub_products) return [];
-        $subProducts = $this->subProducts;
-        return SubProductResource::collection($subProducts);
+        return SubProductResource::collection($this->subProducts);
     }
 }
