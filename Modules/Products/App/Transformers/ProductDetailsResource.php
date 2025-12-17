@@ -69,6 +69,7 @@ class ProductDetailsResource extends JsonResource
             'shops' => ShopCardResource::collection($shops),
         ];
     }
+    
     private function availableRestaurants()
     {
         if (!$this->department) return null;
