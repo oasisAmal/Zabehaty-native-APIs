@@ -4,7 +4,7 @@ namespace Modules\Products\App\Transformers;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SubProductResource extends JsonResource
+class ProductSizeResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -26,7 +26,7 @@ class SubProductResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'descripion' => $this->descripion,
-            'image' => $this->modImage($this->image),
+            'image' => $this->image,
             'price' => $this->price,
             'old_price' => $this->old_price,
             'notes' => $this->notes,
