@@ -42,6 +42,8 @@ class Product extends Model
      */
     protected $casts = [
         'limited_offer_expired_at' => 'datetime',
+        'images' => 'array',
+        'has_quantity' => 'boolean',
     ];
 
     protected static function booted()

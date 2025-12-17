@@ -30,6 +30,7 @@ class ProductDetailsResource extends JsonResource
             'limited_offer_expired_at' => $this->limited_offer_expired_at ? $this->limited_offer_expired_at->timestamp : null,
             'badge' => $this->badge_name ?? null,
             'is_favorite' => (bool) $this->is_favorite,
+            'has_quantity' => $this->has_quantity,
             'addon_sections' => AddonSectionResource::collection($this->addonSectionPivots ?? []),
         ];
     }
