@@ -7,4 +7,6 @@ return [
     'unknown_issue' => 'مشكلة غير معلومة',
     'unauthenticated' => 'غير مصرح',
     'force_update_required' => 'يرجى تحديث التطبيق إلى أحدث إصدار للمتابعة',
+    'weight' => 'كجم',
+	'age' => 'شهر',
 ];

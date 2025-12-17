@@ -31,7 +31,17 @@ class ProductDetailsResource extends JsonResource
             'badge' => $this->badge_name ?? null,
             'is_favorite' => (bool) $this->is_favorite,
             'has_quantity' => $this->has_quantity,
+            'quantity_settings' => $this->quantity_settings,
+            'stock' => $this->stock_settings,
+            'sizes' => $this->getSizes(),
             'addon_sections' => AddonSectionResource::collection($this->addonSectionPivots ?? []),
         ];
+    }
+
+    private function getSizes()
+    {
+        if (!$this->has_sub_products) return [];
+        $subProducts = $this->subProducts;
+        return SubProductResource::collection($subProducts);
     }
 }
