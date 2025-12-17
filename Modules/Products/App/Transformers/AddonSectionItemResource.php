@@ -21,7 +21,13 @@ class AddonSectionItemResource extends JsonResource
 
     private function getPrice()
     {
-        return isset($this->pivot->price) && $this->pivot->price ? (float) $this->pivot->price : (float) $this->price ?? null;
+        $price = null;
+        if (isset($this->pivot->price) && $this->pivot->price) {
+            $price = (float) $this->pivot->price;
+        } elseif (isset($this->price) && $this->price) {
+            $price = (float) $this->price;
+        }
+        return $price ?? null;
     }
 }
 
