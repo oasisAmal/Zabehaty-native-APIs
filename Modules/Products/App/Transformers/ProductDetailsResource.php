@@ -16,7 +16,11 @@ class ProductDetailsResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'image_url' => $this->thumb,
+            'brief' => $this->brief,
+            'description' => $this->description,
+            'thumbnail_url' => $this->thumb,
+            'image_url' => $this->image,
+            'images' => $this->images,
             'shop' => $this->shop?->name,
             'category' => $this->category?->name,
             'currency' => CountryCurrencies::getCurrency(),
