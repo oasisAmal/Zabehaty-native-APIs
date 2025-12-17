@@ -47,6 +47,8 @@ class ProductsService
                 'badges',
                 'subProducts',
                 'addonSectionPivots',
+                'department',
+                'productCookings',
             ])
             ->first();
 

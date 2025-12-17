@@ -14,6 +14,8 @@ class ProductDetailsResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $service = app(ProductDetailsTransformerService::class);
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -36,9 +38,9 @@ class ProductDetailsResource extends JsonResource
             'has_quantity' => $this->has_quantity,
             'quantity_settings' => $this->quantity_settings,
             'stock' => $this->stock_settings,
-            'sizes' => app(ProductDetailsTransformerService::class)->getSizes($this->resource),
-            'available_shops' => app(ProductDetailsTransformerService::class)->getAvailableShops($this->resource),
-            'available_restaurants' => app(ProductDetailsTransformerService::class)->getAvailableRestaurants($this->resource),
+            'sizes' => $service->getSizes($this->resource),
+            'available_shops' => $service->getAvailableShops($this->resource),
+            'available_restaurants' => $service->getAvailableRestaurants($this->resource),
             'addon_sections' => AddonSectionResource::collection($this->addonSectionPivots ?? []),
         ];
     }
