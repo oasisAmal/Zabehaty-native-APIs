@@ -4,6 +4,7 @@ namespace Modules\Products\App\Transformers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\Products\App\Services\AddonSectionItemTransformerService;
 
 class AddonSectionItemResource extends JsonResource
 {
@@ -15,19 +16,8 @@ class AddonSectionItemResource extends JsonResource
         return [
             'id' => $this->product_addon_section_item_id,
             'title' => $this->title,
-            'price' => $this->getPrice(),
+            'price' => app(AddonSectionItemTransformerService::class)->getPrice($this->resource),
         ];
-    }
-
-    private function getPrice()
-    {
-        $price = null;
-        if (isset($this->pivot->price) && $this->pivot->price) {
-            $price = (float) $this->pivot->price;
-        } elseif (isset($this->price) && $this->price) {
-            $price = (float) $this->price;
-        }
-        return $price ?? null;
     }
 }
 

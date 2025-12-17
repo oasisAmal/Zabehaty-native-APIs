@@ -2,7 +2,9 @@
 
 namespace Modules\Products\App\Transformers;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\Products\App\Services\ProductSizeTransformerService;
 
 class ProductSizeResource extends JsonResource
 {
@@ -12,44 +14,23 @@ class ProductSizeResource extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    private $name='';
-
-    public function toArray($request)
+    public function toArray(Request $request): array
     {
-        $this->name = $this->exceptions();
-        if( $this->data && $this->data['age']!='' && strstr($this->data['age'],'سنوات') )
-            $age = '';
-        else
-            $age = ($this->product && in_array($this->product->category_id , [1,2,3,4,160,168])) ? __('messages.age') :''  ;
+        $service = app(ProductSizeTransformerService::class);
 
-        $data = [
+        return [
             'id' => $this->id,
-            'name' => $this->name,
+            'name' => $service->getName($this->resource),
             'descripion' => $this->descripion,
             'image' => $this->image,
             'price' => $this->price,
             'old_price' => $this->old_price,
             'notes' => $this->notes,
-            'weight' => (is_array($this->data) && isset($this->data['weight'])) ? $this->data['weight'].' '.__('messages.weight'):'' ,
-            'age' =>  (is_array($this->data) && isset($this->data['age'])) ? $this->data['age'].' '.$age:''  ,
+            'weight' => $service->getWeight($this->resource),
+            'age' => $service->getAge($this->resource),
             'enough_for_from' => $this->enough_for_from,
             'enough_for_to' => $this->enough_for_to,
             'stock' => $this->stock,
         ];
-
-		return $data ;
-    }
-
-    function exceptions()
-    {
-        if($this->data && $this->data['age']!='' && strstr($this->data['age'],'سنوات') )
-            $age = '';
-        else
-            $age = (in_array($this->product && $this->product->category_id , [1,2,3,4,160,168])) ? __('messages.age') :''  ;
-        $weight = __('messages.weight');
-
-        if ($this->data && is_array($this->data) && isset($this->data['weight']) && isset($this->data['age']))
-            return $this->data['weight'] . ' ' . $weight . ' ' . $this->data['age'] . ' ' . $age;
-        return $this->name;
     }
 }

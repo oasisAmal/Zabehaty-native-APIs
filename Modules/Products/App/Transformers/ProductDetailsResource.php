@@ -4,10 +4,8 @@ namespace Modules\Products\App\Transformers;
 
 use Illuminate\Http\Request;
 use App\Enums\CountryCurrencies;
-use Illuminate\Support\Facades\DB;
-use Modules\Shops\App\Models\Shop;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Modules\Shops\App\Transformers\ShopCardResource;
+use Modules\Products\App\Services\ProductDetailsTransformerService;
 
 class ProductDetailsResource extends JsonResource
 {
@@ -38,48 +36,10 @@ class ProductDetailsResource extends JsonResource
             'has_quantity' => $this->has_quantity,
             'quantity_settings' => $this->quantity_settings,
             'stock' => $this->stock_settings,
-            'sizes' => $this->getSizes(),
-            'available_shops' => $this->availableShops(),
-            'available_restaurants' => $this->availableRestaurants(),
+            'sizes' => app(ProductDetailsTransformerService::class)->getSizes($this->resource),
+            'available_shops' => app(ProductDetailsTransformerService::class)->getAvailableShops($this->resource),
+            'available_restaurants' => app(ProductDetailsTransformerService::class)->getAvailableRestaurants($this->resource),
             'addon_sections' => AddonSectionResource::collection($this->addonSectionPivots ?? []),
         ];
-    }
-
-    private function getSizes()
-    {
-        if (!$this->has_sub_products) return [];
-        return ProductSizeResource::collection($this->subProducts);
-    }
-
-    private function availableShops()
-    {
-        if (!$this->department) return null;
-        $shops = $this->department->shops()
-            ->leftJoin('shop_products', function ($join) {
-                $join->on('shop_products.shop_id', '=', 'shops.id')
-                    ->on('shop_products.product_id', '=', DB::raw($this->id));
-            })
-            ->where('type', 'shop')
-            ->orderBy('shop_products.price')
-            ->get();
-        if ($shops->isEmpty() || $this->shop) return null;
-
-        return [
-            'section_name' => $this->department->shop_section_name,
-            'shops' => ShopCardResource::collection($shops),
-        ];
-    }
-    
-    private function availableRestaurants()
-    {
-        if (!$this->department) return null;
-        $restaurants = Shop::where('type', 'restaurant')
-            ->whereHas('shopCookings', function ($q) {
-                $q->where('product_id', $this->id);
-            })
-            ->get();
-        if ($this->has_cookings == '0' || $this->productCookings->isEmpty() || $restaurants->isEmpty()) return null;
-
-        return ShopCardResource::collection($restaurants);
     }
 }
