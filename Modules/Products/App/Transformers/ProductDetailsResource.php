@@ -22,7 +22,7 @@ class ProductDetailsResource extends JsonResource
             'brief' => $this->brief,
             'description' => $this->description,
             'image_url' => $this->image_url,
-            'images' => $this->images,
+            'images' => $service->getProductImages($this->resource),
             'shop' => $this->shop?->name,
             'category' => $this->category?->name,
             'currency' => CountryCurrencies::getCurrency(),

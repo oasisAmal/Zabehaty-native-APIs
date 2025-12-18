@@ -95,5 +95,16 @@ class ProductDetailsTransformerService
 
         return (float) $product->price;
     }
+
+    /**
+     * Get product images array
+     *
+     * @param Product $product
+     * @return array
+     */
+    public function getProductImages(Product $product)
+    {
+        return (array) ($product->images == "" || $product->images == null ? [] : (array) $product->images);
+    }
 }
 
