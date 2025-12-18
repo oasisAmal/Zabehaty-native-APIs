@@ -22,7 +22,7 @@ class ProductDetailsTransformerService
             return [];
         }
 
-        return ProductSizeResource::collection($product->subProducts);
+        return ProductSizeResource::collection($product->subProducts()->orderBy('price')->get());
     }
 
     /**
