@@ -80,5 +80,20 @@ class ProductDetailsTransformerService
 
         return ShopCardResource::collection($restaurants);
     }
+
+    /**
+     * Get product price
+     *
+     * @param Product $product
+     * @return float
+     */
+    public function getProductPrice(Product $product)
+    {
+        if ($product->has_sub_products) {
+            return (float) $product->subProducts->min('price') ?? 0;
+        }
+
+        return (float) $product->price;
+    }
 }
 

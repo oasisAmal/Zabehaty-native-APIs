@@ -26,7 +26,7 @@ class ProductDetailsResource extends JsonResource
             'shop' => $this->shop?->name,
             'category' => $this->category?->name,
             'currency' => CountryCurrencies::getCurrency(),
-            'price' => (float) $this->price,
+            'price' => $service->getProductPrice($this->resource),
             'price_before_discount' => (float) $this->old_price ?: null,
             'discount_percentage' => (float) $this->discount_percentage ?: null,
             'limited_offer_expired_at' => $this->limited_offer_expired_at ? $this->limited_offer_expired_at->timestamp : null,
