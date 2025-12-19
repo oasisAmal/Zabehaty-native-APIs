@@ -27,7 +27,7 @@ class AddonSectionItemResource extends JsonResource
             'title' => $this->title,
             'price' => self::$service->getPrice($this->resource),
             'image_url' => $this->image,
-            'media' => $this->media,
+            'media' => self::$service->getMedia($this->resource),
         ];
     }
 }

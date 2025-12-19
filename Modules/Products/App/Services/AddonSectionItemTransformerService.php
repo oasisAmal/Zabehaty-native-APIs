@@ -20,5 +20,20 @@ class AddonSectionItemTransformerService
         }
         return $price ?? null;
     }
+
+    /**
+     * Get addon section item media
+     *
+     * @param mixed $item
+     * @return array
+     */
+    public function getMedia($item): array
+    {
+        return $item->media ?? [];
+        if (is_string($media)) {
+            $media = json_decode($media, true) ?? [];
+        }
+        return $media;
+    }
 }
 
