@@ -29,11 +29,11 @@ class AddonSectionItemTransformerService
      */
     public function getMedia($item): array
     {
-        return $item->media ?? [];
+        $media = $item->media ?? [];
         if (is_string($media)) {
             $media = json_decode($media, true) ?? [];
         }
-        return $media;
+        return $media ?? [];
     }
 }
 
