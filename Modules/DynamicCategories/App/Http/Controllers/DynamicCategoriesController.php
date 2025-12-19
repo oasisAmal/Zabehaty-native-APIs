@@ -28,7 +28,6 @@ class DynamicCategoriesController extends Controller
             $dynamicCategoriesData = $this->dynamicCategoriesService->getDynamicCategoriesData($request);
             return responseSuccessData(DynamicCategoriesResource::make($dynamicCategoriesData));
         } catch (\Exception $e) {
-            dd($e->getMessage());
             return responseErrorMessage(
                 __('dynamiccategories::messages.failed_to_retrieve_dynamic_categories_data'),
                 500
