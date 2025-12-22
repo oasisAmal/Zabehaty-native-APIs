@@ -15,11 +15,12 @@ graph TD
     B -->|Validation| C[CartController]
     C -->|calculateProduct| D[CartService]
     D -->|calculateProduct| E[ProductPriceCalculator]
-    E -->|apply modifiers| F[PriceModifierInterface]
+    E -->|apply price modifiers| F[PriceModifierInterface]
     F --> G[BasePriceModifier]
     F --> H[QuantityModifier]
     F --> I[AddonModifier]
-    E -->|return final price| J[Response]
+    E -->|check stock| J[StockAvailabilityModifier]
+    E -->|return price & availability| K[Response]
 ```
 
 ## API Endpoint
@@ -55,7 +56,8 @@ graph TD
     "status": "success",
     "message": null,
     "data": {
-        "price": 150.50
+        "price": 150.50,
+        "can_be_added_to_cart": true
     }
 }
 ```
@@ -121,9 +123,17 @@ Modifiers are applied in the following order:
   Result = 150 + 5 + 10 + 15 = 180
   ```
 
-### Step 4: Return Final Price
+### Step 4: Check Stock Availability
+- Use `StockAvailabilityModifier` to check if product can be added to cart
+- **Logic:**
+  - If product has subproducts and `size_id` is provided: Check `SubProduct` stock
+  - Otherwise: Check `Product` stock
+- **Result:** `can_be_added_to_cart = true` only if stock > 0
+
+### Step 5: Return Final Price and Availability
 - Final price is rounded to 2 decimal places
-- Result is returned in Response
+- Stock availability status is included
+- Result is returned in Response with both `price` and `can_be_added_to_cart`
 
 ## Price Modifiers Details
 
@@ -184,6 +194,29 @@ QuantityModifier → 75 × 3 = 225
 AddonModifier → 225 + 5 + 10 + 15 = 255
 ```
 
+### StockAvailabilityModifier
+
+**Location:** `Modules/Cart/App/Services/Product/Modifiers/StockAvailabilityModifier.php`
+
+**Responsibilities:**
+- Check if product can be added to cart based on stock availability
+- Verify SubProduct stock if `size_id` is provided and product has subproducts
+- Verify Product stock if no `size_id` or product doesn't have subproducts
+- Return `true` only if stock > 0
+
+**Example:**
+```php
+// Product with stock = 10
+// OR
+// SubProduct (size_id=5) with stock = 5
+
+// Without size_id or product without subproducts
+StockAvailabilityModifier → true (if product.stock > 0)
+
+// With size_id = 5 and product has subproducts
+StockAvailabilityModifier → true (if subProduct.stock > 0)
+```
+
 ## File Structure
 
 ```
@@ -200,10 +233,12 @@ Modules/Cart/
 │       ├── CartService.php
 │       └── Product/
 │           ├── ProductPriceCalculator.php
-│           └── PriceModifiers/
-│               ├── BasePriceModifier.php
-│               ├── QuantityModifier.php
-│               └── AddonModifier.php
+│           ├── PriceModifiers/
+│           │   ├── BasePriceModifier.php
+│           │   ├── QuantityModifier.php
+│           │   └── AddonModifier.php
+│           └── Modifiers/
+│               └── StockAvailabilityModifier.php
 └── Routes/
     └── api.php
 ```
@@ -230,8 +265,13 @@ Modules/Cart/
    - Input: `current_price = 150`, `addon_items = [10, 15]`
    - Output: `150 + 5 + 10 = 165`
 
-4. **Final Result:**
-   - `165.00`
+4. **StockAvailabilityModifier:**
+   - Input: `product`, `size_id = 5`
+   - Output: `can_be_added_to_cart = true` (if SubProduct stock > 0)
+
+5. **Final Result:**
+   - `price: 165.00`
+   - `can_be_added_to_cart: true`
 
 ## Adding New Price Modifier
 
@@ -301,3 +341,9 @@ $calculateData = [
 - If `size_id` is not provided, the base Product price is used
 - If `addon_items` is not provided or empty, no addon prices are added
 - Quantity must be at least 1
+- `can_be_added_to_cart` is determined by stock availability:
+  - If product has subproducts and `size_id` is provided: Checks `SubProduct` stock
+  - Otherwise: Checks `Product` stock
+  - Returns `true` only if stock > 0
+- Price modifiers are in `PriceModifiers/` folder
+- Stock availability modifier is in `Modifiers/` folder (separate from price modifiers)
