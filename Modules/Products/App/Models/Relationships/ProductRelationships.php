@@ -3,13 +3,16 @@
 namespace Modules\Products\App\Models\Relationships;
 
 use App\Models\Badge;
+use App\Models\AddonSection;
 use Modules\Shops\App\Models\Shop;
 use Modules\Categories\App\Models\Category;
 use Modules\Products\App\Models\SubProduct;
 use Modules\HomePage\App\Models\HomePageItem;
 use Modules\Products\App\Models\ProductBranch;
+use Modules\Products\App\Models\ProductCooking;
 use Modules\Products\App\Models\ProductVisibility;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Modules\Products\App\Models\ProductAddonSection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -62,5 +65,18 @@ trait ProductRelationships
     public function productVisibilities(): HasMany
     {
         return $this->hasMany(ProductVisibility::class);
+    }
+
+    public function addonSectionPivots(): BelongsToMany
+    {
+        return $this->belongsToMany(AddonSection::class, 'product_addon_sections', 'product_id', 'addon_section_id')
+            ->using(ProductAddonSection::class)
+            ->withPivot(['is_required', 'id'])
+            ->withTimestamps();
+    }
+
+    public function productCookings(): HasMany
+    {
+        return $this->hasMany(ProductCooking::class, 'product_id');
     }
 }

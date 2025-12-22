@@ -29,7 +29,7 @@ class DynamicCategorySection extends Model
      */
     protected $fillable = [
         'category_id',
-        'emirate_id',
+        'emirate_ids',
         'region_ids',
         'title_en',
         'title_ar',
@@ -50,6 +50,7 @@ class DynamicCategorySection extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'emirate_ids' => 'array',
         'region_ids' => 'array',
         'sorting' => 'integer',
     ];

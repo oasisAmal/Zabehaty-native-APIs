@@ -30,6 +30,13 @@ class PullCommand extends Command
         shell_exec("git status 2>&1");
         $pull = shell_exec("git pull 2>&1");
 
+        Artisan::call('optimize:clear');
+        Artisan::call('optimize');
+        Artisan::call('cache:clear');
+        Artisan::call('config:clear');
+        Artisan::call('route:clear');
+        Artisan::call('view:clear');
+
         Artisan::call('migrate');
     }
 }

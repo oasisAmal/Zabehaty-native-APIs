@@ -2,6 +2,7 @@
 
 namespace Modules\Shops\App\Models\Relationships;
 
+use Modules\Shops\App\Models\ShopCooking;
 use Modules\Categories\App\Models\Category;
 use Modules\Shops\App\Models\ShopVisibility;
 use Modules\HomePage\App\Models\HomePageItem;
@@ -30,5 +31,10 @@ trait ShopRelationships
     public function shopVisibilities(): HasMany
     {
         return $this->hasMany(ShopVisibility::class);
+    }
+
+    public function shopCookings(): HasMany
+    {
+        return $this->hasMany(ShopCooking::class);
     }
 }

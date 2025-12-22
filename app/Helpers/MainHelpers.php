@@ -173,7 +173,7 @@ function discountCalc($old_price = 0, $price = 0)
     if ($old_price > 0 && $price >= 0) {
         return round((($old_price - $price) * 100) / $old_price);
     }
-    
+
     return 0;
 }
 

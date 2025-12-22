@@ -31,4 +31,31 @@ class ProductsService
             });
         })->paginate(isset($filters['per_page']) && $filters['per_page'] ? $filters['per_page'] : Pagination::PER_PAGE);
     }
+
+    /**
+     * Get product details
+     *
+     * @param int $id
+     * @return Product|null
+     */
+    public function getProductDetails(int $id): ?Product
+    {
+        $product = Product::where('id', $id)
+            ->with([
+                'shop',
+                'category',
+                'badges',
+                'subProducts',
+                'addonSectionPivots',
+                'department',
+                'productCookings',
+            ])
+            ->first();
+
+        if ($product) {
+            $product->loadMissing('addonSectionPivots.pivot.itemsPivots');
+        }
+
+        return $product;
+    }
 }

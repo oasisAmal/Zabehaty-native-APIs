@@ -2,6 +2,7 @@
 
 namespace Modules\Categories\App\Models\Relationships;
 
+use Modules\Shops\App\Models\Shop;
 use Modules\HomePage\App\Models\HomePageItem;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -17,5 +18,10 @@ trait CategoryRelationships
     public function categoryVisibilities(): HasMany
     {
         return $this->hasMany(CategoryVisibility::class);
+    }
+
+    public function shops()
+    {
+        return $this->belongsToMany(Shop::class, 'shop_categories', 'category_id', 'shop_id');
     }
 }

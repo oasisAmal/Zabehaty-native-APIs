@@ -250,18 +250,19 @@ interface SectionBuilderInterface
 
 #### ProductSectionBuilder
 
-Builds product sections with pagination, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs:
+Builds product sections with pagination, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
 
 ```php
 public function build(HomePage $homePage): array
 {
     return $this->resolveItems($homePage)
+        ->filter(function ($item) {
+            return $item->item !== null;
+        })
         ->take(Pagination::PER_PAGE)
         ->map(function ($item) {
-            $product = $item->item;
-            return $product ? new ProductCardResource($product) : null;
+            return new ProductCardResource($item->item);
         })
-        ->filter()
         ->values()
         ->toArray();
 }
@@ -286,24 +287,23 @@ private function resolveItems(HomePage $homePage): Collection
 }
 ```
 
+**Performance Note:** Filtering before `take()` ensures that if the first N items have null `item` relationships, the builder will continue searching through the collection to find the required number of valid items, rather than returning fewer items than requested.
+
 #### CategorySectionBuilder
 
-Builds category sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs:
+Builds category sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
 
 ```php
 public function build(HomePage $homePage): array
 {
     return $this->resolveItems($homePage)
+        ->filter(function ($item) {
+            return $item->item !== null;
+        })
         ->take(Pagination::PER_PAGE)
         ->map(function ($item) {
-            $category = $item->item;
-            if (!$category) {
-                return null;
-            }
-
-            return new CategoryCardResource($category);
+            return new CategoryCardResource($item->item);
         })
-        ->filter()
         ->values()
         ->toArray();
 }
@@ -328,6 +328,8 @@ private function resolveItems(HomePage $homePage): Collection
 }
 ```
 
+**Performance Note:** Filtering before `take()` ensures that if the first N items have null `item` relationships, the builder will continue searching through the collection to find the required number of valid items, rather than returning fewer items than requested.
+
 #### BannerSectionBuilder
 
 Builds banner sections (returns raw banner data):
@@ -346,22 +348,19 @@ public function build(HomePage $homePage): array
 
 #### ShopSectionBuilder
 
-Builds shop sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs:
+Builds shop sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
 
 ```php
 public function build(HomePage $homePage): array
 {
     return $this->resolveItems($homePage)
+        ->filter(function ($item) {
+            return $item->item !== null;
+        })
         ->take(Pagination::PER_PAGE)
         ->map(function ($item) {
-            $shop = $item->item;
-            if (!$shop) {
-                return null;
-            }
-
-            return new ShopCardResource($shop);
+            return new ShopCardResource($item->item);
         })
-        ->filter()
         ->values()
         ->toArray();
 }
@@ -385,6 +384,8 @@ private function resolveItems(HomePage $homePage): Collection
     return $homePage->items;
 }
 ```
+
+**Performance Note:** Filtering before `take()` ensures that if the first N items have null `item` relationships, the builder will continue searching through the collection to find the required number of valid items, rather than returning fewer items than requested.
 
 ### 4. Caching
 
@@ -778,6 +779,7 @@ $homePage->sorting = 1; // Lower numbers appear first
 - Limit items per section (use pagination constants)
 - Enable caching in production
 - Use appropriate cache TTLs
+- **ProductSectionBuilder, ShopSectionBuilder, and CategorySectionBuilder** filter out null items before applying pagination to ensure the correct number of valid items are returned, preventing scenarios where fewer items than requested are returned due to null relationships
 
 ### 3. Error Handling
 

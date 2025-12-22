@@ -21,12 +21,13 @@ class ProductSectionBuilder implements SectionBuilderInterface
     public function build(DynamicCategorySection $dynamicCategorySection): array
     {
         return $this->resolveItems($dynamicCategorySection)
+            ->filter(function ($item) {
+                return $item->item !== null;
+            })
             ->take(Pagination::PER_PAGE)
             ->map(function ($item) {
-                $product = $item->item;
-                return $product ? new ProductCardResource($product) : null;
+                return new ProductCardResource($item->item);
             })
-            ->filter()
             ->values()
             ->toArray();
     }

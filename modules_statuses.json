@@ -6,5 +6,6 @@
     "Products": true,
     "Categories": true,
     "Shops": true,
-    "DynamicCategories": true
+    "DynamicCategories": true,
+    "Cart": true
 }

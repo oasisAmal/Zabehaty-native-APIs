@@ -31,4 +31,15 @@ class ShopsService
             });
         })->paginate(isset($filters['per_page']) && $filters['per_page'] ? $filters['per_page'] : Pagination::PER_PAGE);
     }
+
+    /**
+     * Get shop detail
+     *
+     * @param int $id
+     * @return Shop
+     */
+    public function getShopDetail(int $id): Shop
+    {
+        return Shop::where('id', $id)->first();
+    }
 }
