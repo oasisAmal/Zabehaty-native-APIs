@@ -40,6 +40,7 @@ class AddonModifier implements PriceModifierInterface
                 $addonSection->pivot->loadMissing('itemsPivots');
             }
             
+            // Get itemsPivots for this addon section
             $itemsPivots = $addonSection->pivot->itemsPivots ?? collect();
             
             foreach ($itemsPivots as $item) {
