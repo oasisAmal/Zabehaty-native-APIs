@@ -30,8 +30,12 @@ class CartService
         $calculator = new ProductPriceCalculator();
         $finalPrice = $calculator->calculate($calculateData);
         
+        // Check stock availability using modifier
+        $canBeAddedToCart = $calculator->canBeAddedToCart($calculateData);
+        
         return [
             'price' => round($finalPrice, 2),
+            'can_be_added_to_cart' => $canBeAddedToCart,
         ];
     }
 }

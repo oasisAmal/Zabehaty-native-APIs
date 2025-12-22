@@ -6,6 +6,7 @@ use Modules\Cart\App\Interfaces\PriceModifierInterface;
 use Modules\Cart\App\Services\Product\PriceModifiers\BasePriceModifier;
 use Modules\Cart\App\Services\Product\PriceModifiers\QuantityModifier;
 use Modules\Cart\App\Services\Product\PriceModifiers\AddonModifier;
+use Modules\Cart\App\Services\Product\Modifiers\StockAvailabilityModifier;
 
 class ProductPriceCalculator
 {
@@ -16,6 +17,13 @@ class ProductPriceCalculator
      */
     protected array $modifiers;
 
+    /**
+     * Stock availability modifier
+     *
+     * @var StockAvailabilityModifier
+     */
+    protected StockAvailabilityModifier $stockAvailabilityModifier;
+
     public function __construct()
     {
         $this->modifiers = [
@@ -23,6 +31,8 @@ class ProductPriceCalculator
             new QuantityModifier(),
             new AddonModifier(),
         ];
+
+        $this->stockAvailabilityModifier = new StockAvailabilityModifier();
     }
 
     /**
@@ -41,6 +51,17 @@ class ProductPriceCalculator
         }
 
         return $price;
+    }
+
+    /**
+     * Check if product can be added to cart based on stock
+     *
+     * @param array $data Contains: 'product' => Product, 'size_id' => int|null
+     * @return bool
+     */
+    public function canBeAddedToCart(array $data): bool
+    {
+        return $this->stockAvailabilityModifier->canBeAddedToCart($data);
     }
 }
 
