@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Cart\App\Services\PriceModifiers;
+namespace Modules\Cart\App\Services\Product\PriceModifiers;
 
 use Modules\Products\App\Models\Product;
 use Modules\Products\App\Models\SubProduct;

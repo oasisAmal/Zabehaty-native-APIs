@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Cart\App\Services\PriceModifiers;
+namespace Modules\Cart\App\Services\Product\PriceModifiers;
 
 use Modules\Products\App\Services\AddonSectionItemTransformerService;
 use Modules\Cart\App\Interfaces\PriceModifierInterface;

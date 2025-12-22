@@ -1,11 +1,11 @@
 <?php
 
-namespace Modules\Cart\App\Services;
+namespace Modules\Cart\App\Services\Product;
 
 use Modules\Cart\App\Interfaces\PriceModifierInterface;
-use Modules\Cart\App\Services\PriceModifiers\BasePriceModifier;
-use Modules\Cart\App\Services\PriceModifiers\QuantityModifier;
-use Modules\Cart\App\Services\PriceModifiers\AddonModifier;
+use Modules\Cart\App\Services\Product\PriceModifiers\BasePriceModifier;
+use Modules\Cart\App\Services\Product\PriceModifiers\QuantityModifier;
+use Modules\Cart\App\Services\Product\PriceModifiers\AddonModifier;
 
 class ProductPriceCalculator
 {
