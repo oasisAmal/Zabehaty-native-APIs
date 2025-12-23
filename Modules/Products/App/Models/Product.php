@@ -33,6 +33,7 @@ class Product extends Model
         'name',
         'description',
         'brief',
+        'sub_products_section',
     ];
 
     /**
