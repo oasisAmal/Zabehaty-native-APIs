@@ -38,6 +38,7 @@ class ProductDetailsResource extends JsonResource
             'has_quantity' => $this->has_quantity,
             'quantity_settings' => $this->quantity_settings,
             'stock' => $this->stock_settings,
+            'size_section_name' => $this->sub_products_section,
             'sizes' => $service->getSizes($this->resource),
             // 'available_shops' => $service->getAvailableShops($this->resource),
             // 'available_restaurants' => $service->getAvailableRestaurants($this->resource),
