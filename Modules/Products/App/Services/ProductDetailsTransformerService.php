@@ -37,7 +37,7 @@ class ProductDetailsTransformerService
             return [];
         }
 
-        return ProductSizeResource::collection($product->subProducts()->orderBy('price')->get());
+        return ProductSizeResource::collection($product->subProducts()->orderBy('price', 'ASC')->get());
     }
 
     /**
