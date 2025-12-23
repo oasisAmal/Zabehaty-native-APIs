@@ -50,6 +50,6 @@ class Product extends Model
     {
         parent::booted();
         static::addGlobalScope(new ActiveScope());
-        static::addGlobalScope(new MatchedDefaultAddressScope());
+        // static::addGlobalScope(new MatchedDefaultAddressScope());
     }
 }
