@@ -11,6 +11,21 @@ use Modules\Shops\App\Transformers\ShopCardResource;
 class ProductDetailsTransformerService
 {
     /**
+     * Get size section name
+     *
+     * @param Product $product
+     * @return string|null
+     */
+    public function getSizeSectionName(Product $product): ?string
+    {
+        if ($product->has_sub_products && $product->sub_products_section == null) {
+            return __('products::messages.size_section_name');
+        }
+
+        return $product->sub_products_section;
+    }
+
+    /**
      * Get product sizes
      *
      * @param Product $product
@@ -107,4 +122,3 @@ class ProductDetailsTransformerService
         return (array) ($product->images == "" || $product->images == null ? [] : (array) $product->images);
     }
 }
-
