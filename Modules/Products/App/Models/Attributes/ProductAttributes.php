@@ -27,9 +27,9 @@ trait ProductAttributes
     public function getQuantitySettingsAttribute()
     {
         return [
-            'min' => $this->quantity_min,
-            'step' => $this->quantity_step,
-            'section_name' => 'zabay7',
+            'min' => (float) $this->quantity_min,
+            'step' => (float) $this->quantity_step,
+            // 'section_name' => 'zabay7',
         ];
     }
 

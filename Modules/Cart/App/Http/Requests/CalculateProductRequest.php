@@ -23,7 +23,7 @@ class CalculateProductRequest extends FormRequest
     {
         return [
             'product_id' => 'required|integer|exists:products,id',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|numeric|min:1.0',
             'size_id' => 'nullable|integer|exists:sub_products,id',
             'addon_items' => 'nullable|array',
             'addon_items.*' => 'required|integer',
@@ -42,7 +42,7 @@ class CalculateProductRequest extends FormRequest
             'product_id.integer' => __('validation.integer'),
             'product_id.exists' => __('validation.exists'),
             'quantity.required' => __('validation.required'),
-            'quantity.integer' => __('validation.integer'),
+            'quantity.numeric' => __('validation.numeric'),
             'quantity.min' => __('validation.min.string'),
             'size_id.integer' => __('validation.integer'),
             'size_id.exists' => __('validation.exists'),
