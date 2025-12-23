@@ -38,17 +38,13 @@ class AddonSectionItemTransformerService
         }
 
         return array_values(array_filter(array_map(function ($entry) {
-            $mediaUrl = is_array($entry) && isset($entry['media_url'])
-                ? $entry['media_url']
-                : $entry;
-
-            if (!is_string($mediaUrl) || $mediaUrl === '') {
+            if (!is_string($entry) || $entry === '') {
                 return null;
             }
 
             return [
-                'media_type' => $this->isVideo($mediaUrl) ? 'video' : 'image',
-                'media_url' => $mediaUrl,
+                'media_type' => $this->isVideo($entry) ? 'video' : 'image',
+                'media_url' => $entry,
             ];
         }, $media)));
     }
@@ -56,9 +52,9 @@ class AddonSectionItemTransformerService
     /**
      * Determine if media entry is a video based on extension.
      */
-    private function isVideo(string $mediaUrl): bool
+    private function isVideo(string $entry): bool
     {
-        $extension = strtolower(pathinfo(parse_url($mediaUrl, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
+        $extension = strtolower(pathinfo(parse_url($entry, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
 
         return in_array($extension, ['mp4', 'mov', 'avi', 'mkv', 'webm'], true);
     }
