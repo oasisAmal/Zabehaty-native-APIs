@@ -100,13 +100,18 @@ Modifiers are applied in the following order:
   ```
 
 #### 3.2 QuantityModifier
-- **Function:** Multiply price by quantity
-- **Logic:** `final_price = base_price × quantity`
+- **Function:** Apply quantity based on `quantity_min` and `quantity_step`
+- **Logic:**
+  - `quantity_min` represents the first unit; `base_price` is the price of `quantity_min`
+  - Valid quantity = `quantity_min + (n * quantity_step)` (rounded to nearest step, min 1 step)
+  - Units = `valid_quantity / quantity_min`
+  - `final_price = base_price × units`
 - **Example:**
   ```
-  Base price = 75
-  Quantity = 2
-  Result = 75 × 2 = 150
+  quantity_min = 1.5, quantity_step = 1.5, base_price = 100
+  requested = 1.5  → valid = 1.5  → units = 1.0  → price = 100 × 1 = 100
+  requested = 3    → valid = 3.0  → units = 2.0  → price = 100 × 2 = 200
+  requested = 4.5  → valid = 4.5  → units = 3.0  → price = 100 × 3 = 300
   ```
 
 #### 3.3 AddonModifier
@@ -163,15 +168,18 @@ BasePriceModifier → 75
 **Location:** `Modules/Cart/App/Services/Product/PriceModifiers/QuantityModifier.php`
 
 **Responsibilities:**
-- Multiply price by selected quantity
-- Ensure quantity is at least 1
+- Apply quantity based on product `quantity_min` and `quantity_step`
+- `base_price` is the price of `quantity_min`
+- Valid quantity = `quantity_min + (n * quantity_step)` (rounded to nearest step, min 1 step)
+- Units = `valid_quantity / quantity_min`
+- Final price = `base_price × units`
 
 **Example:**
 ```php
-// Base price = 75
-// Quantity = 3
-
-QuantityModifier → 75 × 3 = 225
+// quantity_min = 1.5, quantity_step = 1.5, base_price = 100
+// requested = 1.5 → valid = 1.5 → units = 1.0 → price = 100 × 1 = 100
+// requested = 3   → valid = 3.0 → units = 2.0 → price = 100 × 2 = 200
+// requested = 4.5 → valid = 4.5 → units = 3.0 → price = 100 × 3 = 300
 ```
 
 ### AddonModifier
@@ -258,8 +266,10 @@ Modules/Cart/
    - Output: `75` (SubProduct price)
 
 2. **QuantityModifier:**
-   - Input: `base_price = 75`, `quantity = 2`
-   - Output: `75 × 2 = 150`
+   - Input: `base_price = 75`, `quantity = 2`, `quantity_min = 1.5`, `quantity_step = 1.5`
+   - Valid quantity = 1.5 + (round((2 - 1.5) / 1.5) * 1.5) = 3.0
+   - Units = 3.0 / 1.5 = 2.0
+   - Output: `75 × 2.0 = 150`
 
 3. **AddonModifier:**
    - Input: `current_price = 150`, `addon_items = [10, 15]`
@@ -340,7 +350,9 @@ $calculateData = [
 - Final price is rounded to 2 decimal places
 - If `size_id` is not provided, the base Product price is used
 - If `addon_items` is not provided or empty, no addon prices are added
-- Quantity must be at least 1
+- Quantity must follow `quantity_min` and `quantity_step`:
+  - Valid quantity = `quantity_min + (n * quantity_step)` (rounded to nearest step, min 1 step)
+  - Units = `valid_quantity / quantity_min`
 - `can_be_added_to_cart` is determined by stock availability:
   - If product has subproducts and `size_id` is provided: Checks `SubProduct` stock
   - Otherwise: Checks `Product` stock
