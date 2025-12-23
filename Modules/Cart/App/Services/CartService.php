@@ -31,11 +31,11 @@ class CartService
         $finalPrice = $calculator->calculate($calculateData);
         
         // Check stock availability using modifier
-        $canBeAddedToCart = $calculator->canBeAddedToCart($calculateData);
+        // $canBeAddedToCart = $calculator->canBeAddedToCart($calculateData);
         
         return [
             'price' => round($finalPrice, 2),
-            'can_be_added_to_cart' => $canBeAddedToCart,
+            // 'can_be_added_to_cart' => $canBeAddedToCart,
         ];
     }
 }
