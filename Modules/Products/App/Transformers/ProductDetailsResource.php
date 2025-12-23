@@ -19,7 +19,7 @@ class ProductDetailsResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'brief' => $this->brief,
+            'description_title' => $this->brief,
             'description' => $this->description,
             'image_url' => $this->image_url,
             'images' => $service->getProductImages($this->resource),
