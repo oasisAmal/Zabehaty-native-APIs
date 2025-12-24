@@ -2,6 +2,7 @@
 
 namespace Modules\Cart\App\Services\Product\PriceModifiers;
 
+use Illuminate\Support\Facades\Log;
 use Modules\Cart\App\Interfaces\PriceModifierInterface;
 
 class QuantityModifier implements PriceModifierInterface
@@ -18,6 +19,11 @@ class QuantityModifier implements PriceModifierInterface
     {
         $product = $data['product'] ?? null;
         $requestedQuantity = isset($data['quantity']) ? (float) $data['quantity'] : 1.0;
+
+        Log::debug('QuantityModifier', [
+            'requestedQuantity' => $requestedQuantity,
+            'basePrice' => $basePrice,
+        ]);
 
         if (!$product) {
             return $basePrice * $requestedQuantity;
@@ -38,9 +44,27 @@ class QuantityModifier implements PriceModifierInterface
         // Calculate valid quantity based on min and step
         $validQuantity = $this->calculateValidQuantity($requestedQuantity, $quantityMin, $quantityStep);
 
+        Log::debug('validQuantity', [
+            'validQuantity' => $validQuantity,
+            'quantityMin' => $quantityMin,
+            'quantityStep' => $quantityStep,
+        ]);
+
         // quantity_min represents the first unit, basePrice is the price for quantity_min
         // Calculate number of units: quantity / quantity_min
         $numberOfUnits = $validQuantity / $quantityMin;
+
+        Log::debug('numberOfUnits', [
+            'numberOfUnits' => $numberOfUnits,
+            'validQuantity' => $validQuantity,
+            'quantityMin' => $quantityMin,
+        ]);
+
+        Log::debug('finalPrice', [
+            'finalPrice' => $basePrice * $numberOfUnits,
+            'basePrice' => $basePrice,
+            'numberOfUnits' => $numberOfUnits,
+        ]);
 
         // Final price = basePrice * number of units
         return $basePrice * $numberOfUnits;

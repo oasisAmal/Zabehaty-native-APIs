@@ -2,6 +2,7 @@
 
 namespace Modules\Cart\App\Services;
 
+use Illuminate\Support\Facades\Log;
 use Modules\Products\App\Models\Product;
 use Modules\Cart\App\Services\Product\ProductPriceCalculator;
 
@@ -25,6 +26,8 @@ class CartService
             'quantity' => $data['quantity'] ?? 1,
             'addon_items' => $data['addon_items'] ?? [],
         ];
+
+        Log::debug('calculateData', $calculateData);
 
         // Calculate price using ProductPriceCalculator
         $calculator = new ProductPriceCalculator();
