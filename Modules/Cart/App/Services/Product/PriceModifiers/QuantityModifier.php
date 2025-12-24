@@ -38,12 +38,12 @@ class QuantityModifier implements PriceModifierInterface
         // Calculate valid quantity based on min and step
         $validQuantity = $this->calculateValidQuantity($requestedQuantity, $quantityMin, $quantityStep);
 
-        dd([
-            'validQuantity' => $validQuantity,
-            'quantityMin' => $quantityMin,
-            'quantityStep' => $quantityStep,
-            'requestedQuantity' => $requestedQuantity,
-        ]);
+        // dd([
+        //     'validQuantity' => $validQuantity,
+        //     'quantityMin' => $quantityMin,
+        //     'quantityStep' => $quantityStep,
+        //     'requestedQuantity' => $requestedQuantity,
+        // ]);
 
         // quantity_min represents the first unit, basePrice is the price for quantity_min
         // Calculate number of units: quantity / quantity_min
