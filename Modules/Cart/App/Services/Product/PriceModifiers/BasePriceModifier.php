@@ -19,7 +19,6 @@ class BasePriceModifier implements PriceModifierInterface
     {
         /** @var Product $product */
         $product = $data['product'] ?? null;
-
         if (!$product) {
             return 0.0;
         }

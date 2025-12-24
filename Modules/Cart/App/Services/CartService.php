@@ -25,7 +25,7 @@ class CartService
             'quantity' => $data['quantity'] ?? 1,
             'addon_items' => $data['addon_items'] ?? [],
         ];
-
+        
         // Calculate price using ProductPriceCalculator
         $calculator = new ProductPriceCalculator();
         $finalPrice = $calculator->calculate($calculateData);
