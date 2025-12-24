@@ -16,9 +16,9 @@ return [
     ],
     'smscountry' => [
         'url' => 'https://restapi.smscountry.com/v0.1/Accounts',
-        'auth_key' => 'K1izWHxGQMZKm8tyFEV1',
-        'auth_token' => 'W2374w1iJlqDLFeFPGxK6AO6gn5xVvwav4VeI1sE',
-        'source' => 'Thahabi-App'
+        'auth_key' => '7yoRO3RPsaTPahsIuqNv',
+        'auth_token' => 'b4d5b1vGwjbNf8kp2iz0f6RVHnKbRlePQzNbFZsd',
+        'source' => 'Zabehaty'
     ],
     'dreams_sms' => [
         'url' => 'https://www.dreams.sa/index.php/api/sendsms/',

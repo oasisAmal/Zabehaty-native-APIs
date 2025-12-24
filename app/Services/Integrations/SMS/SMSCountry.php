@@ -40,7 +40,7 @@ class SMSCountry implements SMSInterface
                 "Text" => $message,
                 "Number" => format_mobile_number_without_plus($number, $country_code),
                 "SenderId" => $this->source,
-                "DRNotifyUrl" => "https://dev.thahabi.net/notifyurl",
+                "DRNotifyUrl" => "",
                 "DRNotifyHttpMethod" => "POST",
                 "Tool"  => "API"
             ];
