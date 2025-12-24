@@ -27,7 +27,7 @@ class CartService
             'addon_items' => $data['addon_items'] ?? [],
         ];
 
-        Log::debug('calculateData', $calculateData);
+        Log::info('calculateData', $calculateData);
 
         // Calculate price using ProductPriceCalculator
         $calculator = new ProductPriceCalculator();
