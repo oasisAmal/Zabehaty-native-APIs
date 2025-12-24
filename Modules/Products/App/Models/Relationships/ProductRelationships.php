@@ -43,6 +43,7 @@ trait ProductRelationships
     public function subProducts()
     {
         return $this->hasMany(SubProduct::class, 'product_id')
+            ->where('is_active', true)
             ->orderByRaw("CAST(SUBSTRING_INDEX(JSON_UNQUOTE(JSON_EXTRACT(data, '$.weight')), '-', 1) AS UNSIGNED)")
             ->orderBy('price');
     }
