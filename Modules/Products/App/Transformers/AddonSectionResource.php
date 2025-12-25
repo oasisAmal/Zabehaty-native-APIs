@@ -15,6 +15,7 @@ class AddonSectionResource extends JsonResource
         return [
             'id' => $this->id,
             'title' => $this->title,
+            'type' => $this->type,
             'is_required' => (bool) ($this->pivot->is_required ?? false),
             'items' => AddonSectionItemResource::collection($this->pivot->itemsPivots ?? collect()),
         ];
