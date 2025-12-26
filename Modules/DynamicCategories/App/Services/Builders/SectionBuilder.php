@@ -2,14 +2,15 @@
 
 namespace Modules\DynamicCategories\App\Services\Builders;
 
-use Modules\DynamicCategories\App\Models\DynamicCategorySection;
-use Modules\DynamicCategories\Enums\DynamicCategorySectionType;
-use Modules\DynamicCategories\App\Services\Builders\Factories\SectionBuilderFactory;
-use Modules\Products\App\Models\Product;
+use App\Enums\Pagination;
 use Modules\Shops\App\Models\Shop;
+use Modules\Products\App\Models\Product;
 use Modules\Categories\App\Models\Category;
-use Modules\Products\App\Models\Scopes\MatchedDefaultAddressScope as ProductMatchedDefaultAddressScope;
+use Modules\DynamicCategories\Enums\DynamicCategorySectionType;
+use Modules\DynamicCategories\App\Models\DynamicCategorySection;
+use Modules\DynamicCategories\App\Services\Builders\Factories\SectionBuilderFactory;
 use Modules\Shops\App\Models\Scopes\MatchedDefaultAddressScope as ShopMatchedDefaultAddressScope;
+use Modules\Products\App\Models\Scopes\MatchedDefaultAddressScope as ProductMatchedDefaultAddressScope;
 use Modules\Categories\App\Models\Scopes\MatchedDefaultAddressScope as CategoryMatchedDefaultAddressScope;
 
 class SectionBuilder
@@ -76,6 +77,7 @@ class SectionBuilder
             'item_type' => $dynamicCategorySection->item_type ? strtolower($dynamicCategorySection->item_type) : null,
             'banner_size' => $dynamicCategorySection->banner_size ? strtolower($dynamicCategorySection->banner_size) : null,
             'sorting' => $dynamicCategorySection->sorting,
+            'has_more_items' => $dynamicCategorySection->items->count() > Pagination::PER_PAGE,
             'items' => $builder->build($dynamicCategorySection),
         ];
     }
