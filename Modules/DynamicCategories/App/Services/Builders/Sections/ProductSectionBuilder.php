@@ -24,7 +24,7 @@ class ProductSectionBuilder implements SectionBuilderInterface
             ->filter(function ($item) {
                 return $item->item !== null;
             })
-            ->take(Pagination::PER_PAGE)
+            ->take(20)
             ->map(function ($item) {
                 return new ProductCardResource($item->item);
             })
