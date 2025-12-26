@@ -119,6 +119,7 @@ class ProductDetailsTransformerService
      */
     public function getProductImages(Product $product)
     {
-        return (array) ($product->images == "" || $product->images == null ? [] : (array) $product->images);
+        $images = (array) ($product->images == "" || $product->images == null ? [] : (array) $product->images);
+        return handleMediaVideoOrImage($images);
     }
 }

@@ -19,7 +19,7 @@ class ProductCardResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
-            'image_url' => $this->thumb,
+            'image_url' => $this->image_url,
             'shop' => $this->shop?->name,
             'category' => $this->category?->name,
             'currency' => CountryCurrencies::getCurrency(),

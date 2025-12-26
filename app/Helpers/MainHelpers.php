@@ -401,3 +401,42 @@ function getMobileRegexBasedOnCountryCode($country_code)
     $regex = $mobileRegex[$country_code] ?? MobileRegex::AE;
     return '/' . $regex . '/';
 }
+
+/**
+ * Handle media video or image
+ *
+ * @param string $media
+ * @return array
+ */
+function handleMediaVideoOrImage($media)
+{
+    if (is_string($media)) {
+        $media = json_decode($media, true) ?? [];
+    }
+    if (!is_array($media)) {
+        return [];
+    }
+
+    return array_values(array_filter(array_map(function ($entry) {
+        if (!is_string($entry) || $entry === '') {
+            return null;
+        }
+
+        return [
+            'media_type' => isVideo($entry) ? 'video' : 'image',
+            'media_url' => $entry,
+        ];
+    }, $media)));
+}
+
+/**
+ * Determine if media entry is a video based on extension.
+ *
+ * @param string $entry
+ * @return bool
+ */
+function isVideo($entry)
+{
+    $extension = strtolower(pathinfo(parse_url($entry, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
+    return in_array($extension, ['mp4', 'mov', 'avi', 'mkv', 'webm'], true);
+}

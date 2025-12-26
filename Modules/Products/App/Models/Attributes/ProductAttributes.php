@@ -6,7 +6,7 @@ trait ProductAttributes
 {
     public function getImageUrlAttribute()
     {
-        return $this->thumb ?? null;
+        return $this->image ?? null;
     }
 
     public function getBadgeNameAttribute()
