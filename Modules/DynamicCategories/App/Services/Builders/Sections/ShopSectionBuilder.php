@@ -53,5 +53,12 @@ class ShopSectionBuilder implements SectionBuilderInterface
 
         return $dynamicCategorySection->items;
     }
+
+    public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool
+    {
+        return $this->resolveItems($dynamicCategorySection)->filter(function ($item) {
+            return $item->item !== null;
+        })->count() > 20;
+    }
 }
 

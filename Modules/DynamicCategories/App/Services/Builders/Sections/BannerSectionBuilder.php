@@ -21,5 +21,10 @@ class BannerSectionBuilder implements SectionBuilderInterface
             return new DynamicCategoryBannerResource($item);
         })->filter()->toArray();
     }
+
+    public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool
+    {
+        return $dynamicCategorySection->items()->count() > Pagination::PER_PAGE;
+    }
 }
 

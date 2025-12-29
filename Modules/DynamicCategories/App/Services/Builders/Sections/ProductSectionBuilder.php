@@ -48,10 +48,16 @@ class ProductSectionBuilder implements SectionBuilderInterface
         $dynamicCategorySection->load('items');
 
         $dynamicCategorySection->loadMorph('items.item', [
-            Product::class => fn ($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
+            Product::class => fn($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
         ]);
 
         return $dynamicCategorySection->items;
     }
-}
 
+    public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool
+    {
+        return $this->resolveItems($dynamicCategorySection)->filter(function ($item) {
+            return $item->item !== null;
+        })->count() > 20;
+    }
+}

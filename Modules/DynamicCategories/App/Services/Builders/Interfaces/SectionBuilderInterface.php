@@ -13,5 +13,13 @@ interface SectionBuilderInterface
      * @return array
      */
     public function build(DynamicCategorySection $dynamicCategorySection): array;
+
+    /**
+     * Check if there are more items to load
+     *
+     * @param DynamicCategorySection $dynamicCategorySection
+     * @return bool
+     */
+    public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool;
 }
 

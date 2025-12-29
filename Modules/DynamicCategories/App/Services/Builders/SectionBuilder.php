@@ -78,7 +78,7 @@ class SectionBuilder
             'banner_size' => $dynamicCategorySection->banner_size ? strtolower($dynamicCategorySection->banner_size) : null,
             'sorting' => $dynamicCategorySection->sorting,
             // 'has_more_items' => $dynamicCategorySection->items->count() > Pagination::PER_PAGE,
-            'has_more_items' => $dynamicCategorySection->items->count() > 20,
+            'has_more_items' => $builder->hasMoreItems($dynamicCategorySection),
             'items' => $builder->build($dynamicCategorySection),
         ];
     }

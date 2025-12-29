@@ -2,6 +2,7 @@
 
 namespace Modules\DynamicCategories\App\Services\Builders\Sections;
 
+use App\Enums\Pagination;
 use Modules\DynamicCategories\App\Models\DynamicCategorySection;
 use Modules\DynamicCategories\App\Transformers\DynamicCategoryMenuResource;
 use Modules\DynamicCategories\App\Services\Builders\Interfaces\SectionBuilderInterface;
@@ -30,5 +31,10 @@ class MenuItemsSectionBuilder implements SectionBuilderInterface
             ->filter()
             ->values()
             ->toArray();
+    }
+
+    public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool
+    {
+        return $dynamicCategorySection->items()->count() > Pagination::PER_PAGE;
     }
 }
