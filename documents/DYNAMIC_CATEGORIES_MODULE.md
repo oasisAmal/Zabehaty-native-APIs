@@ -224,7 +224,10 @@ public function buildAll(int $categoryId): array
 2. `loadMorph` items to drop `MatchedDefaultAddressScope` on products/shops/categories
 3. Uses factory to get appropriate builder
 4. Builds each section data, filters empty sections
-5. Returns array of sections with additional fields (`display_type`, `menu_type`)
+5. Returns array of sections with additional fields (`display_type`, `menu_type`, `has_more_items`)
+
+**Section Response Structure:**
+Each section includes a `has_more_items` boolean field indicating whether there are more items available beyond the pagination limit. This allows the frontend to implement "Load More" functionality or pagination controls.
 
 #### SectionBuilderFactory
 
@@ -258,8 +261,16 @@ All section builders implement `SectionBuilderInterface`:
 interface SectionBuilderInterface
 {
     public function build(DynamicCategorySection $dynamicCategorySection): array;
+    
+    public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool;
 }
 ```
+
+**hasMoreItems Method:**
+Each section builder implements `hasMoreItems()` to determine if there are additional items beyond the pagination limit. This method:
+- Returns `true` if there are more items available than the pagination limit
+- Returns `false` if all items fit within the pagination limit
+- Is used by `SectionBuilder` to populate the `has_more_items` field in the API response
 
 #### MenuItemsSectionBuilder
 
@@ -292,6 +303,16 @@ public function build(DynamicCategorySection $dynamicCategorySection): array
 - Compatible with MySQL's `only_full_group_by` mode
 - Fetches only the required items (not all items), reducing memory usage
 - Two efficient queries instead of loading all items into memory
+
+**hasMoreItems Implementation:**
+```php
+public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool
+{
+    return $dynamicCategorySection->items()->count() > Pagination::PER_PAGE;
+}
+```
+
+Checks if the total number of menu items exceeds `Pagination::PER_PAGE` (typically 20 items).
 
 **Response Format:**
 Each item in the menu items section includes:
@@ -337,6 +358,18 @@ public function build(DynamicCategorySection $dynamicCategorySection): array
 
 **Performance Note:** Filtering before `take()` ensures that if the first N items have null `item` relationships, the builder will continue searching through the collection to find the required number of valid items, rather than returning fewer items than requested.
 
+**hasMoreItems Implementation:**
+```php
+public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool
+{
+    return $this->resolveItems($dynamicCategorySection)->filter(function ($item) {
+        return $item->item !== null;
+    })->count() > 20;
+}
+```
+
+Filters out null items before counting to ensure accurate pagination indication. Returns `true` if there are more than 20 valid (non-null) product items.
+
 #### ShopSectionBuilder
 
 Builds shop sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
@@ -359,6 +392,18 @@ public function build(DynamicCategorySection $dynamicCategorySection): array
 
 **Performance Note:** Filtering before `take()` ensures that if the first N items have null `item` relationships, the builder will continue searching through the collection to find the required number of valid items, rather than returning fewer items than requested.
 
+**hasMoreItems Implementation:**
+```php
+public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool
+{
+    return $this->resolveItems($dynamicCategorySection)->filter(function ($item) {
+        return $item->item !== null;
+    })->count() > 20;
+}
+```
+
+Filters out null items before counting to ensure accurate pagination indication. Returns `true` if there are more than 20 valid (non-null) shop items.
+
 #### BannerSectionBuilder
 
 Builds banner sections (returns raw banner data):
@@ -377,6 +422,16 @@ public function build(DynamicCategorySection $dynamicCategorySection): array
         ->toArray();
 }
 ```
+
+**hasMoreItems Implementation:**
+```php
+public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool
+{
+    return $dynamicCategorySection->items()->count() > Pagination::PER_PAGE;
+}
+```
+
+Checks if the total number of banner items exceeds `Pagination::PER_PAGE` (typically 20 items).
 
 ### 4. Caching
 
@@ -486,6 +541,7 @@ Authorization: Bearer {token}
                 "menu_type": "horizontal",
                 "banner_size": "",
                 "sorting": 1,
+                "has_more_items": false,
                 "items": [
                     {
                         "id": 1,
@@ -509,6 +565,7 @@ Authorization: Bearer {token}
                 "menu_type": "",
                 "banner_size": "",
                 "sorting": 2,
+                "has_more_items": true,
                 "items": [
                     {
                         "id": 1,
@@ -789,7 +846,7 @@ $cacheService->clearAllDynamicCategoriesCache();
 - **HomePage**: Returns both `header` and `sections`
 
 ### 4. Additional Fields
-- **DynamicCategories**: Includes `display_type` and `menu_type` fields
+- **DynamicCategories**: Includes `display_type`, `menu_type`, and `has_more_items` fields
 - **HomePage**: Does not include these fields
 
 ### 5. Menu Items Builder
@@ -853,6 +910,31 @@ Always validate `category_id` in the request:
 - Each menu group includes `id` (parent ID), `title`, and `image_url`
 - Language-specific images are automatically selected based on request headers
 - The builder uses two efficient queries: one to get group IDs, another to fetch the actual items
+
+### 6. Pagination and hasMoreItems
+
+The `has_more_items` field indicates whether there are additional items beyond the pagination limit:
+
+- **Frontend Usage**: Use `has_more_items` to show/hide "Load More" buttons or pagination controls
+- **Implementation**: Each section builder implements `hasMoreItems()` method that checks if total items exceed the pagination limit
+- **Pagination Limits**:
+  - `ProductSectionBuilder` and `ShopSectionBuilder`: 20 items (hardcoded)
+  - `BannerSectionBuilder` and `MenuItemsSectionBuilder`: `Pagination::PER_PAGE` (typically 20)
+- **Null Item Handling**: `ProductSectionBuilder` and `ShopSectionBuilder` filter out null items before counting to ensure accurate pagination indication
+- **Response Field**: The `has_more_items` boolean is included in each section's response data
+
+**Example Frontend Implementation:**
+```javascript
+section.items.forEach(item => {
+    renderItem(item);
+});
+
+if (section.has_more_items) {
+    showLoadMoreButton(section.id);
+} else {
+    hideLoadMoreButton(section.id);
+}
+```
 
 ## Migration
 
