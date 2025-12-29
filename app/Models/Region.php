@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Traits\TraitLanguage;
+use App\Traits\CountryDatabaseTrait;
 use Illuminate\Database\Eloquent\Model;
 use MatanYadaev\EloquentSpatial\Objects\Point;
 use MatanYadaev\EloquentSpatial\Objects\Polygon;
@@ -9,7 +11,7 @@ use MatanYadaev\EloquentSpatial\Traits\HasSpatial;
 
 class Region extends Model
 {
-    use HasSpatial;
+    use HasSpatial, CountryDatabaseTrait, TraitLanguage;
     
     protected $table = 'regions';
     public $timestamps = false;
@@ -17,6 +19,8 @@ class Region extends Model
     protected $casts = [
         'polygon' => Polygon::class,
     ];
+
+    protected $translatable = ['name'];
 
     public function branch()
     {

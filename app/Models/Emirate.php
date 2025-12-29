@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\TraitLanguage;
+use App\Traits\CountryDatabaseTrait;
 use Illuminate\Database\Eloquent\Model;
 
 class Emirate extends Model
 {
+    use TraitLanguage, CountryDatabaseTrait;
+
     protected $table = 'emirates';
 
     protected $casts = [
@@ -23,6 +27,8 @@ class Emirate extends Model
         'animals' => 'array',
         'prices' => 'array',
     ];
+
+    protected $translatable = ['name'];
 
     public function parent()
     {
