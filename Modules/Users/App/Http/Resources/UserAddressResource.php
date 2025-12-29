@@ -19,8 +19,14 @@ class UserAddressResource extends JsonResource
             'apartment_num' => $this->apartment_num,
             'lat' => (float) $this->lat,
             'lng' => (float) $this->lng,
-            'emirate_id' => $this->emirate_id,
-            'region_id' => $this->region_id,
+            'emirate' => [
+                'id' => $this->emirate?->id,
+                'name' => $this->emirate?->name,
+            ],
+            'region' => [
+                'id' => $this->region?->id,
+                'name' => $this->region?->name,
+            ],
             'branch_id' => $this->branch_id,
             'building_number' => $this->building_number,
             'notes' => $this->notes,
