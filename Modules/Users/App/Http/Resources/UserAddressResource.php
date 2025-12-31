@@ -36,8 +36,8 @@ class UserAddressResource extends JsonResource
             'show_sender_name' => (bool) $this->show_sender_name,
             'is_default' => (bool) $this->is_default,
             'is_active' => (bool) $this->is_active,
-            'created_at' => $this->created_at->format(Common::DATE_FORMAT_24),
-            'updated_at' => $this->updated_at->format(Common::DATE_FORMAT_24),
+            'created_at' => $this->created_at?->format(Common::DATE_FORMAT_24),
+            'updated_at' => $this->updated_at?->format(Common::DATE_FORMAT_24),
         ];
     }
 }
