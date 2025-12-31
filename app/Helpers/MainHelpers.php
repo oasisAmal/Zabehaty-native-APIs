@@ -440,3 +440,26 @@ function isVideo($entry)
     $extension = strtolower(pathinfo(parse_url($entry, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
     return in_array($extension, ['mp4', 'mov', 'avi', 'mkv', 'webm'], true);
 }
+
+/**
+ * Get translation value based on the given key and locale
+ *
+ * @param string $key
+ * @param Model $model
+ * @return string
+ */
+function getTranslationValueWithFallback($key, $model)
+{
+    $locale = app()->getLocale();
+    $fallbackLocale = $locale == 'ar' ? 'en' : 'ar';
+    $value = $model->$key;
+
+    if ($value == "" || $value == null) {
+        $column = $model->{$key . '_' . $fallbackLocale};
+        if (isset($column) && $column != "" && $column != null) {
+            $value = $model->{$column};
+        }
+    }
+
+    return $value;
+}

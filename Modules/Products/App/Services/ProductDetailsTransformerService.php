@@ -122,4 +122,26 @@ class ProductDetailsTransformerService
         $images = (array) ($product->images == "" || $product->images == null ? [] : (array) $product->images);
         return handleMediaVideoOrImage($images);
     }
+
+    /**
+     * Get product description title, if brief is empty or null, return brief with other selected language
+     *
+     * @param Product $product
+     * @return string
+     */
+    public function getProductDescriptionTitle(Product $product)
+    {
+        return getTranslationValueWithFallback('brief', $product);
+    }
+
+    /**
+     * Get product description, if description is empty or null, return description with other selected language
+     *
+     * @param Product $product
+     * @return string
+     */
+    public function getProductDescription(Product $product)
+    {
+        return getTranslationValueWithFallback('description', $product);
+    }
 }
