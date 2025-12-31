@@ -2,6 +2,7 @@
 
 namespace Modules\Users\App\Http\Resources;
 
+use Carbon\Carbon;
 use App\Enums\Common;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -36,8 +37,8 @@ class UserAddressResource extends JsonResource
             'show_sender_name' => (bool) $this->show_sender_name,
             'is_default' => (bool) $this->is_default,
             'is_active' => (bool) $this->is_active,
-            'created_at' => $this->created_at?->format(Common::DATE_FORMAT_24),
-            'updated_at' => $this->updated_at?->format(Common::DATE_FORMAT_24),
+            'created_at' => $this->created_at ? Carbon::parse($this->created_at)->format(Common::DATE_FORMAT_24) : null,
+            'updated_at' => $this->updated_at ? Carbon::parse($this->updated_at)->format(Common::DATE_FORMAT_24) : null,
         ];
     }
 }
