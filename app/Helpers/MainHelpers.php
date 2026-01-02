@@ -453,11 +453,11 @@ function getTranslationValueWithFallback($key, $model)
     $locale = app()->getLocale();
     $fallbackLocale = $locale == 'ar' ? 'en' : 'ar';
     $value = $model->$key;
-
+    
     if ($value == "" || $value == null) {
         $column = $model->{$key . '_' . $fallbackLocale};
         if (isset($column) && $column != "" && $column != null) {
-            $value = $model->{$column};
+            $value = $column;
         }
     }
 
