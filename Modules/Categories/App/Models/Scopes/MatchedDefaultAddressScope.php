@@ -29,10 +29,8 @@ class MatchedDefaultAddressScope implements Scope
         return static function (Builder $query) use ($defaultAddress) {
             $query->where('emirate_id', $defaultAddress->emirate_id)
                 ->where(function (Builder $regionQuery) use ($defaultAddress) {
-                    $regionQuery->whereNull('region_ids');
-
                     if ($defaultAddress->region_id !== null) {
-                        $regionQuery->orWhereJsonContains('region_ids', (int) $defaultAddress->region_id);
+                        $regionQuery->whereJsonContains('region_ids', (int) $defaultAddress->region_id);
                     }
                 });
         };
