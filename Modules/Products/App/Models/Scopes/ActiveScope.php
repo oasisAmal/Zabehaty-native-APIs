@@ -10,13 +10,13 @@ class ActiveScope implements Scope
 {
     public function apply(Builder $builder, Model $model)
     {
-        return $builder->whereHas('department')
-            ->where('products.is_active', true)
-            ->where(function (Builder $q) {
-                $q->whereNull('products.shop_id')
-                ->orWhereHas('shop');
-            })
-            ->where('products.is_approved', true)
-            ->where('products.has_sub_products', true);
+        // return $builder->whereHas('department')
+        //     ->where('products.is_active', true)
+        //     ->where(function (Builder $q) {
+        //         $q->whereNull('products.shop_id')
+        //         ->orWhereHas('shop');
+        //     })
+        //     ->where('products.is_approved', true)
+        //     ->where('products.has_sub_products', true);
     }
 }
