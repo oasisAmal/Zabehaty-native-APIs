@@ -17,9 +17,6 @@ class ActiveScope implements Scope
                 ->orWhereHas('shop');
             })
             ->where('products.is_approved', true)
-            ->where(function (Builder $q) {
-                $q->where('products.price', '>', 0)
-                    ->orWhereHas('subProducts');
-            });
+            ->where('products.has_sub_products', true);
     }
 }
