@@ -2,8 +2,9 @@
 
 namespace Modules\HomePage\App\Services\Builders;
 
-use App\Models\MainCategory;
 use App\Models\Settings;
+use App\Models\MainCategory;
+use Modules\HomePage\App\Models\HomePageBackgroud;
 
 class HeaderBuilder
 {
@@ -36,12 +37,7 @@ class HeaderBuilder
      */
     private function getBackgroundUrl(): string
     {
-        $backgroundImage = isset($this->settings['homepage_background_url']) ? $this->settings['homepage_background_url'] : '';
-        if (isset($this->settings['homepage_background_url']) && $this->settings['homepage_background_url'] == '""') {
-            $backgroundImage = '';
-        }
-
-        return $backgroundImage;
+        return HomePageBackgroud::first()->background_image_url ?? '';
     }
 
     /**
