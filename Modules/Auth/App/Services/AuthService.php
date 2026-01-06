@@ -443,7 +443,7 @@ class AuthService
         $user->tokens()->delete();
         return [
             'token' => $user->createToken('userAuthToken', ['*'], now()->addMinutes(config('session.lifetime')))->plainTextToken,
-            'expires_at' => Carbon::parse($user->tokens()->first()->expires_at)->format(Common::DATE_FORMAT_24_TO_SAVE_DATABASE),
+            'expires_at' => Carbon::parse($user->tokens()->first()->expires_at)->timestamp,
             'profile' => new AuthResource($user),
         ];
     }
