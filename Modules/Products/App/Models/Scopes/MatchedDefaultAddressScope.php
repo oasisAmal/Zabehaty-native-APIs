@@ -25,9 +25,12 @@ class MatchedDefaultAddressScope implements Scope
 
         $builder->where(function (Builder $query) use ($visibilityConstraint) {
             $query->whereHas('productVisibilities', $visibilityConstraint)
-                ->whereHas('shop', function (Builder $shopQuery) use ($visibilityConstraint) {
+            ->where(function (Builder $q) use ($visibilityConstraint) {
+                $q->whereHas('shop', function (Builder $shopQuery) use ($visibilityConstraint) {
                     $shopQuery->whereHas('shopVisibilities', $visibilityConstraint);
                 })
+                ->orWhereNull('products.shop_id');
+            })
                 ->whereHas('category', function (Builder $categoryQuery) use ($visibilityConstraint) {
                     $categoryQuery->whereHas('categoryVisibilities', $visibilityConstraint);
                 });
