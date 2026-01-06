@@ -2,6 +2,7 @@
 
 namespace Modules\Auth\App\Services;
 
+use Carbon\Carbon;
 use App\Enums\Common;
 use App\Enums\SocialProvider;
 use Illuminate\Support\Facades\DB;
@@ -442,7 +443,7 @@ class AuthService
         $user->tokens()->delete();
         return [
             'token' => $user->createToken('userAuthToken', ['*'], now()->addMinutes(config('session.lifetime')))->plainTextToken,
-            'expires_at' => config('session.lifetime'),
+            'expires_at' => Carbon::parse($user->tokens()->first()->expires_at)->format(Common::DATE_FORMAT_24_TO_SAVE_DATABASE),
             'profile' => new AuthResource($user),
         ];
     }
