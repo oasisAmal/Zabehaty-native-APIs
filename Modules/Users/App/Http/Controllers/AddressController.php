@@ -51,10 +51,10 @@ class AddressController extends Controller
         return responseSuccessData(UserAddressResource::make($address));
     }
 
-    public function destroy(Request $request, $id)
+    public function destroy($id)
     {
         try {
-            $this->userAddressService->delete($request->validated(), $id);
+            $this->userAddressService->delete($id);
             return responseSuccessMessage(__('users::messages.address_deleted'));
         } catch (HttpResponseException $e) {
             throw $e;

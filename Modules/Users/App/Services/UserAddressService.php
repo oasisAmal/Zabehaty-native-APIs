@@ -37,9 +37,18 @@ class UserAddressService
         return $address->fresh();
     }
 
-    public function delete(array $data, int $addressId): void
+    public function delete(int $addressId): void
     {
-        $address = $this->findUserAddressOrFail(auth('api')->user()->id, $addressId);
+        $user = auth('api')->user();
+        $defaultAddress = $user->defaultAddress;
+
+        if ($defaultAddress?->id == $addressId) {
+            /** @var \Symfony\Component\HttpFoundation\Response $response */
+            $response = responseErrorMessage(__('users::messages.default_address_cannot_be_deleted'), 422);
+            throw new HttpResponseException($response);
+        }
+
+        $address = $this->findUserAddressOrFail($user->id, $addressId);
 
         $address->delete();
     }
@@ -126,5 +135,3 @@ class UserAddressService
         return $address;
     }
 }
-
-

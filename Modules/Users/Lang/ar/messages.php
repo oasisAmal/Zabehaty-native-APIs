@@ -52,6 +52,7 @@ return [
     'failed_to_delete_address' => 'فشل في حذف العنوان',
     'failed_to_retrieve_addresses' => 'فشل في استرجاع بيانات العنوان',
     'failed_to_set_default_address' => 'فشل في تعيين العنوان الافتراضي',
+    'default_address_cannot_be_deleted' => 'العنوان الافتراضي لا يمكن حذفه',
     'attributes' => [
         'lat' => 'العنوان الجغرافي',
         'lng' => 'العنوان الجغرافي',

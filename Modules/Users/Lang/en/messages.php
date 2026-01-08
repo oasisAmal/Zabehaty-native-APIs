@@ -52,6 +52,7 @@ return [
     'failed_to_delete_address' => 'Failed to delete address',
     'failed_to_retrieve_addresses' => 'Failed to retrieve addresses',
     'failed_to_set_default_address' => 'Failed to set default address',
+    'default_address_cannot_be_deleted' => 'Default address cannot be deleted',
     'attributes' => [
         'lat' => 'Latitude',
         'lng' => 'Longitude',
