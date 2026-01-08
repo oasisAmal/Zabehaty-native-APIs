@@ -18,6 +18,11 @@ class UserAddressService
             return UserAddress::updateOrCreate(['user_id' => $data['user_id']], $data);
         }
 
+        if (!isset($data['mobile'])) {
+            $data['mobile'] = auth('api')->user()->mobile;
+            $data['country_code'] = auth('api')->user()->country_code;
+        }
+
         return UserAddress::create($data);
     }
 
