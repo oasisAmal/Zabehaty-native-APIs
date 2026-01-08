@@ -46,6 +46,7 @@ class StoreAddressRequest extends FormRequest
     {
         $this->merge([
             'mobile' => $this->mobile ? format_mobile_number($this->mobile) : null,
+            'address_type' => $this->address_type ?? 'others',
         ]);
     }
 
