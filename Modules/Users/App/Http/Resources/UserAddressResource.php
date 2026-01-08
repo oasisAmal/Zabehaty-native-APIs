@@ -31,6 +31,7 @@ class UserAddressResource extends JsonResource
             'branch_id' => $this->branch_id,
             'building_number' => $this->building_number,
             'notes' => $this->notes,
+            'main_type' => $this->main_type,
             'address_type' => $this->address_type,
             'is_gift' => (bool) $this->is_gift,
             'receiver_name' => $this->receiver_name,

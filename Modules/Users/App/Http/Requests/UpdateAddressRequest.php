@@ -22,6 +22,7 @@ class UpdateAddressRequest extends FormRequest
             'lng' => ['required', 'numeric', 'between:-180,180'],
             'emirate_id' => ['sometimes', 'nullable', 'numeric', 'exists:emirates,id'],
             'region_id' => ['sometimes', 'nullable', 'numeric', 'exists:regions,id'],
+            'main_type' => ['sometimes', 'nullable', 'string', Rule::in('home', 'office', 'others')],
             'address_type' => ['sometimes', 'nullable', 'string'],
             'address' => ['required', 'string'],
             'street_name' => ['sometimes', 'nullable', 'string'],
