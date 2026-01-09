@@ -2,9 +2,10 @@
 
 namespace Modules\Shops\App\Http\Requests;
 
-use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Modules\DynamicCategories\App\Models\DynamicCategorySectionItem;
 
 class ShopIndexRequest extends FormRequest
 {
@@ -22,14 +23,29 @@ class ShopIndexRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'home_page_section_id' => ['sometimes','nullable', 'integer', 'exists:home_page,id'],
-            'dynamic_category_section_id' => ['sometimes','nullable', 'integer', 'exists:dynamic_category_sections,id'],
-            'dynamic_category_menu_id' => ['sometimes','nullable', 'integer', 'exists:dynamic_category_section_items,menu_item_parent_id'],
-            'per_page' => ['sometimes','nullable', 'integer', 'min:1', 'max:30'],
+            'home_page_section_id' => ['sometimes', 'nullable', 'integer', 'exists:home_page,id'],
+            'dynamic_category_section_id' => ['sometimes', 'nullable', 'integer', 'exists:dynamic_category_sections,id'],
+            'dynamic_category_menu_id' => ['sometimes', 'nullable', 'integer', 'exists:dynamic_category_section_items,menu_item_parent_id'],
+            'is_all_menu_item' => ['sometimes', 'nullable', 'boolean'],
+            'per_page' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:30'],
         ];
     }
 
-
+    /**
+     * Prepare the data for validation.
+     */
+    protected function prepareForValidation(): void
+    {
+        $isAllMenuItem = false;
+        if ($this->dynamic_category_menu_id) {
+            $isAllMenuItem = DynamicCategorySectionItem::where('menu_item_parent_id', $this->dynamic_category_menu_id)
+                ->where('is_all_menu_item', true)
+                ->exists();
+        }
+        $this->merge([
+            'is_all_menu_item' => $isAllMenuItem,
+        ]);
+    }
     public function messages(): array
     {
         return [
@@ -63,4 +79,3 @@ class ShopIndexRequest extends FormRequest
         throw new HttpResponseException(validationErrors($validator->errors()->all()));
     }
 }
-

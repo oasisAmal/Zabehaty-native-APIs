@@ -34,6 +34,7 @@ class DynamicCategorySectionItem extends Model
         'item_id',
         'item_type',
         'external_link',
+        'is_all_menu_item',
         'sorting',
     ];
 
