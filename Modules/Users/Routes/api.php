@@ -9,6 +9,7 @@ Route::prefix('users')->as('users.')->middleware(['auth:api', 'require-registere
 Route::prefix('addresses')->as('addresses.')->middleware(['auth:api'])->controller(AddressController::class)->group(function () {
     Route::post('store', 'store')->name('store');
     Route::post('update/{id}', 'update')->name('update');
+    Route::get('detail/{id}', 'detail')->name('detail');
     Route::group(['middleware' => ['auth:api', 'require-registered']], function () {
         Route::delete('delete/{id}', 'destroy')->name('destroy');
         Route::post('set-default', 'setDefault')->name('set-default');

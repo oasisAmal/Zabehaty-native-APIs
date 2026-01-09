@@ -51,6 +51,15 @@ class AddressController extends Controller
         return responseSuccessData(UserAddressResource::make($address));
     }
 
+    public function detail($id)
+    {
+        $address = $this->userAddressService->findUserAddressOrFail(auth('api')->user()->id, $id);
+        if (!$address) {
+            return responseErrorMessage(__('users::messages.address_not_found'));
+        }
+        return responseSuccessData(UserAddressResource::make($address));
+    }
+
     public function destroy($id)
     {
         try {

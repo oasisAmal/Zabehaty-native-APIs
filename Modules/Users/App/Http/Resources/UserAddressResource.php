@@ -33,6 +33,7 @@ class UserAddressResource extends JsonResource
             'notes' => $this->notes,
             'main_type' => $this->main_type,
             'address_type' => $this->address_type,
+            'directions' => $this->directions,
             'is_gift' => (bool) $this->is_gift,
             'receiver_name' => $this->receiver_name,
             'show_sender_name' => (bool) $this->show_sender_name,

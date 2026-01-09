@@ -122,7 +122,7 @@ class UserAddressService
     /**
      * @throws HttpResponseException
      */
-    protected function findUserAddressOrFail(int $userId, int $addressId): UserAddress
+    public function findUserAddressOrFail(int $userId, int $addressId): UserAddress
     {
         $address = UserAddress::where('user_id', $userId)->find($addressId);
 
