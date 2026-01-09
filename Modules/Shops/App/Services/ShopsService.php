@@ -21,7 +21,7 @@ class ShopsService
             return $query->whereHas('homePageItems', function (Builder $subQuery) use ($filters) {
                 $subQuery->where('home_page_id', $filters['home_page_section_id']);
             });
-        })->when(isset($filters['dynamic_category_section_id']) && $filters['dynamic_category_section_id'], function (Builder $query) use ($filters) {
+        })->when(isset($filters['dynamic_category_section_id']) && $filters['dynamic_category_section_id'] && !$filters['is_all_menu_item'], function (Builder $query) use ($filters) {
             return $query->whereHas('dynamicCategorySectionItems', function (Builder $subQuery) use ($filters) {
                 $subQuery->where('dynamic_category_section_id', $filters['dynamic_category_section_id']);
             });

@@ -128,9 +128,9 @@ Stores items (polymorphic) associated with each section:
 - Menu items sections use `menu_item_parent_id` to group related items
 
 **is_all_menu_item Field:**
-- When set to `true` on a `DynamicCategorySectionItem` with a specific `menu_item_parent_id`, it indicates that when filtering Products or Shops by that `menu_item_parent_id`, all items should be returned instead of filtering by the parent ID
+- When set to `true` on a `DynamicCategorySectionItem`, it indicates that when filtering Products or Shops by `dynamic_category_section_id` or `dynamic_category_menu_id`, all items should be returned instead of filtering by the section ID or menu item parent ID
 - Used in `ProductIndexRequest` and `ShopIndexRequest` to automatically detect if a menu item should show all items
-- When `is_all_menu_item` is `true`, the Products/Shops services skip the `menu_item_parent_id` filter, returning all available items
+- When `is_all_menu_item` is `true`, the Products/Shops services skip both the `dynamic_category_section_id` and `menu_item_parent_id` filters, returning all available items
 
 ## Core Components
 
@@ -741,7 +741,7 @@ section.items.forEach(menuGroup => {
 ### 7. Show All Items Feature (is_all_menu_item)
 
 **Overview:**
-The `is_all_menu_item` field allows menu items to control filtering behavior when querying Products or Shops by `dynamic_category_menu_id`. When a menu item has `is_all_menu_item = true`, it signals that all items should be returned instead of filtering by the specific menu item parent ID.
+The `is_all_menu_item` field allows menu items to control filtering behavior when querying Products or Shops by `dynamic_category_section_id` or `dynamic_category_menu_id`. When a menu item has `is_all_menu_item = true`, it signals that all items should be returned instead of filtering by the specific section ID or menu item parent ID.
 
 **How It Works:**
 
@@ -750,9 +750,12 @@ The `is_all_menu_item` field allows menu items to control filtering behavior whe
    - If found, the `is_all_menu_item` flag is set to `true` in the request data
 
 2. **In Products/Shops Services:**
+   - When filtering by `dynamic_category_section_id`, the service checks the `is_all_menu_item` flag
+     - If `is_all_menu_item` is `true`, the filter by `dynamic_category_section_id` is **skipped**, returning all available products/shops
+     - If `is_all_menu_item` is `false` (or not set), the filter **is applied**, showing only items that belong to that specific section
    - When filtering by `dynamic_category_menu_id`, the service checks the `is_all_menu_item` flag
-   - If `is_all_menu_item` is `true`, the filter by `menu_item_parent_id` is **skipped**, returning all available products/shops
-   - If `is_all_menu_item` is `false` (or not set), the filter **is applied**, showing only items that belong to that specific menu item parent
+     - If `is_all_menu_item` is `true`, the filter by `menu_item_parent_id` is **skipped**, returning all available products/shops
+     - If `is_all_menu_item` is `false` (or not set), the filter **is applied**, showing only items that belong to that specific menu item parent
 
 **Example Implementation:**
 
@@ -772,7 +775,11 @@ protected function prepareForValidation(): void
 }
 
 // In ProductsService/ShopsService
-->when(isset($filters['dynamic_category_menu_id']) && $filters['dynamic_category_menu_id'] && !$filters['is_all_menu_item'], function (Builder $query) use ($filters) {
+->when(isset($filters['dynamic_category_section_id']) && $filters['dynamic_category_section_id'] && !$filters['is_all_menu_item'], function (Builder $query) use ($filters) {
+    return $query->whereHas('dynamicCategorySectionItems', function (Builder $subQuery) use ($filters) {
+        $subQuery->where('dynamic_category_section_id', $filters['dynamic_category_section_id']);
+    });
+})->when(isset($filters['dynamic_category_menu_id']) && $filters['dynamic_category_menu_id'] && !$filters['is_all_menu_item'], function (Builder $query) use ($filters) {
     return $query->whereHas('dynamicCategorySectionItems', function (Builder $subQuery) use ($filters) {
         $subQuery->where('menu_item_parent_id', $filters['dynamic_category_menu_id']);
     });
@@ -780,15 +787,17 @@ protected function prepareForValidation(): void
 ```
 
 **Use Cases:**
-- **Specific Menu Item**: Set `is_all_menu_item = false` (or leave unset) to show only items belonging to that menu group
-- **Show All Items**: Set `is_all_menu_item = true` to show all available products/shops when that menu item is selected
+- **Specific Section/Menu Item**: Set `is_all_menu_item = false` (or leave unset) to show only items belonging to that section or menu group
+- **Show All Items**: Set `is_all_menu_item = true` to show all available products/shops when filtering by that section or menu item
 
 **Backend Configuration:**
 1. Navigate to the menu item in `dynamic_category_section_items`
 2. Set `is_all_menu_item` to `true` for menu items that should show all items
-3. Leave `is_all_menu_item` as `false` (or `null`) for menu items that should filter by parent ID
+3. Leave `is_all_menu_item` as `false` (or `null`) for menu items that should filter by section ID or parent ID
 
-**Result:** When users select a menu item with `is_all_menu_item = true`, they will see all available products/shops instead of filtered results.
+**Result:** 
+- When filtering by `dynamic_category_section_id` with `is_all_menu_item = true`, users will see all available products/shops instead of section-filtered results
+- When filtering by `dynamic_category_menu_id` with `is_all_menu_item = true`, users will see all available products/shops instead of menu-item-filtered results
 
 ### 8. Display Type and Menu Type
 
@@ -969,7 +978,7 @@ Always validate `category_id` in the request:
 - Each menu group includes `id` (parent ID), `title`, and `image_url`
 - Language-specific images are automatically selected based on request headers
 - The builder uses two efficient queries: one to get group IDs, another to fetch the actual items
-- Use `is_all_menu_item` field to control whether a menu item shows all products/shops or filters by parent ID when selected
+- Use `is_all_menu_item` field to control whether a menu item shows all products/shops or filters by section ID or parent ID when selected
 
 ### 6. Pagination and hasMoreItems
 
@@ -1052,15 +1061,16 @@ php artisan country:db migrate --country=AE
 - Ensure MySQL `only_full_group_by` mode compatibility (the builder uses `MIN(id)` with `GROUP BY` to ensure compatibility)
 - Check database indexes on `menu_item_parent_id` for better query performance
 
-### Issue: Products/Shops filtering by menu item not working as expected
+### Issue: Products/Shops filtering by section or menu item not working as expected
 
 **Solution:**
 - Verify `is_all_menu_item` is set correctly on the `DynamicCategorySectionItem` record
-- Check that `dynamic_category_menu_id` matches the `menu_item_parent_id` in the database
-- If `is_all_menu_item = true`, products/shops should return all items (no filtering)
-- If `is_all_menu_item = false` (or null), products/shops should be filtered by `menu_item_parent_id`
+- Check that `dynamic_category_section_id` matches the section ID in the database (if filtering by section)
+- Check that `dynamic_category_menu_id` matches the `menu_item_parent_id` in the database (if filtering by menu item)
+- If `is_all_menu_item = true`, products/shops should return all items (no filtering by section ID or menu item parent ID)
+- If `is_all_menu_item = false` (or null), products/shops should be filtered by `dynamic_category_section_id` or `menu_item_parent_id` respectively
 - Verify the `prepareForValidation()` method in `ProductIndexRequest`/`ShopIndexRequest` is correctly detecting the flag
-- Check that the service is checking `!$filters['is_all_menu_item']` before applying the filter
+- Check that the service is checking `!$filters['is_all_menu_item']` before applying both the `dynamic_category_section_id` and `dynamic_category_menu_id` filters
 
 ## Future Enhancements
 
