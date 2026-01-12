@@ -1,0 +1,1122 @@
+# Dynamic Shops Module
+
+## Overview
+
+The Dynamic Shops module is a flexible and extensible system for managing dynamic shop-specific content sections in the Zabehaty Native APIs application. It supports multiple section types (banners, products, shops, menu items, limited-time offers) with multi-language support, caching, and location-based filtering. Unlike the HomePage module, this module is shop-specific and requires a `shop_id` parameter to filter sections.
+
+## Architecture
+
+### Module Structure
+
+The module follows Laravel Modules structure with clear separation of concerns:
+
+```
+Modules/DynamicShops/
+├── App/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   └── DynamicShopsController.php
+│   │   └── Requests/
+│   │       └── DynamicShopsIndexRequest.php
+│   ├── Models/
+│   │   ├── Attributes/
+│   │   │   └── DynamicShopSectionAttributes.php
+│   │   ├── Relationships/
+│   │   │   └── DynamicShopSectionRelationships.php
+│   │   ├── Scopes/
+│   │   │   ├── DynamicShopSectionScopes.php
+│   │   │   └── MatchedDefaultAddressScope.php
+│   │   ├── DynamicShopSection.php
+│   │   └── DynamicShopSectionItem.php
+│   ├── Providers/
+│   │   ├── DynamicShopsServiceProvider.php
+│   │   ├── RouteServiceProvider.php
+│   │   └── EventServiceProvider.php
+│   ├── Services/
+│   │   ├── Builders/
+│   │   │   ├── Factories/
+│   │   │   │   └── SectionBuilderFactory.php
+│   │   │   ├── Interfaces/
+│   │   │   │   └── SectionBuilderInterface.php
+│   │   │   ├── Sections/
+│   │   │   │   ├── BannerSectionBuilder.php
+│   │   │   │   ├── MenuItemsSectionBuilder.php
+│   │   │   │   ├── DefaultSectionBuilder.php
+│   │   │   │   ├── ProductSectionBuilder.php
+│   │   │   │   └── ShopSectionBuilder.php
+│   │   │   └── SectionBuilder.php
+│   │   ├── Cache/
+│   │   │   └── CacheService.php
+│   │   └── DynamicShopsService.php
+│   └── Transformers/
+│       ├── DynamicShopsResource.php
+│       ├── DynamicShopBannerResource.php
+│       └── DynamicShopMenuResource.php
+├── Database/
+│   └── Migrations/
+│       ├── create_dynamic_shop_sections_table.php
+│       └── create_dynamic_shop_section_items_table.php
+├── Enums/
+│   └── DynamicShopSectionType.php
+├── Routes/
+│   └── api.php
+├── Config/
+│   └── config.php
+└── Lang/
+    ├── en/
+    │   └── messages.php
+    └── ar/
+        └── messages.php
+```
+
+## Database Schema
+
+### `dynamic_shop_sections` Table
+
+Stores shop-specific sections configuration:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | bigint | Primary key |
+| `shop_id` | integer | Foreign key to shops table (required) |
+| `emirate_ids` | json | Optional emirate IDs array |
+| `region_ids` | json | Optional region IDs array |
+| `title_en` | string | English title |
+| `title_ar` | string | Arabic title |
+| `title_image_ar_url` | string | Arabic title image URL |
+| `title_image_en_url` | string | English title image URL |
+| `background_image_url` | string | Section background image |
+| `type` | string | Section type (indexed) |
+| `display_type` | string | Display type for frontend rendering |
+| `menu_type` | string | Menu type for navigation |
+| `item_type` | string | Item type for the section |
+| `banner_size` | enum | Banner size: small, medium, large |
+| `sorting` | smallint | Display order (default: 0) |
+| `timestamps` | timestamps | Created/updated timestamps |
+
+**Section Types:**
+- `banners` - Banner carousel sections
+- `menu_items` - Mixed menu items (products or shops)
+- `shops` - Shop listing sections
+- `products` - Product listing sections
+- `limited_time_offers` - Special offer sections
+
+**Key Differences from HomePage:**
+- Requires `shop_id` for filtering sections
+- Includes `display_type` and `menu_type` fields for additional frontend configuration
+- Sections are filtered by shop before being returned
+
+### `dynamic_shop_section_items` Table
+
+Stores items (polymorphic) associated with each section:
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | bigint | Primary key |
+| `dynamic_shop_section_id` | foreignId | References `dynamic_shop_sections.id` |
+| `menu_item_parent_id` | integer | Parent ID for grouping menu items (used by MenuItemsSectionBuilder) |
+| `title_en` | string | English title for menu items |
+| `title_ar` | string | Arabic title for menu items |
+| `image_ar_url` | string | Arabic item image URL |
+| `image_en_url` | string | English item image URL |
+| `item_id` | bigint | Polymorphic item ID |
+| `item_type` | string | Polymorphic item type |
+| `external_link` | string | Optional external link URL |
+| `is_all_menu_item` | boolean | When true, indicates this menu item should show all items (used in Products/Shops filtering) |
+| `sorting` | smallint | Item display order |
+| `timestamps` | timestamps | Created/updated timestamps |
+
+**Polymorphic Relations:**
+- Can link to Product, Shop, or Category models
+- Menu items sections use `menu_item_parent_id` to group related items
+
+**is_all_menu_item Field:**
+- When set to `true` on a `DynamicShopSectionItem`, it indicates that when filtering Products or Shops by `dynamic_shop_section_id` or `dynamic_shop_menu_id`, all items should be returned instead of filtering by the section ID or menu item parent ID
+- Used in `ProductIndexRequest` and `ShopIndexRequest` to automatically detect if a menu item should show all items
+- When `is_all_menu_item` is `true`, the Products/Shops services skip both the `dynamic_shop_section_id` and `menu_item_parent_id` filters, returning all available items
+
+## Core Components
+
+### 1. Models
+
+#### DynamicShopSection Model
+
+Main model for shop-specific sections with traits for:
+- **CountryDatabaseTrait**: Multi-country database support
+- **TraitLanguage**: Multi-language support
+- **DynamicShopSectionAttributes**: Custom attribute accessors
+- **DynamicShopSectionRelationships**: Model relationships
+- **DynamicShopSectionScopes**: Query scopes
+- **MatchedDefaultAddressScope**: Location-based filtering
+
+**Key Methods:**
+```php
+// Get ordered sections for a shop
+DynamicShopSection::ordered()
+    ->where('shop_id', $shopId)
+    ->get();
+
+// Get sections with items
+DynamicShopSection::with('items.item')->get();
+```
+
+#### DynamicShopSectionItem Model
+
+Polymorphic pivot model linking sections to items:
+
+```php
+// Get item relationship
+$item->item; // Returns polymorphic model (Product, Shop, etc.)
+
+// Get section relationship
+$item->section; // Returns DynamicShopSection
+```
+
+### 2. Services
+
+#### DynamicShopsService
+
+Main service orchestrating dynamic shops data building:
+
+```php
+public function getDynamicShopsData($request): array
+{
+    // 1. Extract shop_id from request
+    // 2. Check cache
+    // 3. Build all sections for the shop
+    // 4. Store in cache
+    // 5. Return data
+}
+```
+
+**Responsibilities:**
+- Cache management (includes `shop_id` in cache key)
+- Coordinating section builders
+- Determining location context (resolves `emirate_id` and `region_id` from the authenticated user's default address, falling back to global `0` values)
+- Country and language handling
+- Shop-specific filtering
+
+**Key Difference from HomePage:**
+- Requires `shop_id` parameter
+- Cache keys include `shop_id` for shop-specific caching
+- Returns empty sections array if `shop_id` is missing
+
+#### SectionBuilder
+
+Builds all shop-specific sections using factory pattern, and preloads morph items without the heavy `MatchedDefaultAddressScope` to improve performance:
+
+```php
+public function buildAll(int $shopId): array
+{
+    $dynamicShopSections = DynamicShopSection::ordered()
+        ->where('shop_id', $shopId)
+        ->has('items')
+        ->with('items')
+        ->get();
+
+    $dynamicShopSections->loadMorph('items.item', [
+        Product::class => fn ($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
+        Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
+        Category::class => fn ($query) => $query->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class),
+    ]);
+
+    return $dynamicShopSections
+        ->map(fn ($section) => $this->buildSection($section))
+        ->filter(fn ($section) => !empty($section['items']))
+        ->values()
+        ->toArray();
+}
+```
+
+**Process:**
+1. Fetch ordered sections filtered by `shop_id` with items
+2. `loadMorph` items to drop `MatchedDefaultAddressScope` on products/shops/categories
+3. Uses factory to get appropriate builder
+4. Builds each section data, filters empty sections
+5. Returns array of sections with additional fields (`display_type`, `menu_type`, `has_more_items`)
+
+**Section Response Structure:**
+Each section includes a `has_more_items` boolean field indicating whether there are more items available beyond the pagination limit. This allows the frontend to implement "Load More" functionality or pagination controls.
+
+#### SectionBuilderFactory
+
+Factory pattern implementation for section builders:
+
+```php
+public function create($type): SectionBuilderInterface
+{
+    return match ($type) {
+        DynamicShopSectionType::BANNERS => new BannerSectionBuilder(),
+        DynamicShopSectionType::SHOPS => new ShopSectionBuilder(),
+        DynamicShopSectionType::MENU_ITEMS => new MenuItemsSectionBuilder(),
+        DynamicShopSectionType::PRODUCTS => new ProductSectionBuilder(),
+        default => new DefaultSectionBuilder(),
+    };
+}
+```
+
+**Supported Builders:**
+- `BannerSectionBuilder` - For banner sections
+- `ShopSectionBuilder` - For shop sections
+- `MenuItemsSectionBuilder` - For mixed menu items (products or shops)
+- `ProductSectionBuilder` - For product and offer sections
+- `DefaultSectionBuilder` - Fallback for unknown types
+
+### 3. Section Builders
+
+All section builders implement `SectionBuilderInterface`:
+
+```php
+interface SectionBuilderInterface
+{
+    public function build(DynamicShopSection $dynamicShopSection): array;
+    
+    public function hasMoreItems(DynamicShopSection $dynamicShopSection): bool;
+}
+```
+
+**hasMoreItems Method:**
+Each section builder implements `hasMoreItems()` to determine if there are additional items beyond the pagination limit. This method:
+- Returns `true` if there are more items available than the pagination limit
+- Returns `false` if all items fit within the pagination limit
+- Is used by `SectionBuilder` to populate the `has_more_items` field in the API response
+
+#### MenuItemsSectionBuilder
+
+**Unique Feature:** This builder groups menu items by `menu_item_parent_id` and returns menu group data. It uses optimized database-level grouping for better performance.
+
+Builds menu items sections by grouping items by parent ID using efficient database queries:
+
+```php
+public function build(DynamicShopSection $dynamicShopSection): array
+{
+    $menuGroupIds = $dynamicShopSection->items()
+        ->selectRaw('MIN(id) as id')
+        ->groupBy('menu_item_parent_id')
+        ->pluck('id');
+
+    return $dynamicShopSection->items()
+        ->whereIn('id', $menuGroupIds)
+        ->get()
+        ->map(function ($menuGroup) {
+            return new DynamicShopMenuResource($menuGroup);
+        })
+        ->filter()
+        ->values()
+        ->toArray();
+}
+```
+
+**Performance Optimization:**
+- Uses database-level `GROUP BY` with `MIN(id)` to get one item per `menu_item_parent_id`
+- Compatible with MySQL's `only_full_group_by` mode
+- Fetches only the required items (not all items), reducing memory usage
+- Two efficient queries instead of loading all items into memory
+
+**hasMoreItems Implementation:**
+```php
+public function hasMoreItems(DynamicShopSection $dynamicShopSection): bool
+{
+    return $dynamicShopSection->items()->count() > Pagination::PER_PAGE;
+}
+```
+
+Checks if the total number of menu items exceeds `Pagination::PER_PAGE` (typically 20 items).
+
+**Response Format:**
+Each item in the menu items section includes:
+- `id`: The `menu_item_parent_id` value
+- `title`: The menu item title (language-aware)
+- `image_url`: Language-specific image URL (Arabic or English based on `App-Language` header)
+
+**Example Response:**
+```json
+[
+    {
+        "id": 1,
+        "title": "Menu Group 1",
+        "image_url": "https://example.com/image-en.png"
+    },
+    {
+        "id": 2,
+        "title": "Menu Group 2",
+        "image_url": "https://example.com/image-ar.png"
+    }
+]
+```
+
+#### ProductSectionBuilder
+
+Builds product sections with pagination, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
+
+```php
+public function build(DynamicShopSection $dynamicShopSection): array
+{
+    return $this->resolveItems($dynamicShopSection)
+        ->filter(function ($item) {
+            return $item->item !== null;
+        })
+        ->take(Pagination::PER_PAGE)
+        ->map(function ($item) {
+            return new ProductCardResource($item->item);
+        })
+        ->values()
+        ->toArray();
+}
+```
+
+**Performance Note:** Filtering before `take()` ensures that if the first N items have null `item` relationships, the builder will continue searching through the collection to find the required number of valid items, rather than returning fewer items than requested.
+
+**hasMoreItems Implementation:**
+```php
+public function hasMoreItems(DynamicShopSection $dynamicShopSection): bool
+{
+    return $this->resolveItems($dynamicShopSection)->filter(function ($item) {
+        return $item->item !== null;
+    })->count() > 20;
+}
+```
+
+Filters out null items before counting to ensure accurate pagination indication. Returns `true` if there are more than 20 valid (non-null) product items.
+
+#### ShopSectionBuilder
+
+Builds shop sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
+
+```php
+public function build(DynamicShopSection $dynamicShopSection): array
+{
+    return $this->resolveItems($dynamicShopSection)
+        ->filter(function ($item) {
+            return $item->item !== null;
+        })
+        ->take(Pagination::PER_PAGE)
+        ->map(function ($item) {
+            return new ShopCardResource($item->item);
+        })
+        ->values()
+        ->toArray();
+}
+```
+
+**Performance Note:** Filtering before `take()` ensures that if the first N items have null `item` relationships, the builder will continue searching through the collection to find the required number of valid items, rather than returning fewer items than requested.
+
+**hasMoreItems Implementation:**
+```php
+public function hasMoreItems(DynamicShopSection $dynamicShopSection): bool
+{
+    return $this->resolveItems($dynamicShopSection)->filter(function ($item) {
+        return $item->item !== null;
+    })->count() > 20;
+}
+```
+
+Filters out null items before counting to ensure accurate pagination indication. Returns `true` if there are more than 20 valid (non-null) shop items.
+
+#### BannerSectionBuilder
+
+Builds banner sections (returns raw banner data):
+
+```php
+public function build(DynamicShopSection $dynamicShopSection): array
+{
+    return $dynamicShopSection->items()
+        ->with('item')
+        ->limit(Pagination::PER_PAGE)
+        ->get()
+        ->map(function ($item) {
+            return new DynamicShopBannerResource($item);
+        })
+        ->filter()
+        ->toArray();
+}
+```
+
+**hasMoreItems Implementation:**
+```php
+public function hasMoreItems(DynamicShopSection $dynamicShopSection): bool
+{
+    return $dynamicShopSection->items()->count() > Pagination::PER_PAGE;
+}
+```
+
+Checks if the total number of banner items exceeds `Pagination::PER_PAGE` (typically 20 items).
+
+### 4. Caching
+
+#### CacheService
+
+Manages dynamic shops data caching with shop-specific cache keys:
+
+**Cache Keys:**
+```php
+"dynamic_shops:shop_id:{shopId}:emirate_id:{emirateId}:region_id:{regionId}:lang:{lang}"
+```
+
+**Methods:**
+- `getDynamicShopsData(int $shopId, int $emirateId, int $regionId, string $lang)` - Retrieve cached payload for a shop/location/language tuple
+- `storeDynamicShopsData(int $shopId, int $emirateId, int $regionId, array $data, string $lang, ?int $ttl = null)` - Persist rendered data using the configured TTL fallback
+- `clearDynamicShopsCache(int $shopId, int $emirateId, int $regionId, ?string $lang = null)` - Clear cache for a specific shop/location (all languages when `lang` is null)
+- `clearAllDynamicShopsCache()` - Clear cache across all shops/emirates/regions and supported languages
+- `isCacheEnabled()` - Check if caching toggle is turned on (`dynamicshops.cache.enabled`)
+
+**Cache Configuration:**
+- Default TTL pulled from `dynamicshops.cache.default_ttl` (3600 seconds by default)
+- Cache disabled in local environment
+- Cache enabled when `cache.default !== 'null'`
+
+**Key Difference from HomePage:**
+- Cache keys include `shop_id` for shop-specific caching
+- Each shop has its own cache entry
+
+### 5. Transformers
+
+#### DynamicShopsResource
+
+API resource transformer:
+
+```php
+public function toArray(Request $request): array
+{
+    return [
+        'sections' => $this->resource['sections'],
+    ];
+}
+```
+
+**Key Difference from HomePage:**
+- No header data (only sections)
+- Sections are pre-filtered by shop
+
+### 6. Validation
+
+#### DynamicShopsIndexRequest
+
+Form request validation for the index endpoint:
+
+**Validation Rules:**
+- `shop_id`: Required, integer, must exist in `shops` table
+
+**Example:**
+```php
+public function rules(): array
+{
+    return [
+        'shop_id' => ['required', 'integer', 'exists:shops,id'],
+    ];
+}
+```
+
+## API Endpoints
+
+### Get Dynamic Shops Data
+
+```
+GET /api/dynamic-shops
+```
+
+**Authentication:** Required (`auth:api`)
+
+**Headers:**
+```
+App-Country: AE
+App-Platform: iOS
+App-Version: 1.0.0
+App-Language: en
+Authorization: Bearer {token}
+```
+
+**Request Parameters:**
+```
+shop_id=1
+```
+
+**Response:**
+```json
+{
+    "status": "success",
+    "message": null,
+    "data": {
+        "sections": [
+            {
+                "id": 1,
+                "type": "menu_items",
+                "title": "Featured Items",
+                "title_image_url": "https://example.com/title.png",
+                "background_image_url": "https://example.com/bg.png",
+                "display_type": "grid",
+                "menu_type": "horizontal",
+                "item_type": "",
+                "banner_size": "",
+                "sorting": 1,
+                "has_more_items": false,
+                "items": [
+                    {
+                        "id": 1,
+                        "title": "Menu Group 1",
+                        "image_url": "https://example.com/menu-1-en.png"
+                    },
+                    {
+                        "id": 2,
+                        "title": "Menu Group 2",
+                        "image_url": "https://example.com/menu-2-en.png"
+                    }
+                ]
+            },
+            {
+                "id": 2,
+                "type": "products",
+                "title": "Featured Products",
+                "title_image_url": null,
+                "background_image_url": null,
+                "display_type": "",
+                "menu_type": "",
+                "item_type": "",
+                "banner_size": "",
+                "sorting": 2,
+                "has_more_items": true,
+                "items": [
+                    {
+                        "id": 1,
+                        "name": "Product Name",
+                        ...
+                    }
+                ]
+            }
+        ]
+    }
+}
+```
+
+**Error Response (Missing shop_id):**
+```json
+{
+    "status": "error",
+    "message": "The shop ID is required.",
+    "data": null
+}
+```
+
+**Error Response (Invalid shop_id):**
+```json
+{
+    "status": "error",
+    "message": "The selected shop ID is invalid.",
+    "data": null
+}
+```
+
+**Error Response (Server Error):**
+```json
+{
+    "status": "error",
+    "message": "Failed to retrieve dynamic shops data",
+    "data": null
+}
+```
+
+## Usage Examples
+
+The Dynamic Shops module can be managed through the backend admin interface. Below are examples of common operations:
+
+### 1. Creating a Menu Items Section
+
+**Backend Interface Steps:**
+1. Navigate to **Dynamic Shops** → **Select a Shop** → **Create New Section**
+2. Fill in the section details:
+   - **Shop**: Select the target shop
+   - **Title (English)**: "Featured Items"
+   - **Title (Arabic)**: "العناصر المميزة"
+   - **Section Type**: Select "menu_items"
+   - **Display Type**: Select display style (e.g., "grid", "list")
+   - **Menu Type**: Select menu style (e.g., "horizontal", "vertical")
+   - **Sorting**: Enter `1` (lower numbers appear first)
+   - **Title Image (English)**: Upload or enter URL for English title image
+   - **Title Image (Arabic)**: Upload or enter URL for Arabic title image
+   - **Background Image**: Optional background image URL
+   - **Emirate IDs**: Optional - select specific emirates for location filtering (JSON array)
+   - **Region IDs**: Optional - select specific regions (JSON array)
+
+3. **Add Items to Section:**
+   - Click "Add Items" or navigate to section items
+   - For each menu item, set:
+     - **Title (English)**: Menu item title in English
+     - **Title (Arabic)**: Menu item title in Arabic
+     - **Menu Item Parent ID**: Group ID for grouping related menu items (items with the same parent ID will be grouped together)
+     - **Is All Menu Item**: Set to `true` if this menu item should show all products/shops when selected (see "Show All Items Feature" section)
+     - **Image (English)**: Custom image URL for English version
+     - **Image (Arabic)**: Custom image URL for Arabic version
+     - **External Link**: Optional external URL
+     - **Item ID & Item Type**: Optional polymorphic item reference (Product, Shop, or Category)
+   - Save items
+
+**Result:** A menu items section will appear for the selected shop showing grouped menu items. Items with the same `menu_item_parent_id` will be grouped together, and the builder will return one representative item per group with its title and image. The frontend will receive menu groups with `id` (parent ID), `title`, and `image_url` fields.
+
+### 2. Creating a Product Section
+
+**Backend Interface Steps:**
+1. Navigate to **Dynamic Shops** → **Select a Shop** → **Create New Section**
+2. Fill in the section details:
+   - **Shop**: Select the target shop
+   - **Title (English)**: "Featured Products"
+   - **Title (Arabic)**: "المنتجات المميزة"
+   - **Section Type**: Select "products"
+   - **Sorting**: Enter `2`
+   - **Display Type**: Optional display configuration
+   - **Menu Type**: Optional menu configuration
+
+3. **Add Products:**
+   - Click "Add Items"
+   - Select products from the product list
+   - Products will be displayed in the section
+   - Save items
+
+**Result:** A product section will appear for the selected shop showing the selected products.
+
+### 3. Creating a Banner Section
+
+**Backend Interface Steps:**
+1. Navigate to **Dynamic Shops** → **Select a Shop** → **Create New Section**
+2. Fill in the section details:
+   - **Shop**: Select the target shop
+   - **Title (English)**: "Shop Banners"
+   - **Title (Arabic)**: "بانرات المتجر"
+   - **Section Type**: Select "banners"
+   - **Banner Size**: Select "large", "medium", or "small"
+   - **Sorting**: Enter `0` (to appear at the top)
+
+3. **Add Banners:**
+   - Click "Add Items"
+   - Select banners from the banner list
+   - Each banner will be displayed in the carousel
+   - Save items
+
+**Result:** A banner carousel section will appear for the selected shop.
+
+### 4. Shop-Specific Filtering
+
+**Key Feature:** All sections are automatically filtered by `shop_id`. When a user requests dynamic shops data, only sections belonging to the specified shop are returned.
+
+**Backend Interface Steps:**
+1. When creating a section, you must select a **Shop**
+2. The section will only appear when that specific shop is requested
+3. Multiple sections can belong to the same shop
+4. Sections are ordered by `sorting` within each shop
+
+**Result:** Each shop has its own set of sections, providing shop-specific content customization.
+
+### 5. Location-Based Filtering
+
+**Backend Interface Steps:**
+1. Edit an existing section or create a new one
+2. **For Emirate-Specific Sections:**
+   - Select **Emirate IDs** (JSON array)
+   - Section will only show for users in those emirates
+
+3. **For Region-Specific Sections:**
+   - Select multiple **Region IDs** (stored as JSON array)
+   - Section will only show for users in those specific regions
+
+4. **For Global Sections:**
+   - Leave **Emirate IDs** and **Region IDs** empty
+   - Section will show for all users regardless of location (within the shop)
+
+**Result:** Sections are automatically filtered based on user's default address location AND shop.
+
+### 6. Menu Items Grouping
+
+**Frontend Implementation:**
+When receiving menu items sections, the frontend receives grouped menu items:
+
+```javascript
+section.items.forEach(menuGroup => {
+    // Each menuGroup has: id, title, image_url
+    renderMenuGroup(menuGroup);
+});
+```
+
+**Backend Configuration:**
+- Items are grouped by `menu_item_parent_id` field
+- The builder uses optimized database queries to group items efficiently
+- Each group represents a menu item with its own title and image
+- Language-specific images are automatically selected based on `App-Language` header
+
+### 7. Show All Items Feature (is_all_menu_item)
+
+**Overview:**
+The `is_all_menu_item` field allows menu items to control filtering behavior when querying Products or Shops by `dynamic_shop_section_id` or `dynamic_shop_menu_id`. When a menu item has `is_all_menu_item = true`, it signals that all items should be returned instead of filtering by the specific section ID or menu item parent ID.
+
+**How It Works:**
+
+1. **In Products/Shops Index Requests:**
+   - When `dynamic_shop_menu_id` is provided, the request automatically checks if there's a `DynamicShopSectionItem` with that `menu_item_parent_id` and `is_all_menu_item = true`
+   - If found, the `is_all_menu_item` flag is set to `true` in the request data
+
+2. **In Products/Shops Services:**
+   - When filtering by `dynamic_shop_section_id`, the service checks the `is_all_menu_item` flag
+     - If `is_all_menu_item` is `true`, the filter by `dynamic_shop_section_id` is **skipped**, returning all available products/shops
+     - If `is_all_menu_item` is `false` (or not set), the filter **is applied**, showing only items that belong to that specific section
+   - When filtering by `dynamic_shop_menu_id`, the service checks the `is_all_menu_item` flag
+     - If `is_all_menu_item` is `true`, the filter by `menu_item_parent_id` is **skipped**, returning all available products/shops
+     - If `is_all_menu_item` is `false` (or not set), the filter **is applied**, showing only items that belong to that specific menu item parent
+
+**Example Implementation:**
+
+```php
+// In ProductIndexRequest/ShopIndexRequest
+protected function prepareForValidation(): void
+{
+    $isAllMenuItem = false;
+    if ($this->dynamic_shop_menu_id) {
+        $isAllMenuItem = DynamicShopSectionItem::where('menu_item_parent_id', $this->dynamic_shop_menu_id)
+            ->where('is_all_menu_item', true)
+            ->exists();
+    }
+    $this->merge([
+        'is_all_menu_item' => $isAllMenuItem,
+    ]);
+}
+
+// In ProductsService/ShopsService
+->when(isset($filters['dynamic_shop_section_id']) && $filters['dynamic_shop_section_id'] && !$filters['is_all_menu_item'], function (Builder $query) use ($filters) {
+    return $query->whereHas('dynamicShopSectionItems', function (Builder $subQuery) use ($filters) {
+        $subQuery->where('dynamic_shop_section_id', $filters['dynamic_shop_section_id']);
+    });
+})->when(isset($filters['dynamic_shop_menu_id']) && $filters['dynamic_shop_menu_id'] && !$filters['is_all_menu_item'], function (Builder $query) use ($filters) {
+    return $query->whereHas('dynamicShopSectionItems', function (Builder $subQuery) use ($filters) {
+        $subQuery->where('menu_item_parent_id', $filters['dynamic_shop_menu_id']);
+    });
+})
+```
+
+**Use Cases:**
+- **Specific Section/Menu Item**: Set `is_all_menu_item = false` (or leave unset) to show only items belonging to that section or menu group
+- **Show All Items**: Set `is_all_menu_item = true` to show all available products/shops when filtering by that section or menu item
+
+**Backend Configuration:**
+1. Navigate to the menu item in `dynamic_shop_section_items`
+2. Set `is_all_menu_item` to `true` for menu items that should show all items
+3. Leave `is_all_menu_item` as `false` (or `null`) for menu items that should filter by section ID or parent ID
+
+**Result:** 
+- When filtering by `dynamic_shop_section_id` with `is_all_menu_item = true`, users will see all available products/shops instead of section-filtered results
+- When filtering by `dynamic_shop_menu_id` with `is_all_menu_item = true`, users will see all available products/shops instead of menu-item-filtered results
+
+### 8. Display Type and Menu Type
+
+**Display Type:**
+- Used for frontend rendering configuration
+- Examples: "grid", "list", "carousel"
+- Stored as string in database
+- Returned in API response
+
+**Menu Type:**
+- Used for navigation/menu configuration
+- Examples: "horizontal", "vertical", "dropdown"
+- Stored as string in database
+- Returned in API response
+
+**Usage:**
+```json
+{
+    "display_type": "grid",
+    "menu_type": "horizontal"
+}
+```
+
+The frontend can use these fields to determine how to render the section.
+
+## Configuration
+
+### Module Configuration
+
+Located in `Modules/DynamicShops/Config/config.php`:
+
+```php
+return [
+    'cache' => [
+        'enabled' => env('DYNAMIC_SHOPS_CACHE_ENABLED', false),
+        'default_ttl' => env('DYNAMIC_SHOPS_CACHE_TTL', 3600),
+    ],
+];
+```
+
+### Environment Variables
+
+```env
+# Cache settings
+DYNAMIC_SHOPS_CACHE_ENABLED=true
+DYNAMIC_SHOPS_CACHE_TTL=3600
+```
+
+## Multi-Country Support
+
+The module fully supports the multi-country database system:
+
+- Uses `CountryDatabaseTrait` for automatic database switching
+- Cache keys include `shop_id`, language code, plus the resolved `emirate_id`/`region_id` pair so each shop/location combination is isolated
+- Sections can be filtered by emirate and region
+- Each country has separate dynamic shops configuration
+
+## Multi-Language Support
+
+- Supports English and Arabic
+- Title fields: `title_en`, `title_ar`
+- Image fields: `image_en_url`, `image_ar_url`, `title_image_en_url`, `title_image_ar_url`
+- Uses `TraitLanguage` for automatic language detection
+- Cache keys include language code
+
+## Location-Based Filtering
+
+Sections can be filtered by location:
+
+- **Emirate Filter**: `emirate_ids` JSON array field
+- **Region Filter**: `region_ids` JSON array field
+- **Global Sections**: When both are null, section shows for all locations (within the shop)
+- **Shop Filter**: `shop_id` field (required)
+
+**Note:** The `MatchedDefaultAddressScope` is enabled in the model boot method for automatic location filtering.
+
+## Caching Strategy
+
+### Cache Flow
+
+1. **Request received** → Extract `shop_id` → Check cache
+2. **Cache hit** → Return cached data
+3. **Cache miss** → Build data → Store in cache → Return data
+
+### Cache Invalidation
+
+Cache should be cleared when:
+- Dynamic shop sections are updated
+- Section items are added/removed
+- Shop-specific settings are changed
+
+### Manual Cache Clear
+
+```bash
+# Clear all dynamic shops cache
+php artisan cache:clear
+
+# Or programmatically
+$cacheService->clearAllDynamicShopsCache();
+```
+
+## Key Differences from HomePage Module
+
+### 1. Shop-Specific Filtering
+- **DynamicShops**: Requires `shop_id` parameter, sections filtered by shop
+- **HomePage**: No shop filtering, shows all sections
+
+### 2. Request Method
+- **DynamicShops**: Uses `GET` method with `shop_id` query parameter
+- **HomePage**: Uses `GET` method
+
+### 3. Response Structure
+- **DynamicShops**: Only returns `sections` (no header)
+- **HomePage**: Returns both `header` and `sections`
+
+### 4. Additional Fields
+- **DynamicShops**: Includes `display_type`, `menu_type`, and `has_more_items` fields
+- **HomePage**: Does not include these fields
+
+### 5. Menu Items Builder
+- **DynamicShops**: `MenuItemsSectionBuilder` supports mixed products/shops with `type` field
+- **HomePage**: `CategorySectionBuilder` only supports categories
+
+### 6. Cache Keys
+- **DynamicShops**: Cache keys include `shop_id`
+- **HomePage**: Cache keys do not include shop
+
+### 7. Enum Types
+- **DynamicShops**: Uses `DynamicShopSectionType` with `MENU_ITEMS`
+- **HomePage**: Uses `HomeSectionType` with `CATEGORIES`
+
+## Key Differences from DynamicCategories Module
+
+### 1. Entity-Specific Filtering
+- **DynamicShops**: Requires `shop_id` parameter, sections filtered by shop
+- **DynamicCategories**: Requires `category_id` parameter, sections filtered by category
+
+### 2. Database Tables
+- **DynamicShops**: Uses `dynamic_shop_sections` and `dynamic_shop_section_items` tables
+- **DynamicCategories**: Uses `dynamic_category_sections` and `dynamic_category_section_items` tables
+
+### 3. Cache Keys
+- **DynamicShops**: Cache keys include `shop_id`
+- **DynamicCategories**: Cache keys include `category_id`
+
+### 4. Model Names
+- **DynamicShops**: Uses `DynamicShopSection` and `DynamicShopSectionItem` models
+- **DynamicCategories**: Uses `DynamicCategorySection` and `DynamicCategorySectionItem` models
+
+### 5. Request Validation
+- **DynamicShops**: Validates `shop_id` exists in `shops` table
+- **DynamicCategories**: Validates `category_id` exists in `categories` table
+
+## Best Practices
+
+### 1. Section Ordering
+
+Always set `sorting` value when creating sections:
+```php
+$section->sorting = 1; // Lower numbers appear first
+```
+
+### 2. Performance
+
+- Use eager loading: `with('items.item')`
+- Limit items per section (use pagination constants)
+- Enable caching in production
+- Use appropriate cache TTLs
+- Filter by `shop_id` early in the query
+- **MenuItemsSectionBuilder** uses optimized database-level grouping with `MIN(id)` and `GROUP BY` for efficient menu item grouping
+- Avoid loading all items into memory; use selective queries with `whereIn` when possible
+- **ProductSectionBuilder and ShopSectionBuilder** filter out null items before applying pagination to ensure the correct number of valid items are returned, preventing scenarios where fewer items than requested are returned due to null relationships
+
+### 3. Error Handling
+
+The controller catches exceptions and returns user-friendly error messages:
+```php
+try {
+    $dynamicShopsData = $this->dynamicShopsService->getDynamicShopsData($request);
+    return responseSuccessData(DynamicShopsResource::make($dynamicShopsData));
+} catch (\Exception $e) {
+    return responseErrorMessage(
+        __('dynamicshops::messages.failed_to_retrieve_dynamic_shops_data'),
+        500
+    );
+}
+```
+
+### 4. Validation
+
+Always validate `shop_id` in the request:
+```php
+'shop_id' => ['required', 'integer', 'exists:shops,id']
+```
+
+### 5. Menu Items Sections
+
+- Use `MenuItemsSectionBuilder` for menu item sections grouped by `menu_item_parent_id`
+- Items are grouped at the database level for optimal performance
+- Each menu group includes `id` (parent ID), `title`, and `image_url`
+- Language-specific images are automatically selected based on request headers
+- The builder uses two efficient queries: one to get group IDs, another to fetch the actual items
+- Use `is_all_menu_item` field to control whether a menu item shows all products/shops or filters by section ID or parent ID when selected
+
+### 6. Pagination and hasMoreItems
+
+The `has_more_items` field indicates whether there are additional items beyond the pagination limit:
+
+- **Frontend Usage**: Use `has_more_items` to show/hide "Load More" buttons or pagination controls
+- **Implementation**: Each section builder implements `hasMoreItems()` method that checks if total items exceed the pagination limit
+- **Pagination Limits**:
+  - `ProductSectionBuilder` and `ShopSectionBuilder`: 20 items (hardcoded)
+  - `BannerSectionBuilder` and `MenuItemsSectionBuilder`: `Pagination::PER_PAGE` (typically 20)
+- **Null Item Handling**: `ProductSectionBuilder` and `ShopSectionBuilder` filter out null items before counting to ensure accurate pagination indication
+- **Response Field**: The `has_more_items` boolean is included in each section's response data
+
+**Example Frontend Implementation:**
+```javascript
+section.items.forEach(item => {
+    renderItem(item);
+});
+
+if (section.has_more_items) {
+    showLoadMoreButton(section.id);
+} else {
+    hideLoadMoreButton(section.id);
+}
+```
+
+## Migration
+
+To apply database changes:
+
+```bash
+# Run migration on all countries
+php artisan country:db migrate --all
+
+# Or run migration on specific country
+php artisan country:db migrate --country=AE
+```
+
+## Troubleshooting
+
+### Issue: Sections not appearing
+
+**Solution:**
+- Check if sections have items: `has('items.item')`
+- Verify `shop_id` is correct in the request
+- Verify `sorting` values are set correctly
+- Check if items exist and are not soft-deleted
+- Clear cache: `php artisan cache:clear`
+- Verify shop exists in database
+
+### Issue: Cache not working
+
+**Solution:**
+- Verify cache driver is configured: `config('cache.default')`
+- Check environment: Cache is disabled in `local` environment
+- Verify cache service: `$cacheService->isCacheEnabled()`
+- Check cache key includes correct `shop_id`
+
+### Issue: Wrong language content
+
+**Solution:**
+- Check `App-Language` header is set correctly
+- Verify language fields in database (`title_en`, `title_ar`)
+- Clear cache for specific language and shop
+
+### Issue: Location filtering not working
+
+**Solution:**
+- Verify `MatchedDefaultAddressScope` is enabled in model boot method
+- Verify `emirate_ids` and `region_ids` are set correctly (JSON arrays)
+- Check user's default address is set
+- Verify shop filtering is working correctly
+
+### Issue: Menu items not grouped correctly
+
+**Solution:**
+- Verify `menu_item_parent_id` is set correctly for items that should be grouped together
+- Check that section type is set to `menu_items`
+- Verify `MenuItemsSectionBuilder` is being used
+- Ensure MySQL `only_full_group_by` mode compatibility (the builder uses `MIN(id)` with `GROUP BY` to ensure compatibility)
+- Check database indexes on `menu_item_parent_id` for better query performance
+
+### Issue: Products/Shops filtering by section or menu item not working as expected
+
+**Solution:**
+- Verify `is_all_menu_item` is set correctly on the `DynamicShopSectionItem` record
+- Check that `dynamic_shop_section_id` matches the section ID in the database (if filtering by section)
+- Check that `dynamic_shop_menu_id` matches the `menu_item_parent_id` in the database (if filtering by menu item)
+- If `is_all_menu_item = true`, products/shops should return all items (no filtering by section ID or menu item parent ID)
+- If `is_all_menu_item = false` (or null), products/shops should be filtered by `dynamic_shop_section_id` or `menu_item_parent_id` respectively
+- Verify the `prepareForValidation()` method in `ProductIndexRequest`/`ShopIndexRequest` is correctly detecting the flag
+- Check that the service is checking `!$filters['is_all_menu_item']` before applying both the `dynamic_shop_section_id` and `dynamic_shop_menu_id` filters
+
+## Future Enhancements
+
+### Planned Features
+
+1. **Shop Templates**: Pre-defined section templates for common shop types
+2. **A/B Testing**: Support for multiple section variants per shop
+3. **Analytics**: Track section performance per shop
+4. **Bulk Operations**: Manage sections across multiple shops
+5. **Section Inheritance**: Inherit sections from shop categories
+6. **Dynamic Pricing**: Shop-specific pricing rules
+7. **Advanced Filtering**: More granular filtering options
+
+## Related Documentation
+
+- `DYNAMIC_CATEGORIES_MODULE.md` - DynamicCategories module documentation
+- `HOMEPAGE_MODULE.md` - HomePage module documentation
+- `PROJECT_SETUP_GUIDE.md` - General project setup
+- `MULTI_COUNTRY_DATABASE_SETUP.md` - Multi-country database configuration
+- `GUEST_USER_SYSTEM.md` - Guest user system
+
+---
+
+**Note**: This module is designed to be flexible and extensible. Follow SOLID principles when extending functionality. The module is shop-specific, making it ideal for providing customized content per shop while maintaining the same flexible architecture as the HomePage and DynamicCategories modules.
