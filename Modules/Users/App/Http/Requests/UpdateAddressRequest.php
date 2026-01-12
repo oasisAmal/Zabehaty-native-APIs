@@ -47,6 +47,7 @@ class UpdateAddressRequest extends FormRequest
     {
         $this->merge([
             'mobile' => $this->mobile ? format_mobile_number($this->mobile) : null,
+            'country_code' => $this->mobile ? $this->mobile_country_code : null,
         ]);
     }
 

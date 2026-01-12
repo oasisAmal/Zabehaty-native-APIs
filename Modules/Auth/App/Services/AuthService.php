@@ -166,6 +166,7 @@ class AuthService
                     $currentUser->first_name = $data['first_name'];
                     $currentUser->last_name = $data['last_name'];
                     $currentUser->mobile = $data['mobile'];
+                    $currentUser->country_symbol = $data['mobile_country_code'];
                     $currentUser->email = $data['email'] ?? null;
                     $currentUser->password = md5($data['password']);
                     $currentUser->is_guest = false;
@@ -195,6 +196,7 @@ class AuthService
                     'first_name' => $data['first_name'],
                     'last_name' => $data['last_name'],
                     'mobile' => $data['mobile'],
+                    'country_symbol' => $data['mobile_country_code'],
                     'email' => $data['email'] ?? null,
                     'password' => md5($data['password']),
                     'is_guest' => false,
