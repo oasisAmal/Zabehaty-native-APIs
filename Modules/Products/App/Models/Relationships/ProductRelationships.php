@@ -16,6 +16,7 @@ use Modules\Products\App\Models\ProductAddonSection;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Modules\DynamicShops\App\Models\DynamicShopSectionItem;
 use Modules\DynamicCategories\App\Models\DynamicCategorySectionItem;
 
 trait ProductRelationships
@@ -56,6 +57,11 @@ trait ProductRelationships
     public function dynamicCategorySectionItems(): MorphMany
     {
         return $this->morphMany(DynamicCategorySectionItem::class, 'item', 'item_type', 'item_id');
+    }
+
+    public function dynamicShopSectionItems(): MorphMany
+    {
+        return $this->morphMany(DynamicShopSectionItem::class, 'item', 'item_type', 'item_id');
     }
 
     public function badges(): BelongsToMany

@@ -9,6 +9,8 @@ return [
         'home_page_section_id' => 'رقم القسم الرئيسي',
         'dynamic_category_section_id' => 'رقم قسم الفئات الديناميكية',
         'dynamic_category_menu_id' => 'رقم قسم الفئات الديناميكية',
+        'dynamic_shop_section_id' => 'رقم قسم المتاجر الديناميكية',
+        'dynamic_shop_menu_id' => 'رقم قسم المتاجر الديناميكية',
         'per_page' => 'عدد العناصر في الصفحة',
     ],
 ];
