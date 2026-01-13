@@ -5,6 +5,7 @@ namespace Modules\Products\App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Modules\DynamicShops\App\Models\DynamicShopSectionItem;
 use Modules\DynamicCategories\App\Models\DynamicCategorySectionItem;
 
 class ProductIndexRequest extends FormRequest
@@ -41,6 +42,11 @@ class ProductIndexRequest extends FormRequest
         $isAllMenuItem = false;
         if ($this->dynamic_category_menu_id) {
             $isAllMenuItem = DynamicCategorySectionItem::where('menu_item_parent_id', $this->dynamic_category_menu_id)
+                ->where('is_all_menu_item', true)
+                ->exists();
+        }
+        if ($this->dynamic_shop_menu_id) {
+            $isAllMenuItem = DynamicShopSectionItem::where('menu_item_parent_id', $this->dynamic_shop_menu_id)
                 ->where('is_all_menu_item', true)
                 ->exists();
         }
