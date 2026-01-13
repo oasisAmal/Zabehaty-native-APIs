@@ -29,6 +29,7 @@ class UserAddress extends Model
         'branch_id',
         'building_number',
         'notes',
+        'directions',
         'main_type',
         'address_type',
         'is_gift',
