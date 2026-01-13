@@ -100,6 +100,11 @@ class UserAddressService
             unset($data['mobile']);
         }
 
+        if (isset($data['validate_mobile'])) {
+            $data['mobile'] = $data['validate_mobile'];
+            unset($data['validate_mobile']);
+        }
+
         return $data;
     }
 

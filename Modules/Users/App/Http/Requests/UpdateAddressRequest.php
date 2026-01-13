@@ -31,6 +31,7 @@ class UpdateAddressRequest extends FormRequest
             'name' => ['sometimes', 'nullable', 'string'],
             'mobile' => ['sometimes', 'nullable', 'regex:' . getMobileRegexBasedOnCountryCode($this->mobile_country_code)],
             'mobile_country_code' => ['sometimes', 'nullable', 'string', Rule::in(MobileRegex::getKeys())],
+            'validate_mobile' => ['sometimes', 'nullable'],
             'country_code' => ['sometimes', 'nullable', 'string'],
             'street_name' => ['sometimes', 'nullable', 'string'],
             'apartment_num' => ['sometimes', 'nullable', 'string'],
@@ -47,6 +48,7 @@ class UpdateAddressRequest extends FormRequest
     {
         $this->merge([
             'mobile' => $this->mobile ? format_mobile_number($this->mobile) : null,
+            'validate_mobile' => $this->mobile ? format_mobile_number_to_database($this->mobile, $this->mobile_country_code) : null,
             'country_code' => $this->mobile ? $this->mobile_country_code : null,
         ]);
     }
