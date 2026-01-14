@@ -57,6 +57,10 @@ return [
     'failed_to_retrieve_addresses' => 'فشل في استرجاع بيانات العنوان',
     'failed_to_set_default_address' => 'فشل في تعيين العنوان الافتراضي',
     'default_address_cannot_be_deleted' => 'العنوان الافتراضي لا يمكن حذفه',
+    'address_state_no_default' => 'يرجى اختيار عنوان افتراضي',
+    'address_state_no_active' => 'يرجى إنشاء عنوان',
+    'address_state_default_changed' => 'تم تغيير العنوان الافتراضي. يرجى إعادة تحميل الشاشة الرئيسية',
+    'address_state_location_changed' => 'تم تغيير موقع العنوان. يرجى إعادة تحميل الشاشة الرئيسية',
     'attributes' => [
         'lat' => 'العنوان الجغرافي',
         'lng' => 'العنوان الجغرافي',

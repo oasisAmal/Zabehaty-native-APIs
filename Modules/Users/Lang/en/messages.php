@@ -57,6 +57,10 @@ return [
     'failed_to_retrieve_addresses' => 'Failed to retrieve addresses',
     'failed_to_set_default_address' => 'Failed to set default address',
     'default_address_cannot_be_deleted' => 'Default address cannot be deleted',
+    'address_state_no_default' => 'Please select a default address',
+    'address_state_no_active' => 'Please create an address',
+    'address_state_default_changed' => 'Default address has changed. Please reload home screen',
+    'address_state_location_changed' => 'Address location has changed. Please reload home screen',
     'attributes' => [
         'lat' => 'Latitude',
         'lng' => 'Longitude',

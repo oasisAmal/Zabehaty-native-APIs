@@ -15,6 +15,7 @@ use App\Http\Middleware\CheckGuestModeMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\RequireRegisteredUserMiddleware;
+use App\Http\Middleware\AddressStateMiddleware;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -34,11 +35,13 @@ return Application::configure(basePath: dirname(__DIR__))
             AppNameMiddleware::class,
             ForceUpdateMiddleware::class,
             CheckGuestModeMiddleware::class,
+            AddressStateMiddleware::class,
         ]);
 
         $middleware->alias([
             'auth-optional' => AuthOptionalMiddleware::class,
             'require-registered' => RequireRegisteredUserMiddleware::class,
+            'address-state' => AddressStateMiddleware::class,
         ]);
     })
     ->withSchedule(function (Schedule $schedule) {
