@@ -96,13 +96,13 @@ class UserAddressService
             $data['name'] = auth('api')->user()->fullname ?? '';
         }
 
-        if (isset($data['mobile']) && $data['mobile'] == null) {
+        if ($data['mobile'] == null) {
             unset($data['mobile']);
-        }
-
-        if (isset($data['validate_mobile'])) {
-            $data['mobile'] = $data['validate_mobile'];
+            unset($data['country_code']);
+            unset($data['mobile_country_code']);
             unset($data['validate_mobile']);
+        } else {
+            $data['mobile'] = $data['validate_mobile'];
         }
 
         return $data;
