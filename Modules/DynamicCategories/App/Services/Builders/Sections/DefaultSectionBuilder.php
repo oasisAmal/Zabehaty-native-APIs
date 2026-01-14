@@ -17,5 +17,10 @@ class DefaultSectionBuilder implements SectionBuilderInterface
     {
         return [];
     }
+
+    public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool
+    {
+        return false;
+    }
 }
 
