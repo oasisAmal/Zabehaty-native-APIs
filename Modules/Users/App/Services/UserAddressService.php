@@ -7,6 +7,7 @@ use App\Models\Region;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Modules\Users\App\Models\UserAddress;
+use Modules\Users\App\Services\AddressStateEvaluationService;
 
 class UserAddressService
 {
@@ -23,7 +24,18 @@ class UserAddressService
             $data['country_code'] = auth('api')->user()->country_code;
         }
 
-        return UserAddress::create($data);
+        $address = UserAddress::create($data);
+
+        // Update address state cache after creation
+        /** @var \Modules\Users\App\Models\User|null $user */
+        $user = auth('api')->user();
+        if ($user && !$user->isGuest()) {
+            /** @var \Modules\Users\App\Models\User $freshUser */
+            $freshUser = $user->fresh();
+            app(AddressStateEvaluationService::class)->updateAddressStateCache($freshUser);
+        }
+
+        return $address;
     }
 
     public function update(array $data, int $addressId): UserAddress
@@ -34,7 +46,18 @@ class UserAddressService
 
         $address->update($data);
 
-        return $address->fresh();
+        $updatedAddress = $address->fresh();
+
+        // Update address state cache after update
+        /** @var \Modules\Users\App\Models\User|null $user */
+        $user = auth('api')->user();
+        if ($user && !$user->isGuest()) {
+            /** @var \Modules\Users\App\Models\User $freshUser */
+            $freshUser = $user->fresh();
+            app(AddressStateEvaluationService::class)->updateAddressStateCache($freshUser);
+        }
+
+        return $updatedAddress;
     }
 
     public function delete(int $addressId): void
@@ -51,6 +74,13 @@ class UserAddressService
         $address = $this->findUserAddressOrFail($user->id, $addressId);
 
         $address->delete();
+
+        // Update address state cache after deletion
+        if (!$user->isGuest()) {
+            /** @var \Modules\Users\App\Models\User $freshUser */
+            $freshUser = $user->fresh();
+            app(AddressStateEvaluationService::class)->updateAddressStateCache($freshUser);
+        }
     }
 
     public function paginate(array $data): LengthAwarePaginator
@@ -62,11 +92,22 @@ class UserAddressService
     {
         $address = $this->findUserAddressOrFail(auth('api')->user()->id, $data['address_id']);
 
-        UserAddress::where('user_id', auth('api')->user()->id)->default()->update(['is_default' => false]);
+        $user = auth('api')->user();
+        
+        UserAddress::where('user_id', $user->id)->default()->update(['is_default' => false]);
 
         $address->update(['is_default' => true]);
 
-        return $address->fresh();
+        $updatedAddress = $address->fresh();
+
+        // Update address state cache after setting default
+        if (!$user->isGuest()) {
+            /** @var \Modules\Users\App\Models\User $freshUser */
+            $freshUser = $user->fresh();
+            app(AddressStateEvaluationService::class)->updateAddressStateCache($freshUser);
+        }
+
+        return $updatedAddress;
     }
 
     /**

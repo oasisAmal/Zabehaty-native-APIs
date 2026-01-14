@@ -45,8 +45,11 @@ class AddressStateEvaluationService
             }
         }
 
-        // Update cache with current state (even if no change)
-        $this->updateAddressStateCache($user);
+        // Create cache on first request if it doesn't exist (for future comparisons)
+        $cacheKey = $this->getCacheKey($user);
+        if (!Cache::has($cacheKey)) {
+            $this->updateAddressStateCache($user);
+        }
 
         return null; // State is valid
     }
@@ -101,15 +104,13 @@ class AddressStateEvaluationService
             'region_id' => $defaultAddress->region_id,
         ];
 
-        // If no cache exists, create it and proceed
+        // If no cache exists, create it and proceed (first request scenario)
         if (!$cachedState) {
-            $this->updateAddressStateCache($user);
             return null;
         }
 
         // Check if default address changed
         if ($cachedState['default_address_id'] !== $currentState['default_address_id']) {
-            $this->updateAddressStateCache($user);
             return [
                 'code' => 429,
                 'action' => 'RELOAD_HOME',
@@ -121,7 +122,6 @@ class AddressStateEvaluationService
         // Check if location changed
         if ($cachedState['emirate_id'] !== $currentState['emirate_id'] || 
             $cachedState['region_id'] !== $currentState['region_id']) {
-            $this->updateAddressStateCache($user);
             return [
                 'code' => 429,
                 'action' => 'RELOAD_HOME',

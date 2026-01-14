@@ -26,12 +26,15 @@ The system uses middleware-based validation that intercepts API requests and eva
 
 ```
 First Request:
-- No cache exists → Cache current state → Request proceeds
+- No cache exists → Create cache with current state → Request proceeds
 
 Subsequent Requests:
 - Compare current state with cache
-  - If different → Return status code with action → Update cache
-  - If same → Request proceeds → Refresh cache TTL
+  - If different → Return status code with action
+  - If same → Request proceeds (cache not updated during evaluation)
+
+Address Modifications (via UserAddressService):
+- Create/Update/Delete/SetDefault → Update cache immediately
 
 Admin Updates Address Externally:
 - Next mobile request detects change → Returns response
@@ -172,7 +175,8 @@ The system uses Laravel cache to track address state:
       'region_id' => int|null,
   ]
   ```
-- **Cache TTL**: 24 hours (auto-refreshed on each request)
+- **Cache TTL**: 24 hours
+- **Cache Updates**: Only updated when addresses are modified (create, update, delete, set default)
 
 ### State Comparison Logic
 
@@ -180,16 +184,39 @@ The system uses Laravel cache to track address state:
 2. **Subsequent Requests**: 
    - Compare `default_address_id` → If changed → Return `RELOAD_HOME`
    - Compare `emirate_id` and `region_id` → If changed → Return `RELOAD_HOME`
-   - If no changes → Update cache TTL → Proceed
+   - If no changes → Proceed (cache not updated during evaluation)
+3. **Address Modifications**: Cache is updated immediately after:
+   - Creating a new address
+   - Updating an existing address
+   - Deleting an address
+   - Setting a default address
+
+### Cache Update Strategy
+
+The cache is **only updated when addresses are modified**, not during evaluation:
+
+- **During Evaluation**: Cache is read-only for comparison purposes
+- **On Address Changes**: Cache is updated immediately after:
+  - `UserAddressService::create()` - After creating a new address
+  - `UserAddressService::update()` - After updating an address
+  - `UserAddressService::delete()` - After deleting an address
+  - `UserAddressService::setDefault()` - After setting a default address
+- **First Request**: If cache doesn't exist and state is valid, cache is created for future comparisons
+
+This approach ensures:
+- More efficient: No unnecessary cache writes during evaluation
+- Accurate change detection: Cache reflects actual address state
+- External updates detected: Admin system changes are detected on next request
 
 ### Edge Cases
 
 1. **Guest Users**: Validation is skipped (guests don't have address requirements)
 2. **Concurrent Requests**: Each request evaluates independently, cache updates are atomic
 3. **Soft Deletes**: System checks `is_active` flag, not just existence
-4. **First Login**: New users without addresses - cache will be created on first request
-5. **Cache Miss**: If cache doesn't exist, create it with current state and proceed
+4. **First Login**: New users without addresses - cache will be created on first valid request
+5. **Cache Miss**: If cache doesn't exist, create it with current state and proceed (only on first request)
 6. **External Updates**: Admin system updates address → Next mobile request detects change via cache comparison
+7. **Cache Not Updated During Evaluation**: Cache is only updated when addresses are modified, ensuring efficient operation
 
 ### Error Handling Best Practices
 
@@ -247,8 +274,9 @@ All messages are available in English and Arabic:
 ## Performance Considerations
 
 - **Lightweight Evaluation**: Single query for default address (already loaded via `$user->defaultAddress` relationship)
-- **Cache Operations**: Fast cache read/write operations
-- **Cache TTL**: Refreshed on each request (24 hours), so active users keep cache warm
+- **Cache Operations**: Fast cache read operations during evaluation (write only on address modifications)
+- **Cache TTL**: 24 hours (not refreshed on each request, only updated when addresses change)
+- **Efficient Updates**: Cache is only written when addresses are actually modified, not on every evaluation
 - **Excluded Routes**: No overhead for address management, auth, or public routes
 - **Guest Users**: Skip evaluation entirely
 - **No Database Writes**: Pure cache-based state tracking
