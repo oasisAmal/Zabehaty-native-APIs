@@ -15,6 +15,7 @@ class DynamicShopsResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'shop' => $this->resource['shop'],
             'sections' => $this->resource['sections'],
         ];
     }

@@ -2,8 +2,10 @@
 
 namespace Modules\DynamicShops\App\Services;
 
-use Modules\DynamicShops\App\Services\Builders\SectionBuilder;
+use Modules\Shops\App\Models\Shop;
+use Modules\Shops\App\Transformers\ShopCardResource;
 use Modules\DynamicShops\App\Services\Cache\CacheService;
+use Modules\DynamicShops\App\Services\Builders\SectionBuilder;
 
 class DynamicShopsService
 {
@@ -27,9 +29,13 @@ class DynamicShopsService
     public function getDynamicShopsData($request): array
     {
         $shopId = $request->input('shop_id', 0);
+        $shop = Shop::find($shopId);
         
-        if (!$shopId) {
-            return ['sections' => []];
+        if (!$shop) {
+            return [
+                'shop' => null,
+                'sections' => [],
+            ];
         }
 
         $emirateId = 0;
@@ -52,6 +58,7 @@ class DynamicShopsService
 
         // Build data
         $data = [
+            'shop' => ShopCardResource::make($shop),
             'sections' => $this->sectionBuilder->buildAll($shopId),
         ];
 
