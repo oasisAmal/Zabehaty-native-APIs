@@ -25,6 +25,7 @@ class AuthResource extends JsonResource
             'rating' => (float) $this->rating ?? 0,
             'image_url' => $this->image_url,
             'default_address' => UserAddressResource::make($this->addresses()->with('emirate', 'region', 'branch')->default()->active()->first()),
+            'has_addresses' => $this->addresses()->active()->exists(),
             'created_at' => $this->created_at->format(Common::DATE_FORMAT_24),
             'updated_at' => $this->updated_at->format(Common::DATE_FORMAT_24),
         ];
