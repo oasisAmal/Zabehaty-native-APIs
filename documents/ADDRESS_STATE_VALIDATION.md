@@ -56,7 +56,7 @@ When address state validation fails, the API returns:
 
 ## Response Types
 
-### 1. No Default Address (428 - SELECT_ADDRESS)
+### 1. No Default Address (427 - SELECT_ADDRESS)
 
 **Scenario**: User has active addresses but none is set as default.
 
@@ -71,7 +71,7 @@ When address state validation fails, the API returns:
 }
 ```
 
-**HTTP Status Code**: `428` (Precondition Required)
+**HTTP Status Code**: `427` (Unassigned - Custom usage for address selection required)
 
 **Mobile App Behavior:**
 - Show address selection screen
@@ -232,7 +232,7 @@ This approach ensures:
 
 1. **No Default Address**
    - Setup: User with active addresses but no default
-   - Expected: 428 with `SELECT_ADDRESS` action
+   - Expected: 427 with `SELECT_ADDRESS` action
 
 2. **No Active Addresses**
    - Setup: User with no active addresses

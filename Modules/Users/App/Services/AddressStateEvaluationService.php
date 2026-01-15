@@ -29,7 +29,7 @@ class AddressStateEvaluationService
         // Check if user has no default address but has active addresses
         if ($this->hasNoDefaultAddress($user)) {
             return [
-                'code' => 428,
+                'code' => 427,
                 'action' => 'SELECT_ADDRESS',
                 'message' => __('users::messages.address_state_no_default'),
                 'reason' => 'no_default_address',
