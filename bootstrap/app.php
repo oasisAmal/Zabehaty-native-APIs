@@ -37,6 +37,9 @@ return Application::configure(basePath: dirname(__DIR__))
             CheckGuestModeMiddleware::class,
             AddressStateMiddleware::class,
         ]);
+        $middleware->api(append: [
+            'throttle:api',
+        ]);
 
         $middleware->alias([
             'auth-optional' => AuthOptionalMiddleware::class,
