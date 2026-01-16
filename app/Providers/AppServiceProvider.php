@@ -29,8 +29,8 @@ class AppServiceProvider extends ServiceProvider
         // Prevent Lazy Loading for all models in production
         // Model::preventLazyLoading(!app()->isProduction());
 
-        // RateLimiter::for('api', function (Request $request) {
-        //     return Limit::perSecond(1)->by($request->ip());
-        // });
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perSecond(2)->by($request->ip());
+        });
     }
 }
