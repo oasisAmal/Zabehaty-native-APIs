@@ -63,6 +63,12 @@ return Application::configure(basePath: dirname(__DIR__))
             }
         });
 
+        $exceptions->render(function (ThrottleRequestsException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return responseErrorMessage(__('auth.throttle'), 429);
+            }
+        });
+
         $exceptions->render(function (Throwable $e, Request $request) {
             if ($request->is('api/*')) {
                 Log::error('Exception in API', [
@@ -72,12 +78,6 @@ return Application::configure(basePath: dirname(__DIR__))
                     'request' => $request->all(),
                 ]);
                 return responseErrorMessage($e->getMessage(), 500);
-            }
-        });
-
-        $exceptions->render(function (ThrottleRequestsException $e, Request $request) {
-            if ($request->is('api/*')) {
-                return responseErrorMessage(__('auth.throttle'), 429);
             }
         });
     })->create();
