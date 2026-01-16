@@ -19,7 +19,7 @@ class AddressStateEvaluationService
         // Check if user has no active addresses
         if ($this->hasNoActiveAddresses($user)) {
             return [
-                'code' => 428,
+                'code' => 452,
                 'action' => 'CREATE_ADDRESS',
                 'message' => __('users::messages.address_state_no_active'),
                 'reason' => 'no_active_addresses',
@@ -29,7 +29,7 @@ class AddressStateEvaluationService
         // Check if user has no default address but has active addresses
         if ($this->hasNoDefaultAddress($user)) {
             return [
-                'code' => 427,
+                'code' => 453,
                 'action' => 'SELECT_ADDRESS',
                 'message' => __('users::messages.address_state_no_default'),
                 'reason' => 'no_default_address',
@@ -112,7 +112,7 @@ class AddressStateEvaluationService
         // Check if default address changed
         if ($cachedState['default_address_id'] !== $currentState['default_address_id']) {
             return [
-                'code' => 429,
+                'code' => 454,
                 'action' => 'RELOAD_HOME',
                 'message' => __('users::messages.address_state_default_changed'),
                 'reason' => 'default_changed',
@@ -123,7 +123,7 @@ class AddressStateEvaluationService
         if ($cachedState['emirate_id'] !== $currentState['emirate_id'] || 
             $cachedState['region_id'] !== $currentState['region_id']) {
             return [
-                'code' => 429,
+                'code' => 454,
                 'action' => 'RELOAD_HOME',
                 'message' => __('users::messages.address_state_location_changed'),
                 'reason' => 'location_changed',
