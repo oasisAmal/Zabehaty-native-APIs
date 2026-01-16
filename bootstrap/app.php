@@ -36,10 +36,11 @@ return Application::configure(basePath: dirname(__DIR__))
             ForceUpdateMiddleware::class,
             CheckGuestModeMiddleware::class,
             AddressStateMiddleware::class,
-        ]);
-        $middleware->api(append: [
             'throttle:api',
         ]);
+        // $middleware->api(append: [
+        //     'throttle:api',
+        // ]);
 
         $middleware->alias([
             'auth-optional' => AuthOptionalMiddleware::class,
