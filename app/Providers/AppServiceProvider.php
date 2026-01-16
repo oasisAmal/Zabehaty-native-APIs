@@ -30,7 +30,7 @@ class AppServiceProvider extends ServiceProvider
         // Model::preventLazyLoading(!app()->isProduction());
 
         RateLimiter::for('api', function (Request $request) {
-            $maxAttempts = (int) env('API_RATE_LIMIT_MAX_ATTEMPTS', 1);
+            $maxAttempts = (int) env('API_RATE_LIMIT_MAX_ATTEMPTS', 4);
             $decaySeconds = (int) env('API_RATE_LIMIT_DECAY_SECONDS', 60);
 
             return Limit::perSecond($maxAttempts, $decaySeconds)->by($request->ip());
