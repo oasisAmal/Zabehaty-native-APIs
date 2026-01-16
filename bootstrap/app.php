@@ -65,7 +65,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $exceptions->render(function (ThrottleRequestsException $e, Request $request) {
             if ($request->is('api/*')) {
-                return responseErrorMessage(__('auth.throttle'), 429);
+                return responseErrorMessage(__('auth.throttle', ['seconds' => $e->getHeaders()['Retry-After']]), 429);
             }
         });
 
