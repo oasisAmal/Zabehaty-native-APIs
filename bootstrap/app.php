@@ -8,6 +8,7 @@ use App\Http\Middleware\CountryMiddleware;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Auth\AuthenticationException;
 use App\Http\Middleware\ForceUpdateMiddleware;
+use App\Http\Middleware\AddressStateMiddleware;
 use App\Http\Middleware\AuthOptionalMiddleware;
 use App\Http\Middleware\LocalizationMiddleware;
 use App\Providers\SocialiteAppleServiceProvider;
@@ -15,7 +16,7 @@ use App\Http\Middleware\CheckGuestModeMiddleware;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\RequireRegisteredUserMiddleware;
-use App\Http\Middleware\AddressStateMiddleware;
+use Illuminate\Http\Exceptions\ThrottleRequestsException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -38,9 +39,6 @@ return Application::configure(basePath: dirname(__DIR__))
             AddressStateMiddleware::class,
             'throttle:api',
         ]);
-        // $middleware->api(append: [
-        //     'throttle:api',
-        // ]);
 
         $middleware->alias([
             'auth-optional' => AuthOptionalMiddleware::class,
@@ -74,6 +72,12 @@ return Application::configure(basePath: dirname(__DIR__))
                     'request' => $request->all(),
                 ]);
                 return responseErrorMessage($e->getMessage(), 500);
+            }
+        });
+
+        $exceptions->render(function (ThrottleRequestsException $e, Request $request) {
+            if ($request->is('api/*')) {
+                return responseErrorMessage(__('auth.throttle'), 429);
             }
         });
     })->create();
