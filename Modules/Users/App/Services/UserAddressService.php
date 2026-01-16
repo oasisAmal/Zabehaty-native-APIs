@@ -21,7 +21,7 @@ class UserAddressService
 
         if (!isset($data['mobile'])) {
             $data['mobile'] = auth('api')->user()->mobile;
-            $data['country_code'] = auth('api')->user()->country_code;
+            $data['country_code'] = auth('api')->user()->country_symbol;
         }
 
         $address = UserAddress::create($data);
