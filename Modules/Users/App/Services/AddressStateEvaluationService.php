@@ -111,6 +111,8 @@ class AddressStateEvaluationService
 
         // Check if default address changed
         if ($cachedState['default_address_id'] !== $currentState['default_address_id']) {
+            // Update cache immediately to prevent infinite loop on next request
+            $this->updateAddressStateCache($user);
             return [
                 'code' => 454,
                 'action' => 'RELOAD_HOME',
@@ -122,6 +124,8 @@ class AddressStateEvaluationService
         // Check if location changed
         if ($cachedState['emirate_id'] !== $currentState['emirate_id'] || 
             $cachedState['region_id'] !== $currentState['region_id']) {
+            // Update cache immediately to prevent infinite loop on next request
+            $this->updateAddressStateCache($user);
             return [
                 'code' => 454,
                 'action' => 'RELOAD_HOME',
