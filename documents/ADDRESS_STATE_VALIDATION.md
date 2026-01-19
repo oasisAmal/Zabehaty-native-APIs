@@ -56,31 +56,7 @@ When address state validation fails, the API returns:
 
 ## Response Types
 
-### 1. No Default Address (427 - SELECT_ADDRESS)
-
-**Scenario**: User has active addresses but none is set as default.
-
-**Response:**
-```json
-{
-    "status": "error",
-    "message": "Please select a default address",
-    "data": {
-        "action": "SELECT_ADDRESS"
-    }
-}
-```
-
-**HTTP Status Code**: `427` (Unassigned - Custom usage for address selection required)
-
-**Mobile App Behavior:**
-- Show address selection screen
-- Allow user to:
-  - Select an existing address, or
-  - Create a new address
-- After address is selected, retry the original request
-
-### 2. No Active Addresses (428 - CREATE_ADDRESS)
+### 1. No Active Addresses (452 - CREATE_ADDRESS)
 
 **Scenario**: User has no active addresses (all deleted or inactive).
 
@@ -95,13 +71,41 @@ When address state validation fails, the API returns:
 }
 ```
 
-**HTTP Status Code**: `428` (Precondition Required)
+**HTTP Status Code**: `452` (Custom - No active addresses)
 
 **Mobile App Behavior:**
 - Redirect to create address flow (map location screen)
 - After address is created, retry the original request
 
-### 3. Default Address Changed (429 - RELOAD_HOME)
+**Note**: This response will continue to appear until the user creates an address.
+
+### 2. No Default Address (453 - SELECT_ADDRESS)
+
+**Scenario**: User has active addresses but none is set as default.
+
+**Response:**
+```json
+{
+    "status": "error",
+    "message": "Please select a default address",
+    "data": {
+        "action": "SELECT_ADDRESS"
+    }
+}
+```
+
+**HTTP Status Code**: `453` (Custom - No default address selected)
+
+**Mobile App Behavior:**
+- Show address selection screen
+- Allow user to:
+  - Select an existing address, or
+  - Create a new address
+- After address is selected, retry the original request
+
+**Note**: This response will continue to appear until the user selects a default address.
+
+### 3. Default Address Changed (454 - RELOAD_HOME)
 
 **Scenario**: Different address becomes default (detected by comparing current default with cached state).
 
@@ -116,15 +120,19 @@ When address state validation fails, the API returns:
 }
 ```
 
-**HTTP Status Code**: `429` (Too Many Requests - Custom usage for state change)
+**HTTP Status Code**: `454` (Custom - Address state changed, reload required)
 
 **Mobile App Behavior:**
 - Clear all cached content
 - Reload home screen
 - Load content based on new address context
-- Retry the original request if needed
+- Subsequent requests will proceed normally (cache is updated after this response)
 
-### 4. Default Address Location Changed (429 - RELOAD_HOME)
+**Important**: The backend updates the cache immediately when returning this response. This means:
+- The first request after the change returns `RELOAD_HOME` (454)
+- All subsequent requests proceed normally (no infinite loop)
+
+### 4. Default Address Location Changed (454 - RELOAD_HOME)
 
 **Scenario**: City (emirate_id) or region (region_id) of default address changed.
 
@@ -139,13 +147,58 @@ When address state validation fails, the API returns:
 }
 ```
 
-**HTTP Status Code**: `429` (Too Many Requests - Custom usage for state change)
+**HTTP Status Code**: `454` (Custom - Address state changed, reload required)
 
 **Mobile App Behavior:**
 - Clear all cached content
 - Reload home screen
 - Load content based on new location context
-- Retry the original request if needed
+- Subsequent requests will proceed normally (cache is updated after this response)
+
+**Important**: The backend updates the cache immediately when returning this response. This means:
+- The first request after the change returns `RELOAD_HOME` (454)
+- All subsequent requests proceed normally (no infinite loop)
+
+## Important: Cache Behavior and Infinite Loop Prevention
+
+### RELOAD_HOME (454) - One-Time Response
+
+When the backend returns `RELOAD_HOME` (454), it immediately updates the cache with the new address state. This means:
+
+1. **First request after change**: Returns 454 with `RELOAD_HOME`
+2. **Cache is updated**: New address state is saved
+3. **Subsequent requests**: Proceed normally (no 454 returned)
+
+This prevents infinite loops where the mobile app would continuously receive `RELOAD_HOME`.
+
+### CREATE_ADDRESS (452) and SELECT_ADDRESS (453) - Persistent Response
+
+These responses do NOT update the cache. They will continue to appear until the user takes action:
+
+- **CREATE_ADDRESS (452)**: Appears until user creates an address
+- **SELECT_ADDRESS (453)**: Appears until user selects a default address
+
+Once the user completes the action via the address management endpoints, the cache is updated and subsequent requests proceed normally.
+
+### Flow Example
+
+```
+Scenario: Admin changes user's default address location
+
+1. User calls /api/home-page
+   → Backend detects location change
+   → Returns 454 RELOAD_HOME
+   → Cache updated with new state
+
+2. Mobile app clears cache, reloads home
+
+3. User calls /api/home-page again
+   → Backend compares with updated cache
+   → No change detected
+   → Request proceeds normally ✓
+
+4. All subsequent API calls work normally
+```
 
 ## Route Exclusions
 
@@ -182,9 +235,11 @@ The system uses Laravel cache to track address state:
 
 1. **First Request**: No cache exists → Create cache with current state → Proceed
 2. **Subsequent Requests**: 
-   - Compare `default_address_id` → If changed → Return `RELOAD_HOME`
-   - Compare `emirate_id` and `region_id` → If changed → Return `RELOAD_HOME`
-   - If no changes → Proceed (cache not updated during evaluation)
+   - Check if user has no active addresses → Return `CREATE_ADDRESS` (452)
+   - Check if user has no default address → Return `SELECT_ADDRESS` (453)
+   - Compare `default_address_id` → If changed → Return `RELOAD_HOME` (454) → Update cache
+   - Compare `emirate_id` and `region_id` → If changed → Return `RELOAD_HOME` (454) → Update cache
+   - If no changes → Proceed normally
 3. **Address Modifications**: Cache is updated immediately after:
    - Creating a new address
    - Updating an existing address
@@ -193,18 +248,31 @@ The system uses Laravel cache to track address state:
 
 ### Cache Update Strategy
 
-The cache is **only updated when addresses are modified**, not during evaluation:
+The cache update behavior depends on the response type:
 
-- **During Evaluation**: Cache is read-only for comparison purposes
-- **On Address Changes**: Cache is updated immediately after:
+**For CREATE_ADDRESS (452) and SELECT_ADDRESS (453):**
+- Cache is NOT updated during evaluation
+- Response will continue to appear until user takes action (creates or selects an address)
+- Once user completes the action, cache is updated via `UserAddressService`
+
+**For RELOAD_HOME (454):**
+- Cache IS updated immediately when returning this response
+- This prevents infinite loop: first request returns 454, subsequent requests proceed normally
+- Mobile app only needs to reload once
+
+**On Address Changes (via UserAddressService):**
+- Cache is updated immediately after:
   - `UserAddressService::create()` - After creating a new address
   - `UserAddressService::update()` - After updating an address
   - `UserAddressService::delete()` - After deleting an address
   - `UserAddressService::setDefault()` - After setting a default address
-- **First Request**: If cache doesn't exist and state is valid, cache is created for future comparisons
+
+**First Request:**
+- If cache doesn't exist and state is valid, cache is created for future comparisons
 
 This approach ensures:
-- More efficient: No unnecessary cache writes during evaluation
+- No infinite loops: RELOAD_HOME updates cache immediately
+- Persistent validation: CREATE_ADDRESS and SELECT_ADDRESS repeat until resolved
 - Accurate change detection: Cache reflects actual address state
 - External updates detected: Admin system changes are detected on next request
 
@@ -230,21 +298,25 @@ This approach ensures:
 
 ### Test Cases
 
-1. **No Default Address**
-   - Setup: User with active addresses but no default
-   - Expected: 427 with `SELECT_ADDRESS` action
-
-2. **No Active Addresses**
+1. **No Active Addresses**
    - Setup: User with no active addresses
-   - Expected: 428 with `CREATE_ADDRESS` action
+   - Expected: 452 with `CREATE_ADDRESS` action
+   - Cache: Not updated (response repeats until user creates address)
+
+2. **No Default Address**
+   - Setup: User with active addresses but no default
+   - Expected: 453 with `SELECT_ADDRESS` action
+   - Cache: Not updated (response repeats until user selects address)
 
 3. **Default Address Changed**
-   - Setup: User changes default address via admin panel
-   - Expected: 429 with `RELOAD_HOME` action on next request
+   - Setup: Admin changes default address via admin panel
+   - Expected: 454 with `RELOAD_HOME` action on first request only
+   - Cache: Updated immediately (subsequent requests proceed normally)
 
 4. **Location Changed**
    - Setup: Admin updates default address location (city/region)
-   - Expected: 429 with `RELOAD_HOME` action on next request
+   - Expected: 454 with `RELOAD_HOME` action on first request only
+   - Cache: Updated immediately (subsequent requests proceed normally)
 
 5. **Valid State**
    - Setup: User with valid default address
