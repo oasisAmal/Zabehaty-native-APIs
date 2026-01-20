@@ -24,7 +24,7 @@ class ProductSectionBuilder implements SectionBuilderInterface
             ->filter(function ($item) {
                 return $item->item !== null;
             })
-            ->take(20)
+            ->take(Pagination::PER_PAGE)
             ->map(function ($item) {
                 return new ProductCardResource($item->item);
             })
@@ -58,6 +58,6 @@ class ProductSectionBuilder implements SectionBuilderInterface
     {
         return $this->resolveItems($dynamicCategorySection)->filter(function ($item) {
             return $item->item !== null;
-        })->count() > 20;
+        })->count() > Pagination::PER_PAGE;
     }
 }
