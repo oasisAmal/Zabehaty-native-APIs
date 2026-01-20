@@ -43,7 +43,9 @@ class DynamicCategoriesServiceProvider extends ServiceProvider
      */
     protected function registerCommands(): void
     {
-        // $this->commands([]);
+        $this->commands([
+            \Modules\DynamicCategories\App\Console\Commands\StoreDynamicCategorySectionsCommand::class,
+        ]);
     }
 
     /**

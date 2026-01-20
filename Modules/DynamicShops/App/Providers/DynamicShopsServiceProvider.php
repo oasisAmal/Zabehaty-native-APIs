@@ -43,7 +43,9 @@ class DynamicShopsServiceProvider extends ServiceProvider
      */
     protected function registerCommands(): void
     {
-        // $this->commands([]);
+        $this->commands([
+            \Modules\DynamicShops\App\Console\Commands\StoreDynamicShopSectionsCommand::class,
+        ]);
     }
 
     /**

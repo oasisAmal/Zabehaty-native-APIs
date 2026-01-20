@@ -43,7 +43,9 @@ class HomePageServiceProvider extends ServiceProvider
      */
     protected function registerCommands(): void
     {
-        // $this->commands([]);
+        $this->commands([
+            \Modules\HomePage\App\Console\Commands\StoreHomePageSectionsCommand::class,
+        ]);
     }
 
     /**

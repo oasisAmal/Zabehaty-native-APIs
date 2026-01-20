@@ -22,6 +22,21 @@ class HomePage extends Model
      */
     protected $table = 'home_page';
 
+    public $timestamps = true;
+
+    protected $fillable = [
+        'emirate_ids',
+        'region_ids',
+        'title_en',
+        'title_ar',
+        'title_image_en_url',
+        'title_image_ar_url',
+        'background_image_url',
+        'type',
+        'banner_size',
+        'sorting',
+    ];
+
     /**
      * The attributes that should be cast.
      *
