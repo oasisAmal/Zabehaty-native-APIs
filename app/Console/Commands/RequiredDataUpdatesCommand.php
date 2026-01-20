@@ -43,12 +43,12 @@ class RequiredDataUpdatesCommand extends Command
     public function handle()
     {
         $this->info('Updating required data...');
-        // $this->activeAllShops();
-        // $this->activeAllCategories();
-        // $this->activeAllProducts();
-        // $this->updateAllProductsPrice();
-        // $this->updateAllProdctsVisibility();
-        // $this->updateAllCategoriesVisibility();
+        $this->activeAllShops();
+        $this->activeAllCategories();
+        $this->activeAllProducts();
+        $this->updateAllProductsPrice();
+        $this->updateAllProdctsVisibility();
+        $this->updateAllCategoriesVisibility();
         $this->updateAllShopsVisibility();
         $this->assignCategoryToProducts();
         $this->info('Required data updated successfully');
