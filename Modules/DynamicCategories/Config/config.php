@@ -20,7 +20,7 @@ return [
     |
     */
     'cache' => [
-        'enabled' => env('DYNAMIC_CATEGORIES_CACHE_ENABLED', true),
+        'enabled' => env('DYNAMIC_CATEGORIES_CACHE_ENABLED', false),
         'default_ttl' => env('DYNAMIC_CATEGORIES_CACHE_TTL', 600), // 10 minutes
     ]
 ];
