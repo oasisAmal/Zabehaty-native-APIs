@@ -43,12 +43,12 @@ class RequiredDataUpdatesCommand extends Command
     public function handle()
     {
         $this->info('Updating required data...');
-        $this->activeAllShops();
-        $this->activeAllCategories();
-        $this->activeAllProducts();
-        $this->updateAllProductsPrice();
-        $this->updateAllProdctsVisibility();
-        $this->updateAllCategoriesVisibility();
+        // $this->activeAllShops();
+        // $this->activeAllCategories();
+        // $this->activeAllProducts();
+        // $this->updateAllProductsPrice();
+        // $this->updateAllProdctsVisibility();
+        // $this->updateAllCategoriesVisibility();
         $this->updateAllShopsVisibility();
         $this->assignCategoryToProducts();
         $this->info('Required data updated successfully');
@@ -132,11 +132,11 @@ class RequiredDataUpdatesCommand extends Command
     public function updateAllShopsVisibility()
     {
         $this->info('Updating all shops visibility...');
-        Shop::with('shopsVisibilities')->orderBy('id', 'desc')->chunk(100, function ($shops) {
+        Shop::with('shopVisibilities')->orderBy('id', 'desc')->chunk(100, function ($shops) {
             foreach ($shops as $shop) {
-                $shop->shopsVisibilities()->delete();
+                $shop->shopVisibilities()->delete();
                 Emirate::with('regions')->get()->each(function ($emirate) use ($shop) {
-                    $shop->shopsVisibilities()->create([
+                    $shop->shopVisibilities()->create([
                         'emirate_id' => $emirate->id,
                         'region_ids' => $emirate->regions->pluck('id')->toArray(),
                     ]);
