@@ -854,6 +854,12 @@ The module fully supports the multi-country database system:
 - Cache keys include `category_id`, language code, plus the resolved `emirate_id`/`region_id` pair so each category/location combination is isolated
 - Sections can be filtered by emirate and region
 - Each country has separate dynamic categories configuration
+- **Data Seeding Commands**: All seeding commands use `forCountry('ae')` to ensure data is stored in the correct country database connection
+  - `Shop::forCountry('ae')` - Query shops from UAE database
+  - `Product::forCountry('ae')` - Query products from UAE database
+  - `Category::forCountry('ae')` - Query categories from UAE database
+  - `DynamicCategorySection::forCountry('ae')` - Query/create sections in UAE database
+  - `DynamicCategorySectionItem::forCountry('ae')->insert()` - Insert items in UAE database
 
 ## Multi-Language Support
 
@@ -1004,6 +1010,63 @@ if (section.has_more_items) {
     hideLoadMoreButton(section.id);
 }
 ```
+
+## Data Seeding Commands
+
+The DynamicCategories module includes an Artisan command for seeding sample data for performance testing and development purposes.
+
+### StoreDynamicCategorySectionsCommand
+
+**Command:** `dynamiccategories:store-sections`
+
+Creates sample DynamicCategories sections with items for testing and performance measurement.
+
+**Usage:**
+```bash
+# Basic usage (default: 50 sections per category, 100 items per section, 10 categories)
+docker compose exec app php artisan dynamiccategories:store-sections
+
+# Custom number of sections, items, and categories
+docker compose exec app php artisan dynamiccategories:store-sections --sections=100 --items-per-section=200 --categories=20
+
+# Force recreate items (delete existing items before creating new ones)
+docker compose exec app php artisan dynamiccategories:store-sections --force
+```
+
+**Options:**
+- `--sections`: Number of sections to create per category (default: 50)
+- `--items-per-section`: Number of items to add per section (default: 100)
+- `--categories`: Number of categories to process (default: 10)
+- `--force`: Recreate items even if they exist
+
+**Features:**
+- **Multi-Country Support**: Uses `forCountry('ae')` for all database operations to ensure data is stored in the correct country database
+- **Idempotent**: Can be run multiple times safely (unless `--force` is used)
+- **Batch Inserts**: Uses batch inserts (500 items per chunk) for better performance
+- **Automatic Location Data**: Automatically sets `emirate_ids` and `region_ids` to include all emirates and regions
+- **Section Types**: Creates sections for all types: `menu_items`, `products`, `shops`, `banners`
+- **Menu Items Support**: Creates menu item groups with `is_all_menu_item` flag support
+
+**What It Creates:**
+- Sections for each category (limited by `--categories` option)
+- Each section type includes appropriate items:
+  - **Menu Items**: Creates menu groups with `menu_item_parent_id` and optional `is_all_menu_item` flag
+  - **Products**: Links random products to the section
+  - **Shops**: Links random shops to the section
+  - **Banners**: Creates banner sections
+- All sections are configured with proper `emirate_ids` and `region_ids` for location filtering
+
+**Example:**
+```bash
+# Create 20 sections per category with 50 items each for 5 categories
+docker compose exec app php artisan dynamiccategories:store-sections --sections=20 --items-per-section=50 --categories=5
+```
+
+**Important Notes:**
+- Requires existing data: shops, products, and categories must exist in the database
+- Uses `forCountry('ae')` to ensure data is stored in the UAE (AE) database connection
+- All models use `forCountry('ae')` for queries and inserts to maintain multi-country database integrity
+- The `is_all_menu_item` field is conditionally set based on database schema (gracefully handles if column doesn't exist)
 
 ## Migration
 

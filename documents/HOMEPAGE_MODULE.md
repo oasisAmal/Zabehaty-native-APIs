@@ -719,6 +719,12 @@ The module fully supports the multi-country database system:
 - Cache keys include language code plus the resolved `emirate_id`/`region_id` pair so each country/location combination is isolated
 - Sections can be filtered by emirate and region
 - Each country has separate homepage configuration
+- **Data Seeding Commands**: All seeding commands use `forCountry('ae')` to ensure data is stored in the correct country database connection
+  - `Shop::forCountry('ae')` - Query shops from UAE database
+  - `Product::forCountry('ae')` - Query products from UAE database
+  - `Category::forCountry('ae')` - Query categories from UAE database
+  - `HomePage::createForCountry(..., 'ae')` - Create sections in UAE database
+  - `HomePageItem::forCountry('ae')->insert()` - Insert items in UAE database
 
 ## Multi-Language Support
 
@@ -795,6 +801,55 @@ try {
     );
 }
 ```
+
+## Data Seeding Commands
+
+The HomePage module includes an Artisan command for seeding sample data for performance testing and development purposes.
+
+### StoreHomePageSectionsCommand
+
+**Command:** `homepage:store-sections`
+
+Creates sample HomePage sections with items for testing and performance measurement.
+
+**Usage:**
+```bash
+# Basic usage (default: 50 sections per type, 100 items per section)
+docker compose exec app php artisan homepage:store-sections
+
+# Custom number of sections and items
+docker compose exec app php artisan homepage:store-sections --sections=100 --items-per-section=200
+
+# Force recreate items (delete existing items before creating new ones)
+docker compose exec app php artisan homepage:store-sections --force
+```
+
+**Options:**
+- `--sections`: Number of sections to create per type (default: 50)
+- `--items-per-section`: Number of items to add per section (default: 100)
+- `--force`: Recreate items even if they exist
+
+**Features:**
+- **Multi-Country Support**: Uses `forCountry('ae')` for all database operations to ensure data is stored in the correct country database
+- **Idempotent**: Can be run multiple times safely (unless `--force` is used)
+- **Batch Inserts**: Uses batch inserts (500 items per chunk) for better performance
+- **Automatic Location Data**: Automatically sets `emirate_ids` and `region_ids` to include all emirates and regions
+
+**What It Creates:**
+- Sections for each type: `categories`, `shops`, `products`
+- Each section includes random items from the respective model
+- All sections are configured with proper `emirate_ids` and `region_ids` for location filtering
+
+**Example:**
+```bash
+# Create 10 sections per type with 50 items each
+docker compose exec app php artisan homepage:store-sections --sections=10 --items-per-section=50
+```
+
+**Important Notes:**
+- Requires existing data: shops, products, and categories must exist in the database
+- Uses `forCountry('ae')` to ensure data is stored in the UAE (AE) database connection
+- All models use `forCountry('ae')` for queries and inserts to maintain multi-country database integrity
 
 ## Migration
 
