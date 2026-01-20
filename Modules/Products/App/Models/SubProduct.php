@@ -8,6 +8,8 @@ class SubProduct extends Model
 {
     protected $table = 'sub_products';
 
+    public $timestamps = false;
+
     protected $casts = [
         'data' => 'array',
         'is_active' => 'boolean'

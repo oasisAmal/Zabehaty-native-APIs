@@ -2,8 +2,9 @@
 
 namespace Modules\HomePage\App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
 use Modules\HomePage\App\Services\HomePageService;
 use Modules\HomePage\App\Transformers\HomePageResource;
 
@@ -28,6 +29,7 @@ class HomePageController extends Controller
             $homePageData = $this->homePageService->getHomePageData($request);
             return responseSuccessData(HomePageResource::make($homePageData));
         } catch (\Exception $e) {
+            Log::error('failed_to_retrieve_homepage_data', ['message' => $e->getMessage()]);
             return responseErrorMessage(
                 __('homepage::messages.failed_to_retrieve_homepage_data'),
                 500

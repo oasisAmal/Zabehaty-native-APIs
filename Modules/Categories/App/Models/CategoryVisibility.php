@@ -10,6 +10,14 @@ class CategoryVisibility extends Model
 {
     protected $table = 'category_visibilities';
 
+    public $timestamps = false;
+
+    protected $fillable = [
+        'category_id',
+        'emirate_id',
+        'region_ids',
+    ];
+
     protected $casts = [
         'emirate_id' => 'integer',
         'region_ids' => 'array',

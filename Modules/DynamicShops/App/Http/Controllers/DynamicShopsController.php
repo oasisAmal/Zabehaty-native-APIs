@@ -2,10 +2,11 @@
 
 namespace Modules\DynamicShops\App\Http\Controllers;
 
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use Modules\DynamicShops\App\Http\Requests\DynamicShopsIndexRequest;
 use Modules\DynamicShops\App\Services\DynamicShopsService;
 use Modules\DynamicShops\App\Transformers\DynamicShopsResource;
+use Modules\DynamicShops\App\Http\Requests\DynamicShopsIndexRequest;
 
 class DynamicShopsController extends Controller
 {
@@ -28,6 +29,7 @@ class DynamicShopsController extends Controller
             $dynamicShopsData = $this->dynamicShopsService->getDynamicShopsData($request);
             return responseSuccessData(DynamicShopsResource::make($dynamicShopsData));
         } catch (\Exception $e) {
+            Log::error('failed_to_retrieve_dynamic_shops_data', ['message' => $e->getMessage()]);
             return responseErrorMessage(
                 __('dynamicshops::messages.failed_to_retrieve_dynamic_shops_data'),
                 500
