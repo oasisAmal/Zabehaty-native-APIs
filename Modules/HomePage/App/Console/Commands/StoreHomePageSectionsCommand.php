@@ -65,7 +65,10 @@ class StoreHomePageSectionsCommand extends Command
 
     private function storeSections($categories, $shops, $products, int $sectionsCount, int $itemsPerSection): void
     {
+        $bannerModels = $products->concat($shops)->concat($categories);
+
         $sections = [
+            ['type' => HomeSectionType::BANNERS, 'title_en' => 'Banners', 'title_ar' => 'البنرات', 'models' => $bannerModels],
             ['type' => HomeSectionType::CATEGORIES, 'title_en' => 'Categories', 'title_ar' => 'التصنيفات', 'models' => $categories],
             ['type' => HomeSectionType::SHOPS, 'title_en' => 'Shops', 'title_ar' => 'المتاجر', 'models' => $shops],
             ['type' => HomeSectionType::PRODUCTS, 'title_en' => 'Products', 'title_ar' => 'المنتجات', 'models' => $products],
@@ -100,13 +103,21 @@ class StoreHomePageSectionsCommand extends Command
                 $itemsData = [];
                 $now = now();
                 foreach ($items as $model) {
-                    $itemsData[] = [
+                    $itemData = [
                         'home_page_id' => $homePage->id,
                         'item_type' => get_class($model),
                         'item_id' => $model->id,
                         'created_at' => $now,
                         'updated_at' => $now,
                     ];
+
+                    if ($section['type'] === HomeSectionType::BANNERS) {
+                        $imageUrl = $this->resolveBannerImageUrl($model);
+                        $itemData['image_en_url'] = $imageUrl;
+                        $itemData['image_ar_url'] = $imageUrl;
+                    }
+
+                    $itemsData[] = $itemData;
                 }
 
                 if (!empty($itemsData)) {
@@ -117,5 +128,22 @@ class StoreHomePageSectionsCommand extends Command
                 }
             }
         }
+    }
+
+    private function resolveBannerImageUrl($model): ?string
+    {
+        if ($model instanceof Product) {
+            return $model->image ?? null;
+        }
+
+        if ($model instanceof Shop) {
+            return $model->banner ?: ($model->image ?? null);
+        }
+
+        if ($model instanceof Category) {
+            return $model->icon ?? null;
+        }
+
+        return null;
     }
 }

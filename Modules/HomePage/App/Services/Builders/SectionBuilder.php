@@ -2,18 +2,14 @@
 
 namespace Modules\HomePage\App\Services\Builders;
 
-use Modules\Shops\App\Models\Shop;
-use Modules\Products\App\Models\Product;
-use Modules\HomePage\App\Models\HomePage;
-use Modules\Categories\App\Models\Category;
+use Illuminate\Support\Facades\DB;
+use Modules\HomePage\App\Services\Builders\Concerns\UsesHomepageQueryBuilder;
 use Modules\HomePage\Enums\HomeSectionType;
 use Modules\HomePage\App\Services\Builders\Factories\SectionBuilderFactory;
-use Modules\Shops\App\Models\Scopes\MatchedDefaultAddressScope as ShopMatchedDefaultAddressScope;
-use Modules\Products\App\Models\Scopes\MatchedDefaultAddressScope as ProductMatchedDefaultAddressScope;
-use Modules\Categories\App\Models\Scopes\MatchedDefaultAddressScope as CategoryMatchedDefaultAddressScope;
 
 class SectionBuilder
 {
+    use UsesHomepageQueryBuilder;
     protected SectionBuilderFactory $sectionBuilderFactory;
 
     public function __construct(SectionBuilderFactory $sectionBuilderFactory)
@@ -28,20 +24,34 @@ class SectionBuilder
      */
     public function buildAll(): array
     {
-        $homePages = HomePage::ordered()
-            ->has('items')
-            ->with('items')
-            ->get();
+        $locale = app()->getLocale() === 'ar' ? 'ar' : 'en';
+        $imageLang = request()->app_lang === 'ar' ? 'ar' : $locale;
 
-        $homePages->loadMorph('items.item', [
-            Product::class => fn($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
-            Shop::class => fn($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
-            Category::class => fn($query) => $query->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class),
-        ]);
+        $query = $this->getConnection()
+            ->table('home_page')
+            ->select([
+                'home_page.id',
+                'home_page.type',
+                'home_page.background_image_url',
+                'home_page.banner_size',
+                'home_page.sorting',
+            ])
+            ->selectRaw("home_page.title_{$locale} as title")
+            ->selectRaw("home_page.title_image_{$imageLang}_url as title_image_url")
+            ->whereExists(function ($subQuery) {
+                $subQuery->select(DB::raw(1))
+                    ->from('home_page_items')
+                    ->whereColumn('home_page_items.home_page_id', 'home_page.id');
+            })
+            ->orderBy('home_page.sorting');
+
+        $this->applyHomePageAddressFilter($query);
+
+        $homePages = $query->get();
 
         return $homePages
             ->map(function ($homePage) {
-                return $this->buildSection($homePage);
+                return $this->buildSection((array) $homePage);
             })
             ->filter(fn($section) => !empty($section['items']))
             ->values()
@@ -51,27 +61,41 @@ class SectionBuilder
     /**
      * Build a single section
      *
-     * @param HomePage $homePage
+     * @param array $homePage
      * @return array
      */
-    public function buildSection(HomePage $homePage): array
+    public function buildSection(array $homePage): array
     {
-        $builder = $this->sectionBuilderFactory->create($homePage->type);
+        $builder = $this->sectionBuilderFactory->create($homePage['type']);
 
-        $type = $homePage->type;
+        $type = $homePage['type'];
         if ($type == HomeSectionType::LIMITED_TIME_OFFERS) {
             $type = HomeSectionType::PRODUCTS;
         }
 
         return [
-            'id' => $homePage->id,
+            'id' => $homePage['id'],
             'type' => $type,
-            'title' => $homePage->title,
-            'title_image_url' => $homePage->title_image_url,
-            'background_image_url' => $homePage->background_image_url,
-            'banner_size' => $homePage->banner_size ?? '',
-            'sorting' => $homePage->sorting,
+            'title' => $homePage['title'] ?? null,
+            'title_image_url' => $homePage['title_image_url'] ?? null,
+            'background_image_url' => $homePage['background_image_url'] ?? null,
+            'banner_size' => $homePage['banner_size'] ?? '',
+            'sorting' => $homePage['sorting'] ?? null,
             'items' => $builder->build($homePage),
         ];
+    }
+
+    private function applyHomePageAddressFilter($query): void
+    {
+        $defaultAddress = $this->getDefaultAddress();
+        if (! $defaultAddress) {
+            return;
+        }
+
+        $query->whereJsonContains('home_page.emirate_ids', (string) $defaultAddress->emirate_id)
+            ->where(function ($innerQuery) use ($defaultAddress) {
+                $innerQuery->whereNull('home_page.region_ids')
+                    ->orWhereJsonContains('home_page.region_ids', (string) $defaultAddress->region_id);
+            });
     }
 }

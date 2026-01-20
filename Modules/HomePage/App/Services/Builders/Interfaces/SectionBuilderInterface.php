@@ -2,15 +2,13 @@
 
 namespace Modules\HomePage\App\Services\Builders\Interfaces;
 
-use Modules\HomePage\App\Models\HomePage;
-
 interface SectionBuilderInterface
 {
     /**
      * Build section data
      *
-     * @param HomePage $homePage
+     * @param array $homePage
      * @return array
      */
-    public function build(HomePage $homePage): array;
+    public function build(array $homePage): array;
 }

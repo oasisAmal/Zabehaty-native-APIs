@@ -2,7 +2,7 @@
 
 ## Overview
 
-The HomePage module is a flexible and extensible system for managing dynamic homepage content in the Zabehaty Native APIs application. It supports multiple section types (banners, products, categories, shops, limited-time offers) with multi-language support, caching, and location-based filtering.
+The HomePage module is a flexible and extensible system for managing dynamic homepage content in the Zabehaty Native APIs application. It supports multiple section types (banners, products, categories, shops, limited-time offers) with multi-language support, caching, and location-based filtering. The current implementation uses Query Builder for section data fetching to optimize performance while preserving the visibility rules.
 
 ## Architecture
 
@@ -64,12 +64,12 @@ Modules/HomePage/
 
 ### `home_page` Table
 
-Stores homepage sections configuration:
+Stores homepage sections configuration (note: uses `emirate_ids` JSON array):
 
 | Column | Type | Description |
 |--------|------|-------------|
 | `id` | bigint | Primary key |
-| `emirate_id` | integer | Optional emirate filter |
+| `emirate_ids` | json | Optional emirate IDs array |
 | `region_ids` | json | Optional region IDs array |
 | `title_en` | string | English title |
 | `title_ar` | string | Arabic title |
@@ -100,6 +100,7 @@ Stores items (polymorphic) associated with each section:
 | `image_en_url` | string | English item image URL |
 | `item_id` | bigint | Polymorphic item ID |
 | `item_type` | string | Polymorphic item type |
+| `external_link` | string | Optional external link |
 | `timestamps` | timestamps | Created/updated timestamps |
 
 **Polymorphic Relations:**
@@ -182,24 +183,19 @@ public function build(): array
 
 #### SectionBuilder
 
-Builds all homepage sections using factory pattern, and preloads morph items without the heavy `MatchedDefaultAddressScope` to improve performance:
+Builds all homepage sections using the factory pattern and Query Builder:
 
 ```php
 public function buildAll(): array
 {
-    $homePages = HomePage::ordered()
-        ->has('items')
-        ->with('items')
+    $homePages = DB::table('home_page')
+        ->select([...])
+        ->whereExists(...)
+        ->orderBy('sorting')
         ->get();
 
-    $homePages->loadMorph('items.item', [
-        Product::class => fn ($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
-        Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
-        Category::class => fn ($query) => $query->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class),
-    ]);
-
     return $homePages
-        ->map(fn ($homePage) => $this->buildSection($homePage))
+        ->map(fn ($homePage) => $this->buildSection((array) $homePage))
         ->filter(fn ($section) => !empty($section['items']))
         ->values()
         ->toArray();
@@ -207,8 +203,8 @@ public function buildAll(): array
 ```
 
 **Process:**
-1. Fetch ordered sections with items
-2. `loadMorph` items to drop `MatchedDefaultAddressScope` on products/shops/categories
+1. Fetch ordered sections via Query Builder (localized title/image fields)
+2. Apply address-based filtering for sections
 3. Uses factory to get appropriate builder
 4. Builds each section data, filters empty sections
 5. Returns array of sections
@@ -244,149 +240,117 @@ All section builders implement `SectionBuilderInterface`:
 ```php
 interface SectionBuilderInterface
 {
-    public function build(HomePage $homePage): array;
+    public function build(array $homePage): array;
 }
 ```
+
+**Shared Query/Visibility Helpers:**
+- Builders reuse a shared trait (`UsesHomepageQueryBuilder`) to avoid duplication.
+- The trait provides the country-aware DB connection, default address resolution, and reusable visibility subqueries (product/shop/category).
 
 #### ProductSectionBuilder
 
-Builds product sections with pagination, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
+Builds product sections via Query Builder and applies full visibility rules (product + shop + category). It also mirrors the product active conditions for price/approval/department and calculates derived fields like price and discount.
 
 ```php
-public function build(HomePage $homePage): array
+public function build(array $homePage): array
 {
-    return $this->resolveItems($homePage)
-        ->filter(function ($item) {
-            return $item->item !== null;
+    $nameColumn = app()->getLocale() === 'ar' ? 'name' : 'name_en';
+
+    $query = DB::table('home_page_items')
+        ->join('products', function ($join) {
+            $join->on('products.id', '=', 'home_page_items.item_id')
+                ->where('home_page_items.item_type', Product::class);
         })
-        ->take(Pagination::PER_PAGE)
-        ->map(function ($item) {
-            return new ProductCardResource($item->item);
-        })
-        ->values()
-        ->toArray();
-}
+        ->where('home_page_items.home_page_id', $homePage['id'])
+        ->where('products.is_active', true)
+        ->where('products.is_approved', true)
+        ->selectRaw("products.{$nameColumn} as name");
 
-private function resolveItems(HomePage $homePage): Collection
-{
-    if ($homePage->relationLoaded('items')) {
-        $items = $homePage->items;
+    $this->applyProductVisibility($query);
 
-        if ($items->isEmpty() || $items->first()->relationLoaded('item')) {
-            return $items;
-        }
-    }
-
-    $homePage->load('items');
-
-    $homePage->loadMorph('items.item', [
-        Product::class => fn ($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
-    ]);
-
-    return $homePage->items;
+    return $query->limit(Pagination::PER_PAGE)->get()->map(fn ($item) => [
+        'id' => $item->id,
+        'name' => $item->name,
+        'price' => $this->resolvePrice($item),
+    ])->toArray();
 }
 ```
-
-**Performance Note:** Filtering before `take()` ensures that if the first N items have null `item` relationships, the builder will continue searching through the collection to find the required number of valid items, rather than returning fewer items than requested.
 
 #### CategorySectionBuilder
 
-Builds category sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
+Builds category sections via Query Builder and applies category visibility rules directly against `category_visibilities`.
 
 ```php
-public function build(HomePage $homePage): array
+public function build(array $homePage): array
 {
-    return $this->resolveItems($homePage)
-        ->filter(function ($item) {
-            return $item->item !== null;
+    $nameColumn = app()->getLocale() === 'ar' ? 'name' : 'name_en';
+
+    $query = DB::table('home_page_items')
+        ->join('categories', function ($join) {
+            $join->on('categories.id', '=', 'home_page_items.item_id')
+                ->where('home_page_items.item_type', Category::class);
         })
-        ->take(Pagination::PER_PAGE)
-        ->map(function ($item) {
-            return new CategoryCardResource($item->item);
-        })
-        ->values()
-        ->toArray();
-}
+        ->where('home_page_items.home_page_id', $homePage['id'])
+        ->where('categories.is_active', true)
+        ->selectRaw("categories.{$nameColumn} as name");
 
-private function resolveItems(HomePage $homePage): Collection
-{
-    if ($homePage->relationLoaded('items')) {
-        $items = $homePage->items;
+    $this->applyCategoryVisibility($query);
 
-        if ($items->isEmpty() || $items->first()->relationLoaded('item')) {
-            return $items;
-        }
-    }
-
-    $homePage->load('items');
-
-    $homePage->loadMorph('items.item', [
-        Category::class => fn ($query) => $query->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class),
-    ]);
-
-    return $homePage->items;
+    return $query->limit(Pagination::PER_PAGE)->get()->map(fn ($item) => [
+        'id' => $item->id,
+        'name' => $item->name,
+    ])->toArray();
 }
 ```
 
-**Performance Note:** Filtering before `take()` ensures that if the first N items have null `item` relationships, the builder will continue searching through the collection to find the required number of valid items, rather than returning fewer items than requested.
-
 #### BannerSectionBuilder
 
-Builds banner sections (returns raw banner data):
+Builds banner sections via Query Builder. If a banner is linked to a product/shop/category, it is returned only when the linked item passes its visibility rules. Unlinked banners remain visible.
 
 ```php
-public function build(HomePage $homePage): array
+public function build(array $homePage): array
 {
-    return $homePage->items()
-        ->with('item')
-        ->get()
-        ->map(function ($item) {
-            return $item->item;
-        })->toArray();
+    $query = DB::table('home_page_items')
+        ->select(['id', 'image_ar_url', 'image_en_url', 'item_type', 'item_id', 'external_link'])
+        ->where('home_page_id', $homePage['id']);
+
+    $this->applyBannerVisibility($query);
+
+    return $query->limit(Pagination::PER_PAGE)->get()->map(fn ($item) => [
+        'id' => $item->id,
+        'image_url' => $this->getImageUrl($item),
+        'item_type' => $this->getItemTypeName($item->item_type),
+    ])->toArray();
 }
 ```
 
 #### ShopSectionBuilder
 
-Builds shop sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
+Builds shop sections via Query Builder and applies shop + category visibility rules to ensure shops are shown only when both visibility layers pass.
 
 ```php
-public function build(HomePage $homePage): array
+public function build(array $homePage): array
 {
-    return $this->resolveItems($homePage)
-        ->filter(function ($item) {
-            return $item->item !== null;
+    $nameColumn = app()->getLocale() === 'ar' ? 'name' : 'name_en';
+
+    $query = DB::table('home_page_items')
+        ->join('shops', function ($join) {
+            $join->on('shops.id', '=', 'home_page_items.item_id')
+                ->where('home_page_items.item_type', Shop::class);
         })
-        ->take(Pagination::PER_PAGE)
-        ->map(function ($item) {
-            return new ShopCardResource($item->item);
-        })
-        ->values()
-        ->toArray();
-}
+        ->where('home_page_items.home_page_id', $homePage['id'])
+        ->where('shops.is_active', true)
+        ->selectRaw("shops.{$nameColumn} as name");
 
-private function resolveItems(HomePage $homePage): Collection
-{
-    if ($homePage->relationLoaded('items')) {
-        $items = $homePage->items;
+    $this->applyShopVisibility($query);
 
-        if ($items->isEmpty() || $items->first()->relationLoaded('item')) {
-            return $items;
-        }
-    }
-
-    $homePage->load('items');
-
-    $homePage->loadMorph('items.item', [
-        Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
-    ]);
-
-    return $homePage->items;
+    return $query->limit(Pagination::PER_PAGE)->get()->map(fn ($item) => [
+        'id' => $item->id,
+        'name' => $item->name,
+    ])->toArray();
 }
 ```
-
-**Performance Note:** Filtering before `take()` ensures that if the first N items have null `item` relationships, the builder will continue searching through the collection to find the required number of valid items, rather than returning fewer items than requested.
-
 ### 4. Caching
 
 #### CacheService
@@ -729,6 +693,7 @@ The module fully supports the multi-country database system:
 ## Multi-Language Support
 
 - Supports English and Arabic
+- Name fields on products/shops/categories: `name_en` (English), `name` (Arabic)
 - Title fields: `title_en`, `title_ar`
 - Image fields: `image_en_url`, `image_ar_url`, `title_image_en_url`, `title_image_ar_url`
 - Uses `TraitLanguage` for automatic language detection
@@ -738,11 +703,11 @@ The module fully supports the multi-country database system:
 
 Sections can be filtered by location:
 
-- **Emirate Filter**: `emirate_id` field
+- **Emirate Filter**: `emirate_ids` JSON array
 - **Region Filter**: `region_ids` JSON array
 - **Global Sections**: When both are null, section shows for all locations
 
-**Note:** The `MatchedDefaultAddressScope` is currently commented out in the model boot method but can be enabled for automatic location filtering.
+**Note:** The homepage uses Query Builder and applies visibility rules directly in the builders, so model scopes are not required for homepage responses. Other parts of the system may still rely on the model scopes.
 
 ## Caching Strategy
 
@@ -781,11 +746,11 @@ $homePage->sorting = 1; // Lower numbers appear first
 
 ### 2. Performance
 
-- Use eager loading: `with('items.item')`
+- Query Builder is used for sections and items to minimize ORM overhead
 - Limit items per section (use pagination constants)
 - Enable caching in production
 - Use appropriate cache TTLs
-- **ProductSectionBuilder, ShopSectionBuilder, and CategorySectionBuilder** filter out null items before applying pagination to ensure the correct number of valid items are returned, preventing scenarios where fewer items than requested are returned due to null relationships
+- Sections with no visible items are removed before returning the response
 
 ### 3. Error Handling
 
@@ -836,8 +801,9 @@ docker compose exec app php artisan homepage:store-sections --force
 - **Automatic Location Data**: Automatically sets `emirate_ids` and `region_ids` to include all emirates and regions
 
 **What It Creates:**
-- Sections for each type: `categories`, `shops`, `products`
-- Each section includes random items from the respective model
+- Sections for each type: `banners`, `categories`, `shops`, `products`
+- Each section includes random items from the respective model (banners are mixed product/shop/category items)
+- Banner items get their `image_en_url` and `image_ar_url` filled from the linked model
 - All sections are configured with proper `emirate_ids` and `region_ids` for location filtering
 
 **Example:**
@@ -868,7 +834,7 @@ php artisan country:db migrate --country=AE
 ### Issue: Sections not appearing
 
 **Solution:**
-- Check if sections have items: `has('items.item')`
+- Check if sections have visible items after visibility filtering
 - Verify `sorting` values are set correctly
 - Check if items exist and are not soft-deleted
 - Clear cache: `php artisan cache:clear`

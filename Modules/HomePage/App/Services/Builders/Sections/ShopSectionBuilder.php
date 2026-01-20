@@ -3,55 +3,82 @@
 namespace Modules\HomePage\App\Services\Builders\Sections;
 
 use App\Enums\Pagination;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Modules\Shops\App\Models\Shop;
-use Illuminate\Support\Facades\Log;
-use Modules\HomePage\App\Models\HomePage;
-use Modules\Shops\App\Transformers\ShopCardResource;
+use Modules\HomePage\App\Services\Builders\Concerns\UsesHomepageQueryBuilder;
 use Modules\HomePage\App\Services\Builders\Interfaces\SectionBuilderInterface;
-use Modules\Shops\App\Models\Scopes\MatchedDefaultAddressScope as ShopMatchedDefaultAddressScope;
 
 class ShopSectionBuilder implements SectionBuilderInterface
 {
+    use UsesHomepageQueryBuilder;
     /**
      * Build shop section data
      *
-     * @param HomePage $homePage
+     * @param array $homePage
      * @return array
      */
-    public function build(HomePage $homePage): array
+    public function build(array $homePage): array
     {
-        return $this->resolveItems($homePage)
-            ->filter(function ($item) {
-                return $item->item !== null;
+        $locale = app()->getLocale() === 'ar' ? 'ar' : 'en';
+        $nameColumn = $locale === 'ar' ? 'name' : 'name_en';
+
+        $query = $this->getConnection()
+            ->table('home_page_items')
+            ->join('shops', function ($join) {
+                $join->on('shops.id', '=', 'home_page_items.item_id')
+                    ->where('home_page_items.item_type', Shop::class);
             })
-            ->take(Pagination::PER_PAGE)
+            ->select([
+                'shops.id',
+                'shops.banner',
+                'shops.image',
+                'shops.rating',
+            ])
+            ->selectRaw("shops.{$nameColumn} as name")
+            ->selectSub($this->firstParentCategorySubQuery($nameColumn), 'first_parent_category_name')
+            ->where('home_page_items.home_page_id', $homePage['id'])
+            ->where('shops.is_active', true)
+            ->orderBy('home_page_items.id')
+            ->limit(Pagination::PER_PAGE);
+
+        $this->applyShopVisibility($query);
+
+        $items = $query->get();
+
+        return $items
             ->map(function ($item) {
-                return new ShopCardResource($item->item);
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'image_url' => $item->banner ?? '',
+                    'logo_url' => $item->image ?? '',
+                    'rating' => $item->rating ? (float) $item->rating : null,
+                    'category' => $item->first_parent_category_name ?? '',
+                    'payment_badges' => ['tamara', 'tabby'],
+                ];
             })
-            ->values()
             ->toArray();
     }
 
-    /**
-     * Ensure items are loaded without the costly visibility scope.
-     */
-    private function resolveItems(HomePage $homePage): Collection
+    private function firstParentCategorySubQuery(string $nameColumn)
     {
-        if ($homePage->relationLoaded('items')) {
-            $items = $homePage->items;
+        return $this->getConnection()
+            ->table('shop_categories')
+            ->join('categories', 'categories.id', '=', 'shop_categories.category_id')
+            ->selectRaw("categories.{$nameColumn}")
+            ->whereColumn('shop_categories.shop_id', 'shops.id')
+            ->whereNull('categories.parent_id')
+            ->limit(1);
+    }
 
-            if ($items->isEmpty() || $items->first()->relationLoaded('item')) {
-                return $items;
-            }
+    private function applyShopVisibility($query): void
+    {
+        $defaultAddress = $this->getDefaultAddress();
+        if (! $defaultAddress) {
+            return;
         }
 
-        $homePage->load('items');
-
-        $homePage->loadMorph('items.item', [
-            Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
-        ]);
-
-        return $homePage->items;
+        $this->applyShopVisibilityByShopId($query, 'shops.id', $defaultAddress);
+        $this->applyCategoryVisibilityThroughShopCategories($query, 'shops.id', $defaultAddress);
     }
 }
