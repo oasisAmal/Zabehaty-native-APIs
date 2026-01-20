@@ -20,7 +20,7 @@ return [
     |
     */
     'cache' => [
-        'enabled' => env('DYNAMIC_SHOPS_CACHE_ENABLED', false),
-        'default_ttl' => env('DYNAMIC_SHOPS_CACHE_TTL', 3600), // 1 hour
+        'enabled' => env('DYNAMIC_SHOPS_CACHE_ENABLED', true),
+        'default_ttl' => env('DYNAMIC_SHOPS_CACHE_TTL', 600), // 10 minutes
     ]
 ];
