@@ -55,6 +55,16 @@ services:
         networks:
             - zabehaty_native_apis_network
 
+    #Redis Service
+    redis:
+        image: redis:alpine
+        restart: unless-stopped
+        tty: true
+        ports:
+            - "6379:6379"
+        networks:
+            - zabehaty_native_apis_network
+
     #mailhog Service
     mailpit:
         image: "axllent/mailpit:latest"
