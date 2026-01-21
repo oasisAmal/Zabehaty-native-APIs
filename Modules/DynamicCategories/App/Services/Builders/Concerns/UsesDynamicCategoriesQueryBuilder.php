@@ -2,14 +2,15 @@
 
 namespace Modules\DynamicCategories\App\Services\Builders\Concerns;
 
-use Illuminate\Support\Facades\DB;
+use App\Traits\CountryQueryBuilderTrait;
 
 trait UsesDynamicCategoriesQueryBuilder
 {
+    use CountryQueryBuilderTrait;
+
     private function getConnection()
     {
-        $connection = strtolower((string) request()->get('app_country_code'));
-        return $connection !== '' ? DB::connection($connection) : DB::connection();
+        return $this->getCountryConnection();
     }
 
     private function getDefaultAddress(): ?object
