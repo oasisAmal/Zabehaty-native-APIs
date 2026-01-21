@@ -4,6 +4,7 @@ namespace Modules\Shops\App\Transformers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Modules\Shops\App\Services\ShopDetailsTransformerService;
 
 class ShopCardResource extends JsonResource
 {
@@ -12,7 +13,7 @@ class ShopCardResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $paymentBadges = $this->payment_badges ?? ['tamara', 'tabby'];
+        $service = app(ShopDetailsTransformerService::class);
 
         return [
             'id' => $this->id,
@@ -22,7 +23,7 @@ class ShopCardResource extends JsonResource
             'logo_url' => $this->image ?? '',
             'rating' => $this->rating ? (float) $this->rating : null,
             'category' => $this->first_parent_category?->name ?? ($this->first_parent_category_name ?? ''),
-            'payment_badges' => $paymentBadges,
+            'payment_badges' => $service->getPaymentBadges($this->resource),
         ];
     }
 }
