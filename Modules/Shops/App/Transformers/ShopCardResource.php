@@ -12,6 +12,8 @@ class ShopCardResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $paymentBadges = $this->payment_badges ?? ['tamara', 'tabby'];
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -19,8 +21,8 @@ class ShopCardResource extends JsonResource
             'image_url' => $this->banner ?? '',
             'logo_url' => $this->image ?? '',
             'rating' => $this->rating ? (float) $this->rating : null,
-            'category' => $this->first_parent_category?->name ?? '',
-            'payment_badges' => $this->payment_badges ?? [],
+            'category' => $this->first_parent_category?->name ?? ($this->first_parent_category_name ?? ''),
+            'payment_badges' => $paymentBadges,
         ];
     }
 }
