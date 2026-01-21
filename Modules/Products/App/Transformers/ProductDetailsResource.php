@@ -5,7 +5,6 @@ namespace Modules\Products\App\Transformers;
 use Illuminate\Http\Request;
 use App\Enums\CountryCurrencies;
 use Illuminate\Http\Resources\Json\JsonResource;
-use Modules\Products\App\Services\ProductDetailsTransformerService;
 
 class ProductDetailsResource extends JsonResource
 {
@@ -14,35 +13,39 @@ class ProductDetailsResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        $service = app(ProductDetailsTransformerService::class);
+        $product = is_array($this->resource) ? $this->resource : (array) $this->resource;
+        $sizes = $product['sub_products'] ?? [];
+        $categoryId = $product['category_id'] ?? null;
 
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'description_title' => $service->getProductDescriptionTitle($this->resource),
-            'description' => $service->getProductDescription($this->resource),
-            'image_url' => $this->image_url,
-            'images' => $service->getProductImages($this->resource),
-            'shop' => $this->shop?->name,
-            'category' => $this->category?->name,
-            'currency' => CountryCurrencies::getCurrency(),
-            'price' => $service->getProductPrice($this->resource),
-            'price_before_discount' => (float) $this->old_price ?: null,
-            'discount_percentage' => (float) $this->discount_percentage ?: null,
-            'limited_offer_expired_at' => $this->limited_offer_expired_at ? $this->limited_offer_expired_at->timestamp : null,
-            'badge' => $this->badge_name ?? null,
-            'is_favorite' => (bool) $this->is_favorite,
-            // 'has_gift' => $this->has_gift,
-            // 'allow_gift' => $this->allow_gift,
-            // 'allow_donate' => $this->allow_donate,
-            'has_quantity' => $this->has_quantity,
-            'quantity_settings' => $this->quantity_settings,
-            'stock' => $this->stock_settings,
-            'size_section_name' => $service->getSizeSectionName($this->resource),
-            'sizes' => $service->getSizes($this->resource),
-            // 'available_shops' => $service->getAvailableShops($this->resource),
-            // 'available_restaurants' => $service->getAvailableRestaurants($this->resource),
-            'addon_sections' => AddonSectionResource::collection($this->addonSectionPivots ?? []),
+            'id' => $product['id'] ?? null,
+            'name' => $product['name'] ?? null,
+            'description_title' => $product['description_title'] ?? null,
+            'description' => $product['description'] ?? null,
+            'image_url' => $product['image'] ?? null,
+            'images' => $product['images'] ?? [],
+            'shop' => $product['shop_name'] ?? null,
+            'category' => $product['category_name'] ?? null,
+            'currency' => $product['currency'] ?? CountryCurrencies::getCurrency(),
+            'price' => $product['price'] ?? null,
+            'price_before_discount' => $product['price_before_discount'] ?? null,
+            'discount_percentage' => $product['discount_percentage'] ?? null,
+            'limited_offer_expired_at' => $product['limited_offer_expired_at'] ?? null,
+            'badge' => $product['badge'] ?? null,
+            'is_favorite' => (bool) ($product['is_favorite'] ?? false),
+            'has_quantity' => $product['has_quantity'] ?? null,
+            'quantity_settings' => $product['quantity_settings'] ?? null,
+            'stock' => $product['stock'] ?? null,
+            'size_section_name' => $product['size_section_name'] ?? null,
+            'sizes' => collect($sizes)->map(function ($size) use ($categoryId) {
+                $sizeArray = (array) $size;
+                if (! array_key_exists('category_id', $sizeArray)) {
+                    $sizeArray['category_id'] = $categoryId;
+                }
+                return new ProductSizeResource((object) $sizeArray);
+            }),
+            'addon_sections' => collect($product['addon_sections'] ?? [])
+                ->map(fn ($section) => new AddonSectionResource((object) $section)),
         ];
     }
 }

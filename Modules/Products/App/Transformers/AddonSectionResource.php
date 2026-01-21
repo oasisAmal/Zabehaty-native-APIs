@@ -12,12 +12,14 @@ class AddonSectionResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $items = $this->items ?? [];
+
         return [
             'id' => $this->id,
             'title' => $this->title,
             'type' => $this->type,
-            'is_required' => (bool) ($this->pivot->is_required ?? false),
-            'items' => AddonSectionItemResource::collection($this->pivot->itemsPivots ?? collect()),
+            'is_required' => (bool) ($this->is_required ?? false),
+            'items' => collect($items)->map(fn ($item) => new AddonSectionItemResource((object) $item)),
         ];
     }
 }

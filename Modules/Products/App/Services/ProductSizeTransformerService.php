@@ -9,6 +9,7 @@ class ProductSizeTransformerService
      */
     private static ?string $ageLabel = null;
     private static ?string $weightLabel = null;
+    private static ?int $categoryId = null;
 
     /**
      * Get age label for size
@@ -27,7 +28,7 @@ class ProductSizeTransformerService
         }
 
         $categoryIds = [1, 2, 3, 4, 160, 168];
-        return ($size->product && in_array($size->product->category_id, $categoryIds)) ? self::$ageLabel : '';
+        return (self::$categoryId && in_array(self::$categoryId, $categoryIds)) ? self::$ageLabel : '';
     }
 
     /**
@@ -93,6 +94,11 @@ class ProductSizeTransformerService
         }
 
         return $size->data['weight'] . ' ' . $this->getWeightLabel();
+    }
+
+    public function setCategoryId(int $categoryId): void
+    {
+        self::$categoryId = $categoryId;
     }
 }
 
