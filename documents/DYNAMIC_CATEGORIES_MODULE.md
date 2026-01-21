@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Dynamic Categories module is a flexible and extensible system for managing dynamic category-specific content sections in the Zabehaty Native APIs application. It supports multiple section types (banners, products, shops, menu items, limited-time offers) with multi-language support, caching, and location-based filtering. Unlike the HomePage module, this module is category-specific and requires a `category_id` parameter to filter sections.
+The Dynamic Categories module is a flexible and extensible system for managing dynamic category-specific content sections in the Zabehaty Native APIs application. It supports multiple section types (banners, products, shops, menu items, limited-time offers) with multi-language support, caching, and location-based filtering. Unlike the HomePage module, this module is category-specific and requires a `category_id` parameter to filter sections. The current implementation uses Query Builder for section data fetching to optimize performance while preserving visibility rules.
 
 ## Architecture
 
@@ -77,7 +77,7 @@ Stores category-specific sections configuration:
 |--------|------|-------------|
 | `id` | bigint | Primary key |
 | `category_id` | integer | Foreign key to categories table (required) |
-| `emirate_id` | integer | Optional emirate filter |
+| `emirate_ids` | json | Optional emirate IDs array |
 | `region_ids` | json | Optional region IDs array |
 | `title_en` | string | English title |
 | `title_ar` | string | Arabic title |
@@ -200,25 +200,20 @@ public function getDynamicCategoriesData($request): array
 
 #### SectionBuilder
 
-Builds all category-specific sections using factory pattern, and preloads morph items without the heavy `MatchedDefaultAddressScope` to improve performance:
+Builds all category-specific sections using the factory pattern and Query Builder:
 
 ```php
 public function buildAll(int $categoryId): array
 {
-    $dynamicCategorySections = DynamicCategorySection::ordered()
+    $sections = DB::table('dynamic_category_sections')
+        ->select([...])
         ->where('category_id', $categoryId)
-        ->has('items')
-        ->with('items')
+        ->whereExists(...)
+        ->orderBy('sorting')
         ->get();
 
-    $dynamicCategorySections->loadMorph('items.item', [
-        Product::class => fn ($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
-        Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
-        Category::class => fn ($query) => $query->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class),
-    ]);
-
-    return $dynamicCategorySections
-        ->map(fn ($section) => $this->buildSection($section))
+    return $sections
+        ->map(fn ($section) => $this->buildSection((array) $section))
         ->filter(fn ($section) => !empty($section['items']))
         ->values()
         ->toArray();
@@ -226,8 +221,8 @@ public function buildAll(int $categoryId): array
 ```
 
 **Process:**
-1. Fetch ordered sections filtered by `category_id` with items
-2. `loadMorph` items to drop `MatchedDefaultAddressScope` on products/shops/categories
+1. Fetch ordered sections filtered by `category_id` via Query Builder
+2. Apply address-based filtering for sections
 3. Uses factory to get appropriate builder
 4. Builds each section data, filters empty sections
 5. Returns array of sections with additional fields (`display_type`, `menu_type`, `has_more_items`)
@@ -266,9 +261,9 @@ All section builders implement `SectionBuilderInterface`:
 ```php
 interface SectionBuilderInterface
 {
-    public function build(DynamicCategorySection $dynamicCategorySection): array;
+    public function build(array $dynamicCategorySection): array;
     
-    public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool;
+    public function hasMoreItems(array $dynamicCategorySection): bool;
 }
 ```
 
@@ -278,26 +273,34 @@ Each section builder implements `hasMoreItems()` to determine if there are addit
 - Returns `false` if all items fit within the pagination limit
 - Is used by `SectionBuilder` to populate the `has_more_items` field in the API response
 
+**Shared Query/Visibility Helpers:**
+- Builders reuse a shared trait (`UsesDynamicCategoriesQueryBuilder`) to avoid duplication.
+- The trait provides the country-aware DB connection, default address resolution, and reusable visibility subqueries (product/shop/category).
+
 #### MenuItemsSectionBuilder
 
 **Unique Feature:** This builder groups menu items by `menu_item_parent_id` and returns menu group data. It uses optimized database-level grouping for better performance.
 
-Builds menu items sections by grouping items by parent ID using efficient database queries:
+Builds menu items sections by grouping items by parent ID using Query Builder:
 
 ```php
-public function build(DynamicCategorySection $dynamicCategorySection): array
+public function build(array $dynamicCategorySection): array
 {
-    $menuGroupIds = $dynamicCategorySection->items()
+    $menuGroupIds = DB::table('dynamic_category_section_items')
+        ->where('dynamic_category_section_id', $dynamicCategorySection['id'])
         ->selectRaw('MIN(id) as id')
         ->groupBy('menu_item_parent_id')
         ->pluck('id');
 
-    return $dynamicCategorySection->items()
+    return DB::table('dynamic_category_section_items')
+        ->where('dynamic_category_section_id', $dynamicCategorySection['id'])
         ->whereIn('id', $menuGroupIds)
         ->get()
-        ->map(function ($menuGroup) {
-            return new DynamicCategoryMenuResource($menuGroup);
-        })
+        ->map(fn ($menuGroup) => [
+            'id' => $menuGroup->menu_item_parent_id,
+            'name' => $menuGroup->title,
+            'image_url' => $menuGroup->image_url,
+        ])
         ->filter()
         ->values()
         ->toArray();
@@ -344,7 +347,7 @@ Each item in the menu items section includes:
 
 #### ProductSectionBuilder
 
-Builds product sections with pagination, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
+Builds product sections via Query Builder and applies full visibility rules (product + shop + category). It also mirrors the product active conditions for price/approval/department and calculates derived fields like price and discount.
 
 ```php
 public function build(DynamicCategorySection $dynamicCategorySection): array
@@ -378,7 +381,7 @@ Filters out null items before counting to ensure accurate pagination indication.
 
 #### ShopSectionBuilder
 
-Builds shop sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
+Builds shop sections via Query Builder and applies shop + category visibility rules to ensure shops are shown only when both visibility layers pass.
 
 ```php
 public function build(DynamicCategorySection $dynamicCategorySection): array
@@ -412,7 +415,7 @@ Filters out null items before counting to ensure accurate pagination indication.
 
 #### BannerSectionBuilder
 
-Builds banner sections (returns raw banner data):
+Builds banner sections via Query Builder. If a banner is linked to a product/shop/category, it is returned only when the linked item passes its visibility rules. Unlinked banners remain visible.
 
 ```php
 public function build(DynamicCategorySection $dynamicCategorySection): array
@@ -873,12 +876,12 @@ The module fully supports the multi-country database system:
 
 Sections can be filtered by location:
 
-- **Emirate Filter**: `emirate_id` field
+- **Emirate Filter**: `emirate_ids` JSON array
 - **Region Filter**: `region_ids` JSON array
 - **Global Sections**: When both are null, section shows for all locations (within the category)
 - **Category Filter**: `category_id` field (required)
 
-**Note:** The `MatchedDefaultAddressScope` is enabled in the model boot method for automatic location filtering.
+**Note:** Dynamic Categories applies visibility rules directly in the builders for category responses, so model scopes are not required for these endpoints. Other parts of the system may still rely on the model scopes.
 
 ## Caching Strategy
 
@@ -946,14 +949,14 @@ $section->sorting = 1; // Lower numbers appear first
 
 ### 2. Performance
 
-- Use eager loading: `with('items.item')`
+- Query Builder is used for sections and items to minimize ORM overhead
 - Limit items per section (use pagination constants)
 - Enable caching in production
 - Use appropriate cache TTLs
 - Filter by `category_id` early in the query
 - **MenuItemsSectionBuilder** uses optimized database-level grouping with `MIN(id)` and `GROUP BY` for efficient menu item grouping
 - Avoid loading all items into memory; use selective queries with `whereIn` when possible
-- **ProductSectionBuilder and ShopSectionBuilder** filter out null items before applying pagination to ensure the correct number of valid items are returned, preventing scenarios where fewer items than requested are returned due to null relationships
+- Sections with no visible items are removed before returning the response
 
 ### 3. Error Handling
 

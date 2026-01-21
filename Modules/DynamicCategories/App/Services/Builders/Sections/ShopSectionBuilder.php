@@ -3,30 +3,39 @@
 namespace Modules\DynamicCategories\App\Services\Builders\Sections;
 
 use App\Enums\Pagination;
-use Illuminate\Support\Collection;
 use Modules\Shops\App\Models\Shop;
-use Modules\DynamicCategories\App\Models\DynamicCategorySection;
-use Modules\Shops\App\Transformers\ShopCardResource;
+use Modules\DynamicCategories\App\Services\Builders\Concerns\UsesDynamicCategoriesQueryBuilder;
 use Modules\DynamicCategories\App\Services\Builders\Interfaces\SectionBuilderInterface;
-use Modules\Shops\App\Models\Scopes\MatchedDefaultAddressScope as ShopMatchedDefaultAddressScope;
 
 class ShopSectionBuilder implements SectionBuilderInterface
 {
+    use UsesDynamicCategoriesQueryBuilder;
     /**
      * Build shop section data
      *
-     * @param DynamicCategorySection $dynamicCategorySection
+     * @param array $dynamicCategorySection
      * @return array
      */
-    public function build(DynamicCategorySection $dynamicCategorySection): array
+    public function build(array $dynamicCategorySection): array
     {
-        return $this->resolveItems($dynamicCategorySection)
-            ->filter(function ($item) {
-                return $item->item !== null;
-            })
-            ->take(20)
+        $locale = app()->getLocale() === 'ar' ? 'ar' : 'en';
+        $nameColumn = $locale === 'ar' ? 'name' : 'name_en';
+
+        $query = $this->buildItemsQuery($dynamicCategorySection, $nameColumn);
+
+        $items = $query->limit(20)->get();
+
+        return $items
             ->map(function ($item) {
-                return new ShopCardResource($item->item);
+                return [
+                    'id' => $item->id,
+                    'name' => $item->name,
+                    'image_url' => $item->banner ?? '',
+                    'logo_url' => $item->image ?? '',
+                    'rating' => $item->rating ? (float) $item->rating : null,
+                    'category' => $item->first_parent_category_name ?? '',
+                    'payment_badges' => ['tamara', 'tabby'],
+                ];
             })
             ->values()
             ->toArray();
@@ -35,30 +44,61 @@ class ShopSectionBuilder implements SectionBuilderInterface
     /**
      * Ensure items are loaded without the costly visibility scope.
      */
-    private function resolveItems(DynamicCategorySection $dynamicCategorySection): Collection
+    public function hasMoreItems(array $dynamicCategorySection): bool
     {
-        if ($dynamicCategorySection->relationLoaded('items')) {
-            $items = $dynamicCategorySection->items;
+        $locale = app()->getLocale() === 'ar' ? 'ar' : 'en';
+        $nameColumn = $locale === 'ar' ? 'name' : 'name_en';
 
-            if ($items->isEmpty() || $items->first()->relationLoaded('item')) {
-                return $items;
-            }
-        }
+        $query = $this->buildItemsQuery($dynamicCategorySection, $nameColumn);
 
-        $dynamicCategorySection->load('items');
-
-        $dynamicCategorySection->loadMorph('items.item', [
-            Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
-        ]);
-
-        return $dynamicCategorySection->items;
+        return $query->count() > 20;
     }
 
-    public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool
+    private function buildItemsQuery(array $dynamicCategorySection, string $nameColumn)
     {
-        return $this->resolveItems($dynamicCategorySection)->filter(function ($item) {
-            return $item->item !== null;
-        })->count() > 20;
+        $query = $this->getConnection()
+            ->table('dynamic_category_section_items')
+            ->join('shops', function ($join) {
+                $join->on('shops.id', '=', 'dynamic_category_section_items.item_id')
+                    ->where('dynamic_category_section_items.item_type', Shop::class);
+            })
+            ->select([
+                'shops.id',
+                'shops.banner',
+                'shops.image',
+                'shops.rating',
+            ])
+            ->selectRaw("shops.{$nameColumn} as name")
+            ->selectSub($this->firstParentCategorySubQuery($nameColumn), 'first_parent_category_name')
+            ->where('dynamic_category_section_items.dynamic_category_section_id', $dynamicCategorySection['id'])
+            ->where('shops.is_active', true)
+            ->orderBy('dynamic_category_section_items.id');
+
+        $this->applyShopVisibility($query);
+
+        return $query;
+    }
+
+    private function firstParentCategorySubQuery(string $nameColumn)
+    {
+        return $this->getConnection()
+            ->table('shop_categories')
+            ->join('categories', 'categories.id', '=', 'shop_categories.category_id')
+            ->selectRaw("categories.{$nameColumn}")
+            ->whereColumn('shop_categories.shop_id', 'shops.id')
+            ->whereNull('categories.parent_id')
+            ->limit(1);
+    }
+
+    private function applyShopVisibility($query): void
+    {
+        $defaultAddress = $this->getDefaultAddress();
+        if (! $defaultAddress) {
+            return;
+        }
+
+        $this->applyShopVisibilityByShopId($query, 'shops.id', $defaultAddress);
+        $this->applyCategoryVisibilityThroughShopCategories($query, 'shops.id', $defaultAddress);
     }
 }
 

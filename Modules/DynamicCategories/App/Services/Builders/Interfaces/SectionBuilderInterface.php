@@ -2,24 +2,22 @@
 
 namespace Modules\DynamicCategories\App\Services\Builders\Interfaces;
 
-use Modules\DynamicCategories\App\Models\DynamicCategorySection;
-
 interface SectionBuilderInterface
 {
     /**
      * Build section data
      *
-     * @param DynamicCategorySection $dynamicCategorySection
+     * @param array $dynamicCategorySection
      * @return array
      */
-    public function build(DynamicCategorySection $dynamicCategorySection): array;
+    public function build(array $dynamicCategorySection): array;
 
     /**
      * Check if there are more items to load
      *
-     * @param DynamicCategorySection $dynamicCategorySection
+     * @param array $dynamicCategorySection
      * @return bool
      */
-    public function hasMoreItems(DynamicCategorySection $dynamicCategorySection): bool;
+    public function hasMoreItems(array $dynamicCategorySection): bool;
 }
 
