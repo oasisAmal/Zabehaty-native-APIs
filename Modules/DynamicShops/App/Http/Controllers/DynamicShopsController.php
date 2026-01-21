@@ -29,6 +29,7 @@ class DynamicShopsController extends Controller
             $dynamicShopsData = $this->dynamicShopsService->getDynamicShopsData($request);
             return responseSuccessData(DynamicShopsResource::make($dynamicShopsData));
         } catch (\Exception $e) {
+            dd($e->getMessage());
             Log::error('failed_to_retrieve_dynamic_shops_data', ['message' => $e->getMessage()]);
             return responseErrorMessage(
                 __('dynamicshops::messages.failed_to_retrieve_dynamic_shops_data'),

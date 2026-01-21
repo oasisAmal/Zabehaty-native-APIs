@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Dynamic Shops module is a flexible and extensible system for managing dynamic shop-specific content sections in the Zabehaty Native APIs application. It supports multiple section types (banners, products, shops, menu items, limited-time offers) with multi-language support, caching, and location-based filtering. Unlike the HomePage module, this module is shop-specific and requires a `shop_id` parameter to filter sections.
+The Dynamic Shops module is a flexible and extensible system for managing dynamic shop-specific content sections in the Zabehaty Native APIs application. It supports multiple section types (banners, products, shops, menu items, limited-time offers) with multi-language support, caching, and location-based filtering. Unlike the HomePage module, this module is shop-specific and requires a `shop_id` parameter to filter sections. The current implementation uses Query Builder for section data fetching to optimize performance while preserving visibility rules.
 
 ## Architecture
 
@@ -203,25 +203,20 @@ public function getDynamicShopsData($request): array
 
 #### SectionBuilder
 
-Builds all shop-specific sections using factory pattern, and preloads morph items without the heavy `MatchedDefaultAddressScope` to improve performance:
+Builds all shop-specific sections using the factory pattern and Query Builder:
 
 ```php
 public function buildAll(int $shopId): array
 {
-    $dynamicShopSections = DynamicShopSection::ordered()
+    $sections = DB::table('dynamic_shop_sections')
+        ->select([...])
         ->where('shop_id', $shopId)
-        ->has('items')
-        ->with('items')
+        ->whereExists(...)
+        ->orderBy('sorting')
         ->get();
 
-    $dynamicShopSections->loadMorph('items.item', [
-        Product::class => fn ($query) => $query->withoutGlobalScope(ProductMatchedDefaultAddressScope::class),
-        Shop::class => fn ($query) => $query->withoutGlobalScope(ShopMatchedDefaultAddressScope::class),
-        Category::class => fn ($query) => $query->withoutGlobalScope(CategoryMatchedDefaultAddressScope::class),
-    ]);
-
-    return $dynamicShopSections
-        ->map(fn ($section) => $this->buildSection($section))
+    return $sections
+        ->map(fn ($section) => $this->buildSection((array) $section))
         ->filter(fn ($section) => !empty($section['items']))
         ->values()
         ->toArray();
@@ -229,8 +224,8 @@ public function buildAll(int $shopId): array
 ```
 
 **Process:**
-1. Fetch ordered sections filtered by `shop_id` with items
-2. `loadMorph` items to drop `MatchedDefaultAddressScope` on products/shops/categories
+1. Fetch ordered sections filtered by `shop_id` via Query Builder
+2. Apply address-based filtering for sections
 3. Uses factory to get appropriate builder
 4. Builds each section data, filters empty sections
 5. Returns array of sections with additional fields (`display_type`, `menu_type`, `has_more_items`)
@@ -269,9 +264,9 @@ All section builders implement `SectionBuilderInterface`:
 ```php
 interface SectionBuilderInterface
 {
-    public function build(DynamicShopSection $dynamicShopSection): array;
+    public function build(array $dynamicShopSection): array;
     
-    public function hasMoreItems(DynamicShopSection $dynamicShopSection): bool;
+    public function hasMoreItems(array $dynamicShopSection): bool;
 }
 ```
 
@@ -281,26 +276,34 @@ Each section builder implements `hasMoreItems()` to determine if there are addit
 - Returns `false` if all items fit within the pagination limit
 - Is used by `SectionBuilder` to populate the `has_more_items` field in the API response
 
+**Shared Query/Visibility Helpers:**
+- Builders reuse a shared trait (`UsesDynamicShopsQueryBuilder`) to avoid duplication.
+- The trait provides the country-aware DB connection, default address resolution, and reusable visibility subqueries (product/shop/category).
+
 #### MenuItemsSectionBuilder
 
 **Unique Feature:** This builder groups menu items by `menu_item_parent_id` and returns menu group data. It uses optimized database-level grouping for better performance.
 
-Builds menu items sections by grouping items by parent ID using efficient database queries:
+Builds menu items sections by grouping items by parent ID using Query Builder:
 
 ```php
-public function build(DynamicShopSection $dynamicShopSection): array
+public function build(array $dynamicShopSection): array
 {
-    $menuGroupIds = $dynamicShopSection->items()
+    $menuGroupIds = DB::table('dynamic_shop_section_items')
+        ->where('dynamic_shop_section_id', $dynamicShopSection['id'])
         ->selectRaw('MIN(id) as id')
         ->groupBy('menu_item_parent_id')
         ->pluck('id');
 
-    return $dynamicShopSection->items()
+    return DB::table('dynamic_shop_section_items')
+        ->where('dynamic_shop_section_id', $dynamicShopSection['id'])
         ->whereIn('id', $menuGroupIds)
         ->get()
-        ->map(function ($menuGroup) {
-            return new DynamicShopMenuResource($menuGroup);
-        })
+        ->map(fn ($menuGroup) => [
+            'id' => $menuGroup->menu_item_parent_id,
+            'name' => $menuGroup->title,
+            'image_url' => $menuGroup->image_url,
+        ])
         ->filter()
         ->values()
         ->toArray();
@@ -347,7 +350,7 @@ Each item in the menu items section includes:
 
 #### ProductSectionBuilder
 
-Builds product sections with pagination, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
+Builds product sections via Query Builder and applies full visibility rules (product + shop + category). It also mirrors the product active conditions for price/approval/department and calculates derived fields like price and discount.
 
 ```php
 public function build(DynamicShopSection $dynamicShopSection): array
@@ -381,7 +384,7 @@ Filters out null items before counting to ensure accurate pagination indication.
 
 #### ShopSectionBuilder
 
-Builds shop sections, reusing preloaded items and removing `MatchedDefaultAddressScope` when loading morphs. Filters out null items before taking the pagination limit to ensure the correct number of valid items are returned:
+Builds shop sections via Query Builder and applies shop + category visibility rules to ensure shops are shown only when both visibility layers pass.
 
 ```php
 public function build(DynamicShopSection $dynamicShopSection): array
@@ -415,7 +418,7 @@ Filters out null items before counting to ensure accurate pagination indication.
 
 #### BannerSectionBuilder
 
-Builds banner sections (returns raw banner data):
+Builds banner sections via Query Builder. If a banner is linked to a product/shop/category, it is returned only when the linked item passes its visibility rules. Unlinked banners remain visible.
 
 ```php
 public function build(DynamicShopSection $dynamicShopSection): array
@@ -866,6 +869,7 @@ The module fully supports the multi-country database system:
 ## Multi-Language Support
 
 - Supports English and Arabic
+- Name fields on products/shops/categories: `name_en` (English), `name` (Arabic)
 - Title fields: `title_en`, `title_ar`
 - Image fields: `image_en_url`, `image_ar_url`, `title_image_en_url`, `title_image_ar_url`
 - Uses `TraitLanguage` for automatic language detection
@@ -880,7 +884,7 @@ Sections can be filtered by location:
 - **Global Sections**: When both are null, section shows for all locations (within the shop)
 - **Shop Filter**: `shop_id` field (required)
 
-**Note:** The `MatchedDefaultAddressScope` is enabled in the model boot method for automatic location filtering.
+**Note:** Dynamic Shops applies visibility rules directly in the builders for shop responses, so model scopes are not required for these endpoints. Other parts of the system may still rely on the model scopes.
 
 ## Caching Strategy
 
@@ -970,14 +974,14 @@ $section->sorting = 1; // Lower numbers appear first
 
 ### 2. Performance
 
-- Use eager loading: `with('items.item')`
+- Query Builder is used for sections and items to minimize ORM overhead
 - Limit items per section (use pagination constants)
 - Enable caching in production
 - Use appropriate cache TTLs
 - Filter by `shop_id` early in the query
 - **MenuItemsSectionBuilder** uses optimized database-level grouping with `MIN(id)` and `GROUP BY` for efficient menu item grouping
 - Avoid loading all items into memory; use selective queries with `whereIn` when possible
-- **ProductSectionBuilder and ShopSectionBuilder** filter out null items before applying pagination to ensure the correct number of valid items are returned, preventing scenarios where fewer items than requested are returned due to null relationships
+- Sections with no visible items are removed before returning the response
 
 ### 3. Error Handling
 

@@ -2,6 +2,7 @@
 
 namespace Modules\DynamicShops\App\Services;
 
+use Illuminate\Support\Facades\DB;
 use Modules\Shops\App\Models\Shop;
 use Modules\Shops\App\Transformers\ShopCardResource;
 use Modules\DynamicShops\App\Services\Cache\CacheService;
@@ -29,8 +30,8 @@ class DynamicShopsService
     public function getDynamicShopsData($request): array
     {
         $shopId = $request->input('shop_id', 0);
-        $shop = Shop::find($shopId);
-        
+        $countryCode = strtolower((string) $request->get('app_country_code'));
+        $shop = DB::connection($countryCode)->table('shops')->where('id', $shopId)->first();
         if (!$shop) {
             return [
                 'shop' => null,

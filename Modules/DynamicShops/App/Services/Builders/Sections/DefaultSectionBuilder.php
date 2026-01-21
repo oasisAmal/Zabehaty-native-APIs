@@ -2,7 +2,6 @@
 
 namespace Modules\DynamicShops\App\Services\Builders\Sections;
 
-use Modules\DynamicShops\App\Models\DynamicShopSection;
 use Modules\DynamicShops\App\Services\Builders\Interfaces\SectionBuilderInterface;
 
 class DefaultSectionBuilder implements SectionBuilderInterface
@@ -10,10 +9,10 @@ class DefaultSectionBuilder implements SectionBuilderInterface
     /**
      * Build default section data
      *
-     * @param DynamicShopSection $dynamicShopSection
+     * @param array $dynamicShopSection
      * @return array
      */
-    public function build(DynamicShopSection $dynamicShopSection): array
+    public function build(array $dynamicShopSection): array
     {
         return [];
     }
@@ -21,10 +20,10 @@ class DefaultSectionBuilder implements SectionBuilderInterface
     /**
      * Check if there are more items to load
      *
-     * @param DynamicShopSection $dynamicShopSection
+     * @param array $dynamicShopSection
      * @return bool
      */
-    public function hasMoreItems(DynamicShopSection $dynamicShopSection): bool
+    public function hasMoreItems(array $dynamicShopSection): bool
     {
         return false;
     }
