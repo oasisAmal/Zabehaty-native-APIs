@@ -47,6 +47,8 @@ Modules/DynamicCategories/
 │   │   │   └── SectionBuilder.php
 │   │   ├── Cache/
 │   │   │   └── CacheService.php
+│   │   ├── Queries/
+│   │   │   └── DynamicCategoryQuery.php
 │   │   └── DynamicCategoriesService.php
 │   └── Transformers/
 │       └── DynamicCategoriesResource.php
@@ -200,7 +202,7 @@ public function getDynamicCategoriesData($request): array
 
 #### SectionBuilder
 
-Builds all category-specific sections using the factory pattern and Query Builder:
+Builds all category-specific sections using the factory pattern and Query Builder. The section query is encapsulated in `DynamicCategoryQuery` for readability.
 
 ```php
 public function buildAll(int $categoryId): array

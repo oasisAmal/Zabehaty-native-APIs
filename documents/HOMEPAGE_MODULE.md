@@ -45,6 +45,8 @@ Modules/HomePage/
 │   │   │   └── SectionBuilder.php
 │   │   ├── Cache/
 │   │   │   └── CacheService.php
+│   │   ├── Queries/
+│   │   │   └── HomePageQuery.php
 │   │   └── HomePageService.php
 │   └── Transformers/
 │       └── HomePageResource.php
@@ -183,7 +185,7 @@ public function build(): array
 
 #### SectionBuilder
 
-Builds all homepage sections using the factory pattern and Query Builder:
+Builds all homepage sections using the factory pattern and Query Builder. The section query is encapsulated in `HomePageQuery` for readability.
 
 ```php
 public function buildAll(): array

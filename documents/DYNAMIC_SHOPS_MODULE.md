@@ -47,6 +47,8 @@ Modules/DynamicShops/
 │   │   │   └── SectionBuilder.php
 │   │   ├── Cache/
 │   │   │   └── CacheService.php
+│   │   ├── Queries/
+│   │   │   └── DynamicShopQuery.php
 │   │   └── DynamicShopsService.php
 │   └── Transformers/
 │       ├── DynamicShopsResource.php
@@ -203,7 +205,7 @@ public function getDynamicShopsData($request): array
 
 #### SectionBuilder
 
-Builds all shop-specific sections using the factory pattern and Query Builder:
+Builds all shop-specific sections using the factory pattern and Query Builder. The section query is encapsulated in `DynamicShopQuery` for readability.
 
 ```php
 public function buildAll(int $shopId): array

@@ -2,19 +2,22 @@
 
 namespace Modules\DynamicShops\App\Services\Builders;
 
-use Illuminate\Support\Facades\DB;
 use Modules\DynamicShops\Enums\DynamicShopSectionType;
+use Modules\DynamicShops\App\Queries\DynamicShopQuery;
 use Modules\DynamicShops\App\Services\Builders\Factories\SectionBuilderFactory;
-use Modules\DynamicShops\App\Services\Builders\Concerns\UsesDynamicShopsQueryBuilder;
 
 class SectionBuilder
 {
-    use UsesDynamicShopsQueryBuilder;
     protected SectionBuilderFactory $sectionBuilderFactory;
+    protected DynamicShopQuery $dynamicShopQuery;
 
-    public function __construct(SectionBuilderFactory $sectionBuilderFactory)
+    public function __construct(
+        SectionBuilderFactory $sectionBuilderFactory,
+        DynamicShopQuery $dynamicShopQuery
+    )
     {
         $this->sectionBuilderFactory = $sectionBuilderFactory;
+        $this->dynamicShopQuery = $dynamicShopQuery;
     }
 
     /**
@@ -25,34 +28,7 @@ class SectionBuilder
      */
     public function buildAll(int $shopId): array
     {
-        $locale = app()->getLocale() === 'ar' ? 'ar' : 'en';
-        $imageLang = request()->app_lang === 'ar' ? 'ar' : $locale;
-
-        $query = $this->getConnection()
-            ->table('dynamic_shop_sections')
-            ->select([
-                'dynamic_shop_sections.id',
-                'dynamic_shop_sections.type',
-                'dynamic_shop_sections.background_image_url',
-                'dynamic_shop_sections.display_type',
-                'dynamic_shop_sections.menu_type',
-                'dynamic_shop_sections.item_type',
-                'dynamic_shop_sections.banner_size',
-                'dynamic_shop_sections.sorting',
-            ])
-            ->selectRaw("dynamic_shop_sections.title_{$locale} as title")
-            ->selectRaw("dynamic_shop_sections.title_image_{$imageLang}_url as title_image_url")
-            ->where('dynamic_shop_sections.shop_id', $shopId)
-            ->whereExists(function ($subQuery) {
-                $subQuery->select(DB::raw(1))
-                    ->from('dynamic_shop_section_items')
-                    ->whereColumn('dynamic_shop_section_items.dynamic_shop_section_id', 'dynamic_shop_sections.id');
-            })
-            ->orderBy('dynamic_shop_sections.sorting');
-
-        $this->applySectionAddressFilter($query);
-
-        $dynamicShopSections = $query->get();
+        $dynamicShopSections = $this->dynamicShopQuery->fetchSections($shopId);
 
         return $dynamicShopSections
             ->map(function ($dynamicShopSection) {
@@ -94,17 +70,4 @@ class SectionBuilder
         ];
     }
 
-    private function applySectionAddressFilter($query): void
-    {
-        $defaultAddress = $this->getDefaultAddress();
-        if (! $defaultAddress) {
-            return;
-        }
-
-        $query->whereJsonContains('dynamic_shop_sections.emirate_ids', (string) $defaultAddress->emirate_id)
-            ->where(function ($innerQuery) use ($defaultAddress) {
-                $innerQuery->whereNull('dynamic_shop_sections.region_ids')
-                    ->orWhereJsonContains('dynamic_shop_sections.region_ids', (string) $defaultAddress->region_id);
-            });
-    }
 }

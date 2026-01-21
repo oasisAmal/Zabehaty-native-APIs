@@ -2,19 +2,22 @@
 
 namespace Modules\DynamicCategories\App\Services\Builders;
 
-use Illuminate\Support\Facades\DB;
+use Modules\DynamicCategories\App\Queries\DynamicCategoryQuery;
 use Modules\DynamicCategories\Enums\DynamicCategorySectionType;
 use Modules\DynamicCategories\App\Services\Builders\Factories\SectionBuilderFactory;
-use Modules\DynamicCategories\App\Services\Builders\Concerns\UsesDynamicCategoriesQueryBuilder;
 
 class SectionBuilder
 {
-    use UsesDynamicCategoriesQueryBuilder;
     protected SectionBuilderFactory $sectionBuilderFactory;
+    protected DynamicCategoryQuery $dynamicCategoryQuery;
 
-    public function __construct(SectionBuilderFactory $sectionBuilderFactory)
+    public function __construct(
+        SectionBuilderFactory $sectionBuilderFactory,
+        DynamicCategoryQuery $dynamicCategoryQuery
+    )
     {
         $this->sectionBuilderFactory = $sectionBuilderFactory;
+        $this->dynamicCategoryQuery = $dynamicCategoryQuery;
     }
 
     /**
@@ -25,34 +28,7 @@ class SectionBuilder
      */
     public function buildAll(int $categoryId): array
     {
-        $locale = app()->getLocale() === 'ar' ? 'ar' : 'en';
-        $imageLang = request()->app_lang === 'ar' ? 'ar' : $locale;
-
-        $query = $this->getConnection()
-            ->table('dynamic_category_sections')
-            ->select([
-                'dynamic_category_sections.id',
-                'dynamic_category_sections.type',
-                'dynamic_category_sections.background_image_url',
-                'dynamic_category_sections.display_type',
-                'dynamic_category_sections.menu_type',
-                'dynamic_category_sections.item_type',
-                'dynamic_category_sections.banner_size',
-                'dynamic_category_sections.sorting',
-            ])
-            ->selectRaw("dynamic_category_sections.title_{$locale} as title")
-            ->selectRaw("dynamic_category_sections.title_image_{$imageLang}_url as title_image_url")
-            ->where('dynamic_category_sections.category_id', $categoryId)
-            ->whereExists(function ($subQuery) {
-                $subQuery->select(DB::raw(1))
-                    ->from('dynamic_category_section_items')
-                    ->whereColumn('dynamic_category_section_items.dynamic_category_section_id', 'dynamic_category_sections.id');
-            })
-            ->orderBy('dynamic_category_sections.sorting');
-
-        $this->applySectionAddressFilter($query);
-
-        $dynamicCategorySections = $query->get();
+        $dynamicCategorySections = $this->dynamicCategoryQuery->fetchSections($categoryId);
 
         return $dynamicCategorySections
             ->map(function ($dynamicCategorySection) {
@@ -94,18 +70,5 @@ class SectionBuilder
         ];
     }
 
-    private function applySectionAddressFilter($query): void
-    {
-        $defaultAddress = $this->getDefaultAddress();
-        if (! $defaultAddress) {
-            return;
-        }
-
-        $query->whereJsonContains('dynamic_category_sections.emirate_ids', (string) $defaultAddress->emirate_id)
-            ->where(function ($innerQuery) use ($defaultAddress) {
-                $innerQuery->whereNull('dynamic_category_sections.region_ids')
-                    ->orWhereJsonContains('dynamic_category_sections.region_ids', (string) $defaultAddress->region_id);
-            });
-    }
 }
 
