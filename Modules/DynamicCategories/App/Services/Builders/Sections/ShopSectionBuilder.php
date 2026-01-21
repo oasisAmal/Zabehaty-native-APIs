@@ -23,7 +23,7 @@ class ShopSectionBuilder implements SectionBuilderInterface
 
         $query = $this->buildItemsQuery($dynamicCategorySection, $nameColumn);
 
-        $items = $query->limit(20)->get();
+        $items = $query->limit(Pagination::PER_PAGE)->get();
 
         return $items
             ->map(function ($item) {
@@ -51,7 +51,7 @@ class ShopSectionBuilder implements SectionBuilderInterface
 
         $query = $this->buildItemsQuery($dynamicCategorySection, $nameColumn);
 
-        return $query->count() > 20;
+        return $query->count() > Pagination::PER_PAGE;
     }
 
     private function buildItemsQuery(array $dynamicCategorySection, string $nameColumn)

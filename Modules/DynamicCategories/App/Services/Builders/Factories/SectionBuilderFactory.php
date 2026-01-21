@@ -22,7 +22,7 @@ class SectionBuilderFactory
     {
         return match ($type) {
             DynamicCategorySectionType::BANNERS => new BannerSectionBuilder(),
-            // DynamicCategorySectionType::SHOPS => new ShopSectionBuilder(),
+            DynamicCategorySectionType::SHOPS => new ShopSectionBuilder(),
             DynamicCategorySectionType::MENU_ITEMS => new MenuItemsSectionBuilder(),
             DynamicCategorySectionType::LIMITED_TIME_OFFERS,
             DynamicCategorySectionType::PRODUCTS => new ProductSectionBuilder(),
