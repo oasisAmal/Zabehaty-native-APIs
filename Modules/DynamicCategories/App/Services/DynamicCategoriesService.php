@@ -27,7 +27,6 @@ class DynamicCategoriesService
     public function getDynamicCategoriesData($request): array
     {
         $categoryId = $request->input('category_id', 0);
-        
         if (!$categoryId) {
             return ['sections' => []];
         }

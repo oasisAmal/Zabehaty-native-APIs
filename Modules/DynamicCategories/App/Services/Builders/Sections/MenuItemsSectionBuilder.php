@@ -9,6 +9,8 @@ use Modules\DynamicCategories\App\Services\Builders\Interfaces\SectionBuilderInt
 class MenuItemsSectionBuilder implements SectionBuilderInterface
 {
     use UsesDynamicCategoriesQueryBuilder;
+    const PER_PAGE = 20;
+    
     /**
      * Build menu items section data (supports products or shops).
      *
@@ -37,6 +39,7 @@ class MenuItemsSectionBuilder implements SectionBuilderInterface
                 'image_en_url',
             ])
             ->selectRaw("{$titleColumn} as title")
+            ->limit(self::PER_PAGE)
             ->get()
             ->map(function ($menuGroup) {
                 return [
@@ -55,7 +58,7 @@ class MenuItemsSectionBuilder implements SectionBuilderInterface
         return $this->getConnection()
             ->table('dynamic_category_section_items')
             ->where('dynamic_category_section_id', $dynamicCategorySection['id'])
-            ->count() > Pagination::PER_PAGE;
+            ->count() > self::PER_PAGE;
     }
 
     private function getImageUrl(object $item): string
