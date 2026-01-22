@@ -3,10 +3,10 @@
 namespace Modules\Products\App\Queries;
 
 use App\Enums\Pagination;
-use App\Traits\CountryQueryBuilderTrait;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use App\Traits\CountryQueryBuilderTrait;
 use Modules\Products\App\Models\Product;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ProductsQuery
 {
@@ -75,7 +75,28 @@ class ProductsQuery
 
     private function applyDynamicCategoryFilters($query, array $filters): void
     {
-        if (! empty($filters['dynamic_category_section_id']) && empty($filters['is_all_menu_item'])) {
+        $isAllMenuItem = false;
+
+        if (isset($filters['dynamic_category_section_id'])) {
+            $categoryId = $this->getCountryConnection()
+                ->table('dynamic_category_sections')
+                ->where('id', $filters['dynamic_category_section_id'])
+                ->value('category_id');
+            if ($categoryId) {
+                $childCategoryIds = getAllChildCategoriesIds($categoryId);
+                $query->whereIn('products.category_id', $childCategoryIds);
+            }
+        }
+
+        if (isset($filters['dynamic_category_menu_id'])) {
+            $isAllMenuItem = $this->getCountryConnection()
+                ->table('dynamic_category_section_items')
+                ->where('menu_item_parent_id', $filters['dynamic_category_menu_id'])
+                ->where('is_all_menu_item', true)
+                ->exists();
+        }
+
+        if (isset($filters['dynamic_category_section_id']) && $isAllMenuItem == false) {
             $query->whereExists(function ($subQuery) use ($filters) {
                 $subQuery->select(DB::raw(1))
                     ->from('dynamic_category_section_items')
@@ -85,7 +106,7 @@ class ProductsQuery
             });
         }
 
-        if (! empty($filters['dynamic_category_menu_id']) && empty($filters['is_all_menu_item'])) {
+        if (isset($filters['dynamic_category_menu_id']) && $isAllMenuItem == false) {
             $query->whereExists(function ($subQuery) use ($filters) {
                 $subQuery->select(DB::raw(1))
                     ->from('dynamic_category_section_items')
@@ -98,7 +119,27 @@ class ProductsQuery
 
     private function applyDynamicShopFilters($query, array $filters): void
     {
-        if (! empty($filters['dynamic_shop_section_id']) && empty($filters['is_all_menu_item'])) {
+        $isAllMenuItem = false;
+
+        if (isset($filters['dynamic_shop_section_id'])) {
+            $shopId = $this->getCountryConnection()
+                ->table('dynamic_shop_sections')
+                ->where('id', $filters['dynamic_shop_section_id'])
+                ->value('shop_id');
+            if ($shopId) {
+                $query->where('products.shop_id', $shopId);
+            }
+        }
+
+        if (isset($filters['dynamic_shop_menu_id'])) {
+            $isAllMenuItem = $this->getCountryConnection()
+                ->table('dynamic_shop_section_items')
+                ->where('menu_item_parent_id', $filters['dynamic_shop_menu_id'])
+                ->where('is_all_menu_item', true)
+                ->exists();
+        }
+
+        if (isset($filters['dynamic_shop_section_id']) && $isAllMenuItem == false) {
             $query->whereExists(function ($subQuery) use ($filters) {
                 $subQuery->select(DB::raw(1))
                     ->from('dynamic_shop_section_items')
@@ -108,7 +149,7 @@ class ProductsQuery
             });
         }
 
-        if (! empty($filters['dynamic_shop_menu_id']) && empty($filters['is_all_menu_item'])) {
+        if (isset($filters['dynamic_shop_menu_id']) && $isAllMenuItem == false) {
             $query->whereExists(function ($subQuery) use ($filters) {
                 $subQuery->select(DB::raw(1))
                     ->from('dynamic_shop_section_items')

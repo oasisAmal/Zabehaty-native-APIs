@@ -5,11 +5,13 @@ use App\Enums\Common;
 use App\Enums\MobileRegex;
 use Illuminate\Support\Str;
 use Illuminate\Support\Number;
+use App\Helpers\DatabaseHelpers;
 use Shivella\Bitly\Facade\Bitly;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Modules\Countries\App\Models\Country;
 use Propaganistas\LaravelPhone\PhoneNumber;
+use App\Services\Common\DatabaseConnectionService;
 
 /**
  * Helper for format date for 12 Hours
@@ -453,7 +455,7 @@ function getTranslationValueWithFallback($key, $model)
     $locale = app()->getLocale();
     $fallbackLocale = $locale == 'ar' ? 'en' : 'ar';
     $value = $model->$key;
-    
+
     if ($value == "" || $value == null) {
         $column = $model->{$key . '_' . $fallbackLocale};
         if (isset($column) && $column != "" && $column != null) {
@@ -462,4 +464,50 @@ function getTranslationValueWithFallback($key, $model)
     }
 
     return $value;
+}
+
+/**
+ * Get Parent Category ID based on the given category ID
+ *
+ * @param int $categoryId
+ * @return int|null
+ */
+function getParentCategoryId($categoryId)
+{
+    $parent = DatabaseConnectionService::getConnection()
+        ->table('category_parents')
+        ->where('category_id', $categoryId)
+        ->orderBy('level', 'desc')
+        ->first();
+
+    return $parent ? $parent->parent_id : null;
+}
+
+/**
+ * Get All Child Categories IDs based on the given category ID (recursively)
+ *
+ * @param int $categoryId
+ * @return array
+ */
+function getAllChildCategoriesIds($categoryId)
+{
+    $connection = DatabaseConnectionService::getConnection();
+    $allChildren = [];
+    
+    $directChildren = $connection
+        ->table('categories')
+        ->where('parent_id', $categoryId)
+        ->pluck('id')
+        ->toArray();
+    
+    $allChildren = array_merge($allChildren, $directChildren);
+    
+    foreach ($directChildren as $childId) {
+        $nestedChildren = getAllChildCategoriesIds($childId);
+        $allChildren = array_merge($allChildren, $nestedChildren);
+    }
+
+    $allChildren = array_merge($allChildren, [$categoryId]);
+    
+    return array_unique($allChildren);
 }
