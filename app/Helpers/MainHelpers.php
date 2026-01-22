@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use Modules\Countries\App\Models\Country;
 use Propaganistas\LaravelPhone\PhoneNumber;
+use libphonenumber\PhoneNumberUtil;
 use App\Services\Common\DatabaseConnectionService;
 
 /**
@@ -277,6 +278,129 @@ function format_mobile_number_without_plus($number, $country_code = null)
 {
     $phone = new PhoneNumber($number, $country_code);
     return str_replace('+', '', $phone->formatE164());
+}
+
+/**
+ * Helper for get country code from mobile number
+ *
+ * @param string $number
+ * @return string
+ */
+function getCountryCodeFromMobile($number)
+{
+    // Clean the number (remove non-digits except +)
+    $cleanNumber = preg_replace('/[^0-9+]/', '', $number);
+    
+    try {
+        // First, try to parse the number as-is (if it already has country code like +971...)
+        $phone = new PhoneNumber($cleanNumber);
+        $country = $phone->getCountry();
+        if ($country) {
+            return $country;
+        }
+    } catch (\Throwable $th) {
+        // Continue to try with country hints
+    }
+
+    // Remove leading 0 if present (e.g., 0568283131 -> 568283131)
+    $normalizedNumber = preg_replace('/^0+/', '', $cleanNumber);
+    $normalizedNumber = preg_replace('/[^0-9]/', '', $normalizedNumber);
+
+    // If parsing failed, try common GCC countries based on number patterns
+    $commonCountries = ['AE', 'SA', 'KW', 'QA', 'OM', 'BH', 'US', 'EG'];
+    
+    foreach ($commonCountries as $countryCode) {
+        try {
+            $phone = new PhoneNumber($normalizedNumber, $countryCode);
+            $detectedCountry = $phone->getCountry();
+            if ($detectedCountry === $countryCode) {
+                return $countryCode;
+            }
+        } catch (\Throwable $th) {
+            continue;
+        }
+    }
+
+    // Fallback: Pattern matching for common GCC number patterns
+    // UAE: 9 digits starting with 5
+    if (strlen($normalizedNumber) == 9 && substr($normalizedNumber, 0, 1) == '5') {
+        try {
+            $phone = new PhoneNumber($normalizedNumber, 'AE');
+            if ($phone->getCountry() === 'AE') {
+                return 'AE';
+            }
+        } catch (\Throwable $th) {
+            // Continue
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Helper for get numeric country code from mobile number (e.g., 971, 966, 965)
+ *
+ * @param string $number
+ * @return string|null
+ */
+function getCountryCodeNumberFromMobile($number)
+{
+    // Clean the number (remove non-digits except +)
+    $cleanNumber = preg_replace('/[^0-9+]/', '', $number);
+    
+    try {
+        // First, try to parse the number as-is (if it already has country code like +971...)
+        $phone = new PhoneNumber($cleanNumber);
+        $libPhoneObject = $phone->toLibPhoneObject();
+        $countryCode = $libPhoneObject->getCountryCode();
+        if ($countryCode) {
+            return (string) $countryCode;
+        }
+    } catch (\Throwable $th) {
+        // Continue to try with country hints
+    }
+
+    // Remove leading 0 if present (e.g., 0568283131 -> 568283131)
+    $normalizedNumber = preg_replace('/^0+/', '', $cleanNumber);
+    $normalizedNumber = preg_replace('/[^0-9]/', '', $normalizedNumber);
+
+    // If parsing failed, try common GCC countries based on number patterns
+    $commonCountries = ['AE', 'SA', 'KW', 'QA', 'OM', 'BH', 'US', 'EG'];
+    
+    foreach ($commonCountries as $countryCode) {
+        try {
+            $phone = new PhoneNumber($normalizedNumber, $countryCode);
+            $detectedCountry = $phone->getCountry();
+            if ($detectedCountry === $countryCode) {
+                $libPhoneObject = $phone->toLibPhoneObject();
+                $numericCountryCode = $libPhoneObject->getCountryCode();
+                if ($numericCountryCode) {
+                    return (string) $numericCountryCode;
+                }
+            }
+        } catch (\Throwable $th) {
+            continue;
+        }
+    }
+
+    // Fallback: Pattern matching for common GCC number patterns
+    // UAE: 9 digits starting with 5 -> country code 971
+    if (strlen($normalizedNumber) == 9 && substr($normalizedNumber, 0, 1) == '5') {
+        try {
+            $phone = new PhoneNumber($normalizedNumber, 'AE');
+            if ($phone->getCountry() === 'AE') {
+                $libPhoneObject = $phone->toLibPhoneObject();
+                $numericCountryCode = $libPhoneObject->getCountryCode();
+                if ($numericCountryCode) {
+                    return (string) $numericCountryCode;
+                }
+            }
+        } catch (\Throwable $th) {
+            // Continue
+        }
+    }
+
+    return null;
 }
 
 /**
