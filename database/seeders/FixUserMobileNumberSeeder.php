@@ -22,9 +22,7 @@ class FixUserMobileNumberSeeder extends Seeder
                     $user->country_symbol = getCountryCodeFromMobile($user->mobile);
                     $user->save();
 
-                    $user->refresh();
-
-                    $user->addresses()->each(function ($address) use ($user) {
+                    $user->addresses()->each(function ($address) {
                         $address->mobile = format_mobile_number_to_database($address->mobile);
                         $address->country_code = getCountryCodeFromMobile($address->mobile);
                         $address->save();
