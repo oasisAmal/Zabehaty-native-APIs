@@ -5,8 +5,6 @@ namespace Modules\Products\App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Modules\DynamicShops\App\Models\DynamicShopSectionItem;
-use Modules\DynamicCategories\App\Models\DynamicCategorySectionItem;
 
 class ProductIndexRequest extends FormRequest
 {

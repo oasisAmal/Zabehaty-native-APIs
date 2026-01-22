@@ -26,45 +26,16 @@ class ShopsQuery
                 'shops.image',
                 'shops.rating',
             ])
+            ->distinct()
             ->selectRaw("shops.{$nameColumn} as name")
             ->selectSub($this->firstParentCategorySubQuery($nameColumn), 'first_parent_category_name')
             ->where('shops.is_active', true);
 
         $this->applyShopVisibility($query);
 
-        $query->when(isset($filters['home_page_section_id']) && $filters['home_page_section_id'], function ($query) use ($filters) {
-            $query->whereExists(function ($subQuery) use ($filters) {
-                $subQuery->select(DB::raw(1))
-                    ->from('home_page_items')
-                    ->whereColumn('home_page_items.item_id', 'shops.id')
-                    ->where('home_page_items.item_type', Shop::class)
-                    ->where('home_page_items.home_page_id', $filters['home_page_section_id']);
-            });
-        })->when(
-            isset($filters['dynamic_category_section_id']) && $filters['dynamic_category_section_id'] && !$filters['is_all_menu_item'],
-            function ($query) use ($filters) {
-                $query->whereExists(function ($subQuery) use ($filters) {
-                    $subQuery->select(DB::raw(1))
-                        ->from('dynamic_category_section_items')
-                        ->whereColumn('dynamic_category_section_items.item_id', 'shops.id')
-                        ->where('dynamic_category_section_items.item_type', Shop::class)
-                        ->where('dynamic_category_section_items.dynamic_category_section_id', $filters['dynamic_category_section_id']);
-                });
-            }
-        )->when(
-            isset($filters['dynamic_category_menu_id']) && $filters['dynamic_category_menu_id'] && !$filters['is_all_menu_item'],
-            function ($query) use ($filters) {
-                $query->whereExists(function ($subQuery) use ($filters) {
-                    $subQuery->select(DB::raw(1))
-                        ->from('dynamic_category_section_items')
-                        ->whereColumn('dynamic_category_section_items.item_id', 'shops.id')
-                        ->where('dynamic_category_section_items.item_type', Shop::class)
-                        ->where('dynamic_category_section_items.menu_item_parent_id', $filters['dynamic_category_menu_id']);
-                });
-            }
-        );
+        $this->applyDynamicCategoryFilters($query, $filters);
 
-        return $query->paginate($perPage);
+        return $query->orderBy('shops.id', 'desc')->paginate($perPage);
     }
 
     private function firstParentCategorySubQuery(string $nameColumn)
@@ -118,5 +89,49 @@ class ShopsQuery
                     }
                 });
         });
+    }
+
+    private function applyDynamicCategoryFilters($query, array $filters): void
+    {
+        $isAllMenuItem = false;
+
+        if (isset($filters['dynamic_category_section_id'])) {
+            $categoryId = $this->getCountryConnection()
+                ->table('dynamic_category_sections')
+                ->where('id', $filters['dynamic_category_section_id'])
+                ->value('category_id');
+            if ($categoryId) {
+                $childCategoryIds = getAllChildCategoriesIds($categoryId);
+                $query->join('shop_categories', 'shop_categories.shop_id', '=', 'shops.id')->whereIn('shop_categories.category_id', $childCategoryIds);
+            }
+        }
+
+        if (isset($filters['dynamic_category_menu_id'])) {
+            $isAllMenuItem = $this->getCountryConnection()
+                ->table('dynamic_category_section_items')
+                ->where('menu_item_parent_id', $filters['dynamic_category_menu_id'])
+                ->where('is_all_menu_item', true)
+                ->exists();
+        }
+
+        if (isset($filters['dynamic_category_section_id']) && $isAllMenuItem == false) {
+            $query->whereExists(function ($subQuery) use ($filters) {
+                $subQuery->select(DB::raw(1))
+                    ->from('dynamic_category_section_items')
+                    ->whereColumn('dynamic_category_section_items.item_id', 'shops.id')
+                    ->where('dynamic_category_section_items.item_type', Shop::class)
+                    ->where('dynamic_category_section_items.dynamic_category_section_id', $filters['dynamic_category_section_id']);
+            });
+        }
+
+        if (isset($filters['dynamic_category_menu_id']) && $isAllMenuItem == false) {
+            $query->whereExists(function ($subQuery) use ($filters) {
+                $subQuery->select(DB::raw(1))
+                    ->from('dynamic_category_section_items')
+                    ->whereColumn('dynamic_category_section_items.item_id', 'shops.id')
+                    ->where('dynamic_category_section_items.item_type', Shop::class)
+                    ->where('dynamic_category_section_items.menu_item_parent_id', $filters['dynamic_category_menu_id']);
+            });
+        }
     }
 }

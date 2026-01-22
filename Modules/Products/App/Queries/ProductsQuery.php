@@ -18,11 +18,18 @@ class ProductsQuery
         $nameColumn = $locale === 'ar' ? 'name' : 'name_en';
         $perPage = isset($filters['per_page']) && $filters['per_page'] ? $filters['per_page'] : Pagination::PER_PAGE;
 
+        $user = auth('api')->user();
+        
         $query = $this->getCountryConnection()
             ->table('products')
             ->leftJoin('shops', 'shops.id', '=', 'products.shop_id')
             ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
-            ->leftJoin('favourites', 'favourites.product_id', '=', 'products.id')
+            ->leftJoin('favourites', function ($join) use ($user) {
+                $join->on('favourites.product_id', '=', 'products.id');
+                if ($user) {
+                    $join->where('favourites.user_id', '=', $user->id);
+                }
+            })
             ->select([
                 'products.id',
                 'products.image',
@@ -37,6 +44,7 @@ class ProductsQuery
             ->selectRaw("categories.{$nameColumn} as category_name")
             ->selectSub($this->minSubProductPriceSubQuery(), 'min_sub_price')
             ->selectSub($this->badgeNameSubQuery($nameColumn), 'badge_name')
+            ->distinct()
             ->where('products.is_active', true)
             ->where('products.is_approved', true)
             ->whereNotNull('products.department_id')
@@ -55,7 +63,7 @@ class ProductsQuery
         $this->applyDynamicCategoryFilters($query, $filters);
         $this->applyDynamicShopFilters($query, $filters);
 
-        return $query->paginate($perPage);
+        return $query->orderBy('products.id', 'desc')->paginate($perPage);
     }
 
     private function applyHomePageFilter($query, array $filters): void
