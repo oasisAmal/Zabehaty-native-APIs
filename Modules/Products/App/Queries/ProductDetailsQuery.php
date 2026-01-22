@@ -25,6 +25,7 @@ class ProductDetailsQuery
                 'products.category_id',
                 'products.image',
                 'products.images',
+                'products.video',
                 'products.price',
                 'products.old_price',
                 'products.has_sub_products',
@@ -76,7 +77,7 @@ class ProductDetailsQuery
             'description_ar',
             'description_en'
         );
-        $productArray['images'] = $this->resolveImages($productArray['images'] ?? null);
+        $productArray['images'] = $this->resolveImages(images: $productArray['images'] ?? null, video: $productArray['video'] ?? null);
         $productArray['price'] = $this->resolvePrice($productArray);
         $productArray['price_before_discount'] = $productArray['old_price'] ? (float) $productArray['old_price'] : null;
         $productArray['discount_percentage'] = $this->resolveDiscountPercentage(
@@ -221,10 +222,17 @@ class ProductDetailsQuery
         return $primary ?: $fallback;
     }
 
-    private function resolveImages($images): array
+    private function resolveImages($images = null, $video = null): array
     {
         $decoded = $images ? (is_array($images) ? $images : (array) json_decode($images, true)) : [];
-        return handleMediaVideoOrImage($decoded);
+        $images = handleMediaVideoOrImage($decoded);
+        if ($video) {
+            $images[] = [
+                'media_type' => 'video',
+                'media_url' => $video,
+            ];
+        }
+        return $images;
     }
 
     private function resolvePrice(array $product): float

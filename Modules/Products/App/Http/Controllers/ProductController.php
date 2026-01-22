@@ -48,7 +48,6 @@ class ProductController extends Controller
             }
             return responseSuccessData(ProductDetailsResource::make($product));
         } catch (\Exception $e) {
-            dd($e->getMessage());
             return responseErrorMessage(
                 __('products::messages.failed_to_retrieve_product_details'),
                 500,
