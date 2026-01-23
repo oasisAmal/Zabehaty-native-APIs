@@ -12,7 +12,7 @@ class FixUserMobileNumberSeeder extends Seeder
      */
     public function run(): void
     {
-        User::orderBy('id', 'asc')
+        User::forCountry('ae')->orderBy('id', 'asc')
             // ->where('id', 89007) // test user
             // ->where('id', 89010) // test user
             ->chunk(100, function ($users) {
