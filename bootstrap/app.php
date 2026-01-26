@@ -37,7 +37,7 @@ return Application::configure(basePath: dirname(__DIR__))
             ForceUpdateMiddleware::class,
             CheckGuestModeMiddleware::class,
             AddressStateMiddleware::class,
-            'throttle:api',
+            // 'throttle:api',
         ]);
 
         $middleware->alias([

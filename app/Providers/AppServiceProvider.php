@@ -29,13 +29,13 @@ class AppServiceProvider extends ServiceProvider
         // Prevent Lazy Loading for all models in production
         // Model::preventLazyLoading(!app()->isProduction());
 
-        RateLimiter::for('api', function (Request $request) {
-            $maxAttempts = (int) env('API_RATE_LIMIT_MAX_ATTEMPTS', 30);
-            $decayMinutes = (int) env('API_RATE_LIMIT_DECAY_MINUTES', 1);
+        // RateLimiter::for('api', function (Request $request) {
+        //     $maxAttempts = (int) env('API_RATE_LIMIT_MAX_ATTEMPTS', 30);
+        //     $decayMinutes = (int) env('API_RATE_LIMIT_DECAY_MINUTES', 1);
 
-            return Limit::perMinutes($decayMinutes, $maxAttempts)->by(
-                $request->user()?->id ?: $request->ip()
-            );
-        });
+        //     return Limit::perMinutes($decayMinutes, $maxAttempts)->by(
+        //         $request->user()?->id ?: $request->ip()
+        //     );
+        // });
     }
 }
