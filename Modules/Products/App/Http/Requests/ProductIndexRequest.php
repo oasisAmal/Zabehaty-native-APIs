@@ -11,7 +11,7 @@ use Illuminate\Http\Exceptions\HttpResponseException;
 class ProductIndexRequest extends FormRequest
 {
     use CountryQueryBuilderTrait;
-    
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -66,10 +66,10 @@ class ProductIndexRequest extends FormRequest
                 ->select('dynamic_shop_section_items.dynamic_shop_section_id', 'dynamic_shop_sections.shop_id')
                 ->where('menu_item_parent_id', $this->dynamic_shop_menu_id)
                 ->first();
-        }
-        if ($dynamicShopSectionItem) {
-            $dynamicShopSectionId = $dynamicShopSectionItem->dynamic_shop_section_id;
-            $shopId = $dynamicShopSectionItem->shop_id;
+            if ($dynamicShopSectionItem) {
+                $dynamicShopSectionId = $dynamicShopSectionItem->dynamic_shop_section_id;
+                $shopId = $dynamicShopSectionItem->shop_id;
+            }
         }
 
         $this->merge([
