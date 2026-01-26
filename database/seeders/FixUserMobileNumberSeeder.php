@@ -21,18 +21,26 @@ class FixUserMobileNumberSeeder extends Seeder
         }
 
         $usersQuery
-            // ->where('id', 89007) // test user
+            // ->where('id', 108) // test user
             // ->where('id', 89010) // test user
             ->chunk(100, function ($users) use ($progressBar) {
                 foreach ($users as $user) {
-                    $user->mobile = format_mobile_number_to_database($user->mobile);
-                    $user->country_code = getCountryCodeNumberFromMobile($user->mobile);
-                    $user->country_symbol = getCountryCodeFromMobile($user->mobile);
+                    $userMobiles = $this->getValidMobiles($user->mobile);
+                    $userMobile = $userMobiles[0] ?? null;
+                    if (count($userMobiles) === 1) {
+                        $user->mobile = format_mobile_number_to_database($userMobile);
+                    }
+                    $user->country_code = $userMobile ? getCountryCodeNumberFromMobile($userMobile) : null;
+                    $user->country_symbol = $userMobile ? getCountryCodeFromMobile($userMobile) : null;
                     $user->save();
 
                     $user->addresses()->each(function ($address) {
-                        $address->mobile = format_mobile_number_to_database($address->mobile);
-                        $address->country_code = getCountryCodeFromMobile($address->mobile);
+                        $addressMobiles = $this->getValidMobiles($address->mobile);
+                        $addressMobile = $addressMobiles[0] ?? null;
+                        if (count($addressMobiles) === 1) {
+                            $address->mobile = format_mobile_number_to_database($addressMobile);
+                        }
+                        $address->country_code = $addressMobile ? getCountryCodeFromMobile($addressMobile) : null;
                         $address->save();
                     });
 
@@ -46,5 +54,32 @@ class FixUserMobileNumberSeeder extends Seeder
             $progressBar->finish();
             $this->command->getOutput()->newLine();
         }
+    }
+
+    private function getValidMobiles(?string $rawMobile): array
+    {
+        if (!$rawMobile) {
+            return [];
+        }
+
+        $normalized = str_replace([';', '|', '/', '\\'], ',', $rawMobile);
+        $parts = preg_split('/[,\s]+/', $normalized, -1, PREG_SPLIT_NO_EMPTY);
+
+        $validMobiles = [];
+        foreach ($parts as $part) {
+            $candidate = preg_replace('/[^0-9+]/', '', $part);
+            if ($candidate === '') {
+                continue;
+            }
+
+            $countrySymbol = getCountryCodeFromMobile($candidate);
+            $countryCode = getCountryCodeNumberFromMobile($candidate);
+
+            if (($countrySymbol || $countryCode) && !in_array($candidate, $validMobiles, true)) {
+                $validMobiles[] = $candidate;
+            }
+        }
+
+        return $validMobiles;
     }
 }
