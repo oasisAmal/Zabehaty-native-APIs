@@ -2,9 +2,11 @@
 
 namespace Modules\Products\App\Http\Requests;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
+use Modules\DynamicCategories\App\Models\DynamicCategorySectionItem;
 
 class ProductIndexRequest extends FormRequest
 {
@@ -38,7 +40,25 @@ class ProductIndexRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-       // no need to prepare for validation
+        // no need to prepare for validation
+        $categoryId = null;
+        $dynamicCategorySectionId = null;
+        if ($this->dynamic_category_menu_id) {
+            $dynamicCategorySectionItem = DB::table('dynamic_category_section_items')
+                ->join('dynamic_category_sections', 'dynamic_category_sections.id', '=', 'dynamic_category_section_items.dynamic_category_section_id')
+                ->select('dynamic_category_section_items.dynamic_category_section_id', 'dynamic_category_sections.category_id')
+                ->where('menu_item_parent_id', $this->dynamic_category_menu_id)
+                ->first();
+            if ($dynamicCategorySectionItem) {
+                $dynamicCategorySectionId = $dynamicCategorySectionItem->dynamic_category_section_id;
+                $categoryId = $dynamicCategorySectionItem->category_id;
+            }
+        }
+
+        $this->merge([
+            'category_id' => $categoryId,
+            'dynamic_category_section_id' => $dynamicCategorySectionId,
+        ]);
     }
 
     public function messages(): array
