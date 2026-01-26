@@ -135,7 +135,7 @@ class UserAddressService
 
         if ($isCreate) {
             $data['user_id'] = auth('api')->user()->id;
-            $data['is_default'] = UserAddress::where('user_id', $data['user_id'])->count() >= 1 ? 0 : 1;
+            // $data['is_default'] = UserAddress::where('user_id', $data['user_id'])->count() >= 1 ? 0 : 1;
             $data['is_active'] = 1;
         }
 
