@@ -99,7 +99,7 @@ class UserAddressService
         $address = $this->findUserAddressOrFail(auth('api')->user()->id, $data['address_id']);
 
         $user = auth('api')->user();
-        
+
         UserAddress::where('user_id', $user->id)->default()->update(['is_default' => false]);
 
         $address->update(['is_default' => true]);
@@ -135,8 +135,8 @@ class UserAddressService
 
         if ($isCreate) {
             $data['user_id'] = auth('api')->user()->id;
-            // $data['is_default'] = UserAddress::where('user_id', $data['user_id'])->count() >= 1 ? 0 : 1;
             $data['is_active'] = 1;
+            $data['is_default'] = 1;
         }
 
         if (!isset($data['name'])) {
