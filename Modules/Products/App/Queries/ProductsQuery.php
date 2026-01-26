@@ -86,7 +86,8 @@ class ProductsQuery
         $isAllMenuItem = false;
 
         if (isset($filters['category_id']) && $filters['category_id'] !== null) {
-            $query->where('products.category_id', $filters['category_id']);
+            $childCategoryIds = getAllChildCategoriesIds($filters['category_id']);
+            $query->whereIn('products.category_id', $childCategoryIds);
         }
 
         if (isset($filters['dynamic_category_menu_id'])) {
