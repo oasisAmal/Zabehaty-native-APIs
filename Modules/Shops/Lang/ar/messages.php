@@ -6,6 +6,7 @@ return [
         'home_page_section_id' => 'رقم القسم الرئيسي',
         'dynamic_category_section_id' => 'رقم قسم الفئات الديناميكية',
         'dynamic_category_menu_id' => 'رقم قسم الفئات الديناميكية',
+        'category_id' => 'رقم الفئة',
         'per_page' => 'عدد العناصر في الصفحة',
     ],
 ];

@@ -25,6 +25,7 @@ class ShopController extends Controller
             $shops = $this->shopsService->getShops($request->validated());
             return responsePaginate(ShopCardResource::collection($shops));
         } catch (\Exception $e) {
+            dd($e->getMessage());
             return responseErrorMessage(
                 __('shops::messages.failed_to_retrieve_shops'),
                 500

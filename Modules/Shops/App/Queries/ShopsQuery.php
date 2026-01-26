@@ -94,19 +94,35 @@ class ShopsQuery
     private function applyDynamicCategoryFilters($query, array $filters): void
     {
         $isAllMenuItem = false;
+        $categoryIds = [];
 
-        if (isset($filters['dynamic_category_section_id'])) {
+        if (isset($filters['category_id']) && $filters['category_id'] !== null) {
+            $childCategoryIds = getAllChildCategoriesIds($filters['category_id']);
+            $categoryIds = array_merge($categoryIds, $childCategoryIds);
+        }
+
+        if (isset($filters['dynamic_category_section_id']) && $filters['dynamic_category_section_id'] !== null) {
             $categoryId = $this->getCountryConnection()
                 ->table('dynamic_category_sections')
                 ->where('id', $filters['dynamic_category_section_id'])
                 ->value('category_id');
             if ($categoryId) {
                 $childCategoryIds = getAllChildCategoriesIds($categoryId);
-                $query->join('shop_categories', 'shop_categories.shop_id', '=', 'shops.id')->whereIn('shop_categories.category_id', $childCategoryIds);
+                $categoryIds = array_merge($categoryIds, $childCategoryIds);
             }
         }
 
-        if (isset($filters['dynamic_category_menu_id'])) {
+        if (! empty($categoryIds)) {
+            $categoryIds = array_values(array_unique($categoryIds));
+            $query->whereExists(function ($subQuery) use ($categoryIds) {
+                $subQuery->select(DB::raw(1))
+                    ->from('shop_categories')
+                    ->whereColumn('shop_categories.shop_id', 'shops.id')
+                    ->whereIn('shop_categories.category_id', $categoryIds);
+            });
+        }
+
+        if (isset($filters['dynamic_category_menu_id']) && $filters['dynamic_category_menu_id'] !== null) {
             $isAllMenuItem = $this->getCountryConnection()
                 ->table('dynamic_category_section_items')
                 ->where('menu_item_parent_id', $filters['dynamic_category_menu_id'])

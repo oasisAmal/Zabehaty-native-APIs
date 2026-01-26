@@ -2,12 +2,15 @@
 
 namespace Modules\Shops\App\Http\Requests;
 
+use App\Traits\CountryQueryBuilderTrait;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 
 class ShopIndexRequest extends FormRequest
 {
+    use CountryQueryBuilderTrait;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -23,6 +26,7 @@ class ShopIndexRequest extends FormRequest
     {
         return [
             'home_page_section_id' => ['sometimes', 'nullable', 'integer', 'exists:home_page,id'],
+            'category_id' => ['sometimes', 'nullable', 'integer', 'exists:categories,id'],
             'dynamic_category_section_id' => ['sometimes', 'nullable', 'integer', 'exists:dynamic_category_sections,id'],
             'dynamic_category_menu_id' => ['sometimes', 'nullable', 'integer', 'exists:dynamic_category_section_items,menu_item_parent_id'],
             'per_page' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:30'],
@@ -34,7 +38,24 @@ class ShopIndexRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        // no need to prepare for validation
+        $categoryId = null;
+        $dynamicCategorySectionId = null;
+        if ($this->dynamic_category_menu_id) {
+            $dynamicCategorySectionItem = $this->getCountryConnection()
+                ->table('dynamic_category_section_items')
+                ->join('dynamic_category_sections', 'dynamic_category_sections.id', '=', 'dynamic_category_section_items.dynamic_category_section_id')
+                ->select('dynamic_category_section_items.dynamic_category_section_id', 'dynamic_category_sections.category_id')
+                ->where('menu_item_parent_id', $this->dynamic_category_menu_id)
+                ->first();
+            if ($dynamicCategorySectionItem) {
+                $dynamicCategorySectionId = $dynamicCategorySectionItem->dynamic_category_section_id;
+                $categoryId = $dynamicCategorySectionItem->category_id;
+            }
+        }
+        $this->merge([
+            'category_id' => $categoryId,
+            'dynamic_category_section_id' => $dynamicCategorySectionId,
+        ]);
     }
     public function messages(): array
     {
@@ -45,6 +66,8 @@ class ShopIndexRequest extends FormRequest
             'dynamic_category_section_id.exists' => __('validation.exists'),
             'dynamic_category_menu_id.integer' => __('validation.integer'),
             'dynamic_category_menu_id.exists' => __('validation.exists'),
+            'category_id.integer' => __('validation.integer'),
+            'category_id.exists' => __('validation.exists'),
             'per_page.integer' => __('validation.integer'),
             'per_page.min' => __('validation.min.string'),
             'per_page.max' => __('validation.max.string'),
@@ -55,8 +78,10 @@ class ShopIndexRequest extends FormRequest
     {
         return [
             'home_page_section_id' => __('shops::messages.attributes.home_page_section_id'),
+            'category_id' => __('shops::messages.attributes.category_id'),
             'dynamic_category_section_id' => __('shops::messages.attributes.dynamic_category_section_id'),
             'dynamic_category_menu_id' => __('shops::messages.attributes.dynamic_category_menu_id'),
+            'category_id' => __('shops::messages.attributes.category_id'),
             'per_page' => __('shops::messages.attributes.per_page'),
         ];
     }
