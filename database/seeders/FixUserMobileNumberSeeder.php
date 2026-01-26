@@ -12,10 +12,18 @@ class FixUserMobileNumberSeeder extends Seeder
      */
     public function run(): void
     {
-        User::forCountry('ae')->orderBy('id', 'asc')
+        $usersQuery = User::forCountry('ae')->orderBy('id', 'asc');
+
+        $progressBar = null;
+        if ($this->command) {
+            $progressBar = $this->command->getOutput()->createProgressBar($usersQuery->count());
+            $progressBar->start();
+        }
+
+        $usersQuery
             // ->where('id', 89007) // test user
             // ->where('id', 89010) // test user
-            ->chunk(100, function ($users) {
+            ->chunk(100, function ($users) use ($progressBar) {
                 foreach ($users as $user) {
                     $user->mobile = format_mobile_number_to_database($user->mobile);
                     $user->country_code = getCountryCodeNumberFromMobile($user->mobile);
@@ -27,7 +35,16 @@ class FixUserMobileNumberSeeder extends Seeder
                         $address->country_code = getCountryCodeFromMobile($address->mobile);
                         $address->save();
                     });
+
+                    if ($progressBar) {
+                        $progressBar->advance();
+                    }
                 }
             });
+
+        if ($progressBar) {
+            $progressBar->finish();
+            $this->command->getOutput()->newLine();
+        }
     }
 }
