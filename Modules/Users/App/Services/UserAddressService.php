@@ -4,6 +4,7 @@ namespace Modules\Users\App\Services;
 
 use App\Enums\Pagination;
 use App\Models\Region;
+use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use Modules\Users\App\Models\UserAddress;
@@ -25,6 +26,8 @@ class UserAddressService
         }
 
         $address = UserAddress::create($data);
+
+        UserAddress::where('user_id', $data['user_id'])->where('id', '!=', $address->id)->update(['is_default' => false]);
 
         // Update address state cache after creation
         /** @var \Modules\Users\App\Models\User|null $user */

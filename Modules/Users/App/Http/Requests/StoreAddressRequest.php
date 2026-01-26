@@ -53,6 +53,7 @@ class StoreAddressRequest extends FormRequest
             'country_code' => $this->mobile ? $this->mobile_country_code : null,
             'main_type' => $this->main_type ?? 'others',
             'address_type' => $this->address_type ?? 'others',
+            'is_default' => true
         ]);
     }
 
