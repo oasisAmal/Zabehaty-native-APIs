@@ -42,7 +42,6 @@ class ProductIndexRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        // no need to prepare for validation
         $categoryId = null;
         $dynamicCategorySectionId = null;
         if ($this->dynamic_category_menu_id) {
@@ -58,9 +57,26 @@ class ProductIndexRequest extends FormRequest
             }
         }
 
+        $shopId = null;
+        $dynamicShopSectionId = null;
+        if ($this->dynamic_shop_menu_id) {
+            $dynamicShopSectionItem = $this->getCountryConnection()
+                ->table('dynamic_shop_section_items')
+                ->join('dynamic_shop_sections', 'dynamic_shop_sections.id', '=', 'dynamic_shop_section_items.dynamic_shop_section_id')
+                ->select('dynamic_shop_section_items.dynamic_shop_section_id', 'dynamic_shop_sections.shop_id')
+                ->where('menu_item_parent_id', $this->dynamic_shop_menu_id)
+                ->first();
+        }
+        if ($dynamicShopSectionItem) {
+            $dynamicShopSectionId = $dynamicShopSectionItem->dynamic_shop_section_id;
+            $shopId = $dynamicShopSectionItem->shop_id;
+        }
+
         $this->merge([
             'category_id' => $categoryId,
             'dynamic_category_section_id' => $dynamicCategorySectionId,
+            'shop_id' => $shopId,
+            'dynamic_shop_section_id' => $dynamicShopSectionId,
         ]);
     }
 

@@ -85,7 +85,7 @@ class ProductsQuery
     {
         $isAllMenuItem = false;
 
-        if (isset($filters['category_id'])) {
+        if (isset($filters['category_id']) && $filters['category_id'] !== null) {
             $query->where('products.category_id', $filters['category_id']);
         }
 
@@ -122,7 +122,7 @@ class ProductsQuery
     {
         $isAllMenuItem = false;
 
-        if (isset($filters['shop_id'])) {
+        if (isset($filters['shop_id']) && $filters['shop_id'] !== null) {
             $query->where('products.shop_id', $filters['shop_id']);
         }
 
