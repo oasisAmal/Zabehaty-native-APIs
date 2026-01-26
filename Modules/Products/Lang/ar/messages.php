@@ -7,8 +7,10 @@ return [
     'size_section_name' => 'اختار الحجم',
     'attributes' => [
         'home_page_section_id' => 'رقم القسم الرئيسي',
+        'category_id' => 'رقم الفئة',
         'dynamic_category_section_id' => 'رقم قسم الفئات الديناميكية',
         'dynamic_category_menu_id' => 'رقم قسم الفئات الديناميكية',
+        'shop_id' => 'رقم المتجر',
         'dynamic_shop_section_id' => 'رقم قسم المتاجر الديناميكية',
         'dynamic_shop_menu_id' => 'رقم قسم المتاجر الديناميكية',
         'per_page' => 'عدد العناصر في الصفحة',

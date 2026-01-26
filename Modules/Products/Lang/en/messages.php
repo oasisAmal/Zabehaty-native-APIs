@@ -7,8 +7,10 @@ return [
     'size_section_name' => 'Choose Size',
     'attributes' => [
         'home_page_section_id' => 'Home page section ID',
+        'category_id' => 'Category ID',
         'dynamic_category_section_id' => 'Dynamic category section ID',
         'dynamic_category_menu_id' => 'Dynamic category menu ID',
+        'shop_id' => 'Shop ID',
         'dynamic_shop_section_id' => 'Dynamic shop section ID',
         'dynamic_shop_menu_id' => 'Dynamic shop menu ID',
         'per_page' => 'Per page',

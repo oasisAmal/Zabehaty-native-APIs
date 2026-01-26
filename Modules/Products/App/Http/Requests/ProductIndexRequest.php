@@ -23,8 +23,10 @@ class ProductIndexRequest extends FormRequest
     {
         return [
             'home_page_section_id' => ['sometimes', 'nullable', 'integer', 'exists:home_page,id'],
+            'category_id' => ['sometimes', 'nullable', 'integer', 'exists:categories,id'],
             'dynamic_category_section_id' => ['sometimes', 'nullable', 'integer', 'exists:dynamic_category_sections,id'],
             'dynamic_category_menu_id' => ['sometimes', 'nullable', 'integer', 'exists:dynamic_category_section_items,menu_item_parent_id'],
+            'shop_id' => ['sometimes', 'nullable', 'integer', 'exists:shops,id'],
             'dynamic_shop_section_id' => ['sometimes', 'nullable', 'integer', 'exists:dynamic_shop_sections,id'],
             'dynamic_shop_menu_id' => ['sometimes', 'nullable', 'integer', 'exists:dynamic_shop_section_items,menu_item_parent_id'],
             'per_page' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:30'],
@@ -44,10 +46,14 @@ class ProductIndexRequest extends FormRequest
         return [
             'home_page_section_id.integer' => __('validation.integer'),
             'home_page_section_id.exists' => __('validation.exists'),
+            'category_id.integer' => __('validation.integer'),
+            'category_id.exists' => __('validation.exists'),
             'dynamic_category_section_id.integer' => __('validation.integer'),
             'dynamic_category_section_id.exists' => __('validation.exists'),
             'dynamic_category_menu_id.integer' => __('validation.integer'),
             'dynamic_category_menu_id.exists' => __('validation.exists'),
+            'shop_id.integer' => __('validation.integer'),
+            'shop_id.exists' => __('validation.exists'),
             'dynamic_shop_section_id.integer' => __('validation.integer'),
             'dynamic_shop_section_id.exists' => __('validation.exists'),
             'dynamic_shop_menu_id.integer' => __('validation.integer'),
@@ -62,8 +68,10 @@ class ProductIndexRequest extends FormRequest
     {
         return [
             'home_page_section_id' => __('products::messages.attributes.home_page_section_id'),
+            'category_id' => __('products::messages.attributes.category_id'),
             'dynamic_category_section_id' => __('products::messages.attributes.dynamic_category_section_id'),
             'dynamic_category_menu_id' => __('products::messages.attributes.dynamic_category_menu_id'),
+            'shop_id' => __('products::messages.attributes.shop_id'),
             'dynamic_shop_section_id' => __('products::messages.attributes.dynamic_shop_section_id'),
             'dynamic_shop_menu_id' => __('products::messages.attributes.dynamic_shop_menu_id'),
             'per_page' => __('products::messages.attributes.per_page'),

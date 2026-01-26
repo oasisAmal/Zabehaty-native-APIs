@@ -85,15 +85,8 @@ class ProductsQuery
     {
         $isAllMenuItem = false;
 
-        if (isset($filters['dynamic_category_section_id'])) {
-            $categoryId = $this->getCountryConnection()
-                ->table('dynamic_category_sections')
-                ->where('id', $filters['dynamic_category_section_id'])
-                ->value('category_id');
-            if ($categoryId) {
-                $childCategoryIds = getAllChildCategoriesIds($categoryId);
-                $query->whereIn('products.category_id', $childCategoryIds);
-            }
+        if (isset($filters['category_id'])) {
+            $query->where('products.category_id', $filters['category_id']);
         }
 
         if (isset($filters['dynamic_category_menu_id'])) {
@@ -129,14 +122,8 @@ class ProductsQuery
     {
         $isAllMenuItem = false;
 
-        if (isset($filters['dynamic_shop_section_id'])) {
-            $shopId = $this->getCountryConnection()
-                ->table('dynamic_shop_sections')
-                ->where('id', $filters['dynamic_shop_section_id'])
-                ->value('shop_id');
-            if ($shopId) {
-                $query->where('products.shop_id', $shopId);
-            }
+        if (isset($filters['shop_id'])) {
+            $query->where('products.shop_id', $filters['shop_id']);
         }
 
         if (isset($filters['dynamic_shop_menu_id'])) {
