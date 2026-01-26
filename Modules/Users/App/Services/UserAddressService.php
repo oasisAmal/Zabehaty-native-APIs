@@ -73,7 +73,7 @@ class UserAddressService
 
         $address = $this->findUserAddressOrFail($user->id, $addressId);
 
-        $address->delete();
+        $address->update(['is_active' => false]);
 
         // Update address state cache after deletion
         if (!$user->isGuest()) {
