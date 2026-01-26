@@ -3,13 +3,15 @@
 namespace Modules\Products\App\Http\Requests;
 
 use Illuminate\Support\Facades\DB;
+use App\Traits\CountryQueryBuilderTrait;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Modules\DynamicCategories\App\Models\DynamicCategorySectionItem;
 
 class ProductIndexRequest extends FormRequest
 {
+    use CountryQueryBuilderTrait;
+    
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -44,7 +46,8 @@ class ProductIndexRequest extends FormRequest
         $categoryId = null;
         $dynamicCategorySectionId = null;
         if ($this->dynamic_category_menu_id) {
-            $dynamicCategorySectionItem = DB::table('dynamic_category_section_items')
+            $dynamicCategorySectionItem = $this->getCountryConnection()
+                ->table('dynamic_category_section_items')
                 ->join('dynamic_category_sections', 'dynamic_category_sections.id', '=', 'dynamic_category_section_items.dynamic_category_section_id')
                 ->select('dynamic_category_section_items.dynamic_category_section_id', 'dynamic_category_sections.category_id')
                 ->where('menu_item_parent_id', $this->dynamic_category_menu_id)
