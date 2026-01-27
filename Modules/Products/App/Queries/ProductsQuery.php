@@ -39,7 +39,7 @@ class ProductsQuery
                 'products.has_sub_products',
                 'products.limited_offer_expired_at',
             ])
-            ->selectRaw('favourites.id as is_favorite')
+            ->selectRaw('IF(favourites.id IS NULL, 0, 1) as is_favorite')
             ->selectRaw("products.{$nameColumn} as name")
             ->selectRaw("shops.{$nameColumn} as shop_name")
             ->selectRaw("categories.{$nameColumn} as category_name")
