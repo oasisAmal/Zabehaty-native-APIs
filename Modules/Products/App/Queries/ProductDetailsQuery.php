@@ -177,7 +177,7 @@ class ProductDetailsQuery
             ->whereIn('product_addon_section_items.product_addon_section_id', $pivotIds)
             ->get()
             ->map(function ($row) {
-                $row->media = $row->media ? json_decode($row->media, true) : [];
+                $row->media = handleMediaVideoOrImage($row->media);
                 return $row;
             })
             ->groupBy('product_addon_section_id');
