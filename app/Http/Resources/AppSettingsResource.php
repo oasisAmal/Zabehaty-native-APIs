@@ -24,6 +24,7 @@ class AppSettingsResource extends JsonResource
             'create_account_screen_settings' => $this->getCreateAccountScreenSettings($settings),
             'otp_screen_settings' => $this->getOtpScreenSettings($settings),
             'forgot_password_screen_settings' => $this->getForgotPasswordScreenSettings($settings),
+            'password_verification_screen_settings' => $this->getPasswordVerificationScreenSettings($settings),
         ];
     }
 
@@ -118,6 +119,19 @@ class AppSettingsResource extends JsonResource
         return [
             'background_image' => $backgroundImage,
             'dialog_opacity' => (float) ($settings['forgot_password_screen_settings_dialog_opacity'] ?? 1.0),
+        ];
+    }
+
+    private function getPasswordVerificationScreenSettings($settings)
+    {
+        $backgroundImage = isset($settings['password_verification_screen_settings_image']) ? $settings['password_verification_screen_settings_image'] : '';
+        if (isset($settings['password_verification_screen_settings_image']) && $settings['password_verification_screen_settings_image'] == '""') {
+            $backgroundImage = '';
+        }
+
+        return [
+            'background_image' => $backgroundImage,
+            'dialog_opacity' => (float) ($settings['password_verification_screen_settings_dialog_opacity'] ?? 1.0),
         ];
     }
 }
