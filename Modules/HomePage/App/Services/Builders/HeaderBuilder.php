@@ -24,6 +24,7 @@ class HeaderBuilder
     {
         return [
             'background_url' => $this->getBackgroundUrl(),
+            'main_categories_opacity' => $this->getMainCategoriesOpacity(),
             'main_categories' => $this->getMainCategories(),
             'story_section_available' => $this->storySectionAvailable(),
             'user_stories' => $this->getUserStories(),
@@ -38,6 +39,19 @@ class HeaderBuilder
     private function getBackgroundUrl(): string
     {
         return HomePageBackgroud::first()->background_image_url ?? '';
+    }
+
+    /**
+     * Get main categories opacity from settings
+     *
+     * @return float
+     */
+    private function getMainCategoriesOpacity(): float
+    {
+        if (isset($this->settings['main_categories_opacity']) && $this->settings['main_categories_opacity'] == '""') {
+            return 1.0;
+        }
+        return (float) ($this->settings['main_categories_opacity'] ?? 1.0);
     }
 
     /**
