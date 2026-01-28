@@ -89,7 +89,6 @@ class UserAddressService
     public function paginate(array $data): LengthAwarePaginator
     {
         return UserAddress::where('user_id', auth('api')->user()->id)
-            ->active()
             ->orderByDesc('is_default')
             ->paginate(Pagination::PER_PAGE);
     }
