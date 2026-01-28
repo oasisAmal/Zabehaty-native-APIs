@@ -174,6 +174,28 @@ class InsertSettingsSeeder extends Seeder
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
+            'key' => 'password_verification_screen_settings_image',
+        ], [
+            'alias' => 'صورة الشاشة التحقق من كلمة المرور للتطبيق',
+            'value' => '',
+            'type' => 5,
+            'category' => 3,
+            'lang' => 'ar',
+            'header_id' => $headerId,
+        ]);
+
+        Settings::forCountry('ae')->updateOrCreate([
+            'key' => 'password_verification_screen_settings_dialog_opacity',
+        ], [
+            'alias' => 'نسبة الشاشة التحقق من كلمة المرور للتطبيق',
+            'value' => '1.0',
+            'type' => 1,
+            'category' => 3,
+            'lang' => 'ar',
+            'header_id' => $headerId,
+        ]);
+
+        Settings::forCountry('ae')->updateOrCreate([
             'key' => 'on_boarding_screens',
         ], [
             'alias' => 'اعلانات بعد فتح شاشه التطبيق',
