@@ -185,7 +185,7 @@ class InsertSettingsSeeder extends Seeder
         ]);
 
         Settings::forCountry('ae')->updateOrCreate([
-            'key' => 'password_verification_screen_settings_dialog_opacity',
+            'key' => 'password_verification_dialog_opacity',
         ], [
             'alias' => 'نسبة الشاشة التحقق من كلمة المرور للتطبيق',
             'value' => '1.0',

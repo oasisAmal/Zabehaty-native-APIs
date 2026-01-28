@@ -131,7 +131,7 @@ class AppSettingsResource extends JsonResource
 
         return [
             'background_image' => $backgroundImage,
-            'dialog_opacity' => (float) ($settings['password_verification_screen_settings_dialog_opacity'] ?? 1.0),
+            'dialog_opacity' => (float) ($settings['password_verification_dialog_opacity'] ?? 1.0),
         ];
     }
 }
