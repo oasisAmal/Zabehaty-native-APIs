@@ -8,5 +8,6 @@
     "Shops": true,
     "DynamicCategories": true,
     "Cart": true,
-    "DynamicShops": true
+    "DynamicShops": true,
+    "Search": true
 }
