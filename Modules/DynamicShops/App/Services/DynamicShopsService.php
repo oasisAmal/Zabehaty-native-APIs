@@ -38,6 +38,7 @@ class DynamicShopsService
                 'sections' => [],
             ];
         }
+        saveUserVisit(shopId: $shopId);
 
         $emirateId = 0;
         $regionId = 0;

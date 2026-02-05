@@ -23,6 +23,7 @@ class ProductDetailsQuery
             ->select([
                 'products.id',
                 'products.category_id',
+                'products.shop_id',
                 'products.image',
                 'products.images',
                 'products.video',
@@ -95,6 +96,8 @@ class ProductDetailsQuery
         ];
         $productArray['stock'] = $this->resolveStockSettings($productArray);
         $productArray['size_section_name'] = $this->resolveSizeSectionName($productArray);
+
+        saveUserVisit(productId: $productArray['id'] ?? null, shopId: $productArray['shop_id'] ?? null, categoryId: $productArray['category_id'] ?? null);
 
         return $productArray;
     }

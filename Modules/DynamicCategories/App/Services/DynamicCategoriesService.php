@@ -30,6 +30,7 @@ class DynamicCategoriesService
         if (!$categoryId) {
             return ['sections' => []];
         }
+        saveUserVisit(categoryId: $categoryId);
 
         $emirateId = 0;
         $regionId = 0;

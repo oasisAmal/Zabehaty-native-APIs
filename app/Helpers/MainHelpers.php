@@ -10,6 +10,7 @@ use Shivella\Bitly\Facade\Bitly;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
 use libphonenumber\PhoneNumberUtil;
+use Modules\Users\App\Models\UserVisit;
 use Modules\Countries\App\Models\Country;
 use Propaganistas\LaravelPhone\PhoneNumber;
 use Modules\Users\App\Models\UserSearchWord;
@@ -650,5 +651,22 @@ function saveSearchWord($searchWord)
         'word' => $searchWord,
     ], [
         'repeats_count' => DB::raw('repeats_count + 1'),
+    ]);
+}
+
+function saveUserVisit($productId = null, $shopId = null, $categoryId = null) 
+{
+    $user = auth('api')->user();
+    if (!$user) {
+        return;
+    }
+
+    UserVisit::updateOrCreate([
+        'user_id' => $user->id,
+        'product_id' => $productId ?? null,
+        'shop_id' => $shopId ?? null,
+        'category_id' => $categoryId ?? null,
+    ], [
+        'visit_count' => DB::raw('visit_count + 1'),
     ]);
 }
