@@ -9,9 +9,10 @@ use App\Helpers\DatabaseHelpers;
 use Shivella\Bitly\Facade\Bitly;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\URL;
+use libphonenumber\PhoneNumberUtil;
 use Modules\Countries\App\Models\Country;
 use Propaganistas\LaravelPhone\PhoneNumber;
-use libphonenumber\PhoneNumberUtil;
+use Modules\Users\App\Models\UserSearchWord;
 use App\Services\Common\DatabaseConnectionService;
 
 /**
@@ -290,7 +291,7 @@ function getCountryCodeFromMobile($number)
 {
     // Clean the number (remove non-digits except +)
     $cleanNumber = preg_replace('/[^0-9+]/', '', $number);
-    
+
     try {
         // First, try to parse the number as-is (if it already has country code like +971...)
         $phone = new PhoneNumber($cleanNumber);
@@ -308,7 +309,7 @@ function getCountryCodeFromMobile($number)
 
     // If parsing failed, try common GCC countries based on number patterns
     $commonCountries = ['AE', 'SA', 'KW', 'QA', 'OM', 'BH', 'US', 'EG'];
-    
+
     foreach ($commonCountries as $countryCode) {
         try {
             $phone = new PhoneNumber($normalizedNumber, $countryCode);
@@ -347,7 +348,7 @@ function getCountryCodeNumberFromMobile($number)
 {
     // Clean the number (remove non-digits except +)
     $cleanNumber = preg_replace('/[^0-9+]/', '', $number);
-    
+
     try {
         // First, try to parse the number as-is (if it already has country code like +971...)
         $phone = new PhoneNumber($cleanNumber);
@@ -366,7 +367,7 @@ function getCountryCodeNumberFromMobile($number)
 
     // If parsing failed, try common GCC countries based on number patterns
     $commonCountries = ['AE', 'SA', 'KW', 'QA', 'OM', 'BH', 'US', 'EG'];
-    
+
     foreach ($commonCountries as $countryCode) {
         try {
             $phone = new PhoneNumber($normalizedNumber, $countryCode);
@@ -617,21 +618,37 @@ function getAllChildCategoriesIds($categoryId)
 {
     $connection = DatabaseConnectionService::getConnection();
     $allChildren = [];
-    
+
     $directChildren = $connection
         ->table('categories')
         ->where('parent_id', $categoryId)
         ->pluck('id')
         ->toArray();
-    
+
     $allChildren = array_merge($allChildren, $directChildren);
-    
+
     foreach ($directChildren as $childId) {
         $nestedChildren = getAllChildCategoriesIds($childId);
         $allChildren = array_merge($allChildren, $nestedChildren);
     }
 
     $allChildren = array_merge($allChildren, [$categoryId]);
-    
+
     return array_unique($allChildren);
+}
+
+
+function saveSearchWord($searchWord)
+{
+    $user = auth('api')->user();
+    if (!$user) {
+        return;
+    }
+
+    UserSearchWord::updateOrCreate([
+        'user_id' => $user->id,
+        'word' => $searchWord,
+    ], [
+        'repeats_count' => DB::raw('repeats_count + 1'),
+    ]);
 }

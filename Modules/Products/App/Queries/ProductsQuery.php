@@ -69,6 +69,7 @@ class ProductsQuery
                 $query->where('products.name', 'like', '%' . $filters['search_word'] . '%')
                     ->orWhere('products.name_en', 'like', '%' . $filters['search_word'] . '%');
             });
+            saveSearchWord($filters['search_word']);
         }
 
         return $query->orderBy('products.id', 'desc')->paginate($perPage);

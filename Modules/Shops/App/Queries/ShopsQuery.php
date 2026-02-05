@@ -40,6 +40,7 @@ class ShopsQuery
                 $query->where('shops.name', 'like', '%' . $filters['search_word'] . '%')
                     ->orWhere('shops.name_en', 'like', '%' . $filters['search_word'] . '%');
             });
+            saveSearchWord($filters['search_word']);
         }
 
         return $query->orderBy('shops.id', 'desc')->paginate($perPage);

@@ -2,10 +2,13 @@
 
 namespace Modules\Users\App\Models;
 
+use App\Traits\CountryDatabaseTrait;
 use Illuminate\Database\Eloquent\Model;
 
 class UserSearchWord extends Model
 {
+    use CountryDatabaseTrait;
+    
     /**
      * The table associated with the model.
      *
