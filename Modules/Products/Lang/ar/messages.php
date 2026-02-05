@@ -13,6 +13,7 @@ return [
         'shop_id' => 'رقم المتجر',
         'dynamic_shop_section_id' => 'رقم قسم المتاجر الديناميكية',
         'dynamic_shop_menu_id' => 'رقم قسم المتاجر الديناميكية',
+        'search_word' => 'البحث',
         'per_page' => 'عدد العناصر في الصفحة',
     ],
 ];

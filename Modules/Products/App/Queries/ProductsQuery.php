@@ -64,6 +64,13 @@ class ProductsQuery
         $this->applyDynamicCategoryFilters($query, $filters);
         $this->applyDynamicShopFilters($query, $filters);
 
+        if (isset($filters['search_word']) && $filters['search_word'] !== '') {
+            $query->where(function ($query) use ($filters) {
+                $query->where('products.name', 'like', '%' . $filters['search_word'] . '%')
+                    ->orWhere('products.name_en', 'like', '%' . $filters['search_word'] . '%');
+            });
+        }
+
         return $query->orderBy('products.id', 'desc')->paginate($perPage);
     }
 

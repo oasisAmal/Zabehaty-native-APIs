@@ -36,6 +36,13 @@ class SearchServiceProvider extends ServiceProvider
     {
         $this->app->register(EventServiceProvider::class);
         $this->app->register(RouteServiceProvider::class);
+
+        $this->app->singleton(
+            \Modules\Search\App\Services\Builders\Factories\SectionBuilderFactory::class
+        );
+        $this->app->singleton(
+            \Modules\Search\App\Services\Builders\SectionBuilder::class
+        );
     }
 
     /**

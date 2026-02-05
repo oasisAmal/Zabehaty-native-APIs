@@ -29,6 +29,7 @@ class ShopIndexRequest extends FormRequest
             'category_id' => ['sometimes', 'nullable', 'integer', 'exists:categories,id'],
             'dynamic_category_section_id' => ['sometimes', 'nullable', 'integer', 'exists:dynamic_category_sections,id'],
             'dynamic_category_menu_id' => ['sometimes', 'nullable', 'integer', 'exists:dynamic_category_section_items,menu_item_parent_id'],
+            'search_word' => ['sometimes', 'nullable', 'string'],
             'per_page' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:30'],
         ];
     }
@@ -68,6 +69,7 @@ class ShopIndexRequest extends FormRequest
             'dynamic_category_menu_id.exists' => __('validation.exists'),
             'category_id.integer' => __('validation.integer'),
             'category_id.exists' => __('validation.exists'),
+            'search_word.string' => __('validation.string'),
             'per_page.integer' => __('validation.integer'),
             'per_page.min' => __('validation.min.string'),
             'per_page.max' => __('validation.max.string'),
@@ -82,6 +84,7 @@ class ShopIndexRequest extends FormRequest
             'dynamic_category_section_id' => __('shops::messages.attributes.dynamic_category_section_id'),
             'dynamic_category_menu_id' => __('shops::messages.attributes.dynamic_category_menu_id'),
             'category_id' => __('shops::messages.attributes.category_id'),
+            'search_word' => __('shops::messages.attributes.search_word'),
             'per_page' => __('shops::messages.attributes.per_page'),
         ];
     }

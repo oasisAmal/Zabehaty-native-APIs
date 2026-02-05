@@ -35,6 +35,13 @@ class ShopsQuery
 
         $this->applyDynamicCategoryFilters($query, $filters);
 
+        if (isset($filters['search_word']) && $filters['search_word'] !== '') {
+            $query->where(function ($query) use ($filters) {
+                $query->where('shops.name', 'like', '%' . $filters['search_word'] . '%')
+                    ->orWhere('shops.name_en', 'like', '%' . $filters['search_word'] . '%');
+            });
+        }
+
         return $query->orderBy('shops.id', 'desc')->paginate($perPage);
     }
 

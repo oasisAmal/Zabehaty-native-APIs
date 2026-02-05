@@ -4,53 +4,36 @@ namespace Modules\Search\App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Modules\Search\App\Services\SearchService;
+use Modules\Search\App\Transformers\SearchResource;
 
 class SearchController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    protected SearchService $searchService;
+
+    public function __construct(SearchService $searchService)
     {
-        return view('search::index');
+        $this->searchService = $searchService;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+   /**
+    * Prepare search data
+    *
+    * @param Request $request
+    * @return \Illuminate\Http\JsonResponse
+    */
+    public function prepare(Request $request)
     {
-        return view('search::create');
+        try {
+            $searchData = $this->searchService->getSearchData($request);
+            return responseSuccessData(SearchResource::make($searchData));
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            return responseErrorMessage(
+                __('search::messages.failed_to_prepare_search_data'),
+                500
+            );
+        }
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request) {}
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
-    {
-        return view('search::show');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        return view('search::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id) {}
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id) {}
 }

@@ -7,6 +7,7 @@ return [
         'dynamic_category_section_id' => 'Dynamic category section ID',
         'dynamic_category_menu_id' => 'Dynamic category menu ID',
         'category_id' => 'Category ID',
+        'search_word' => 'Search word',
         'per_page' => 'Per page',
     ],
 ];

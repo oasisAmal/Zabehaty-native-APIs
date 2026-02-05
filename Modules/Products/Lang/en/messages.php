@@ -13,6 +13,7 @@ return [
         'shop_id' => 'Shop ID',
         'dynamic_shop_section_id' => 'Dynamic shop section ID',
         'dynamic_shop_menu_id' => 'Dynamic shop menu ID',
+        'search_word' => 'Search word',
         'per_page' => 'Per page',
     ],
 ];

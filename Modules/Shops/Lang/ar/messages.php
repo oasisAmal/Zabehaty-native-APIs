@@ -7,6 +7,7 @@ return [
         'dynamic_category_section_id' => 'رقم قسم الفئات الديناميكية',
         'dynamic_category_menu_id' => 'رقم قسم الفئات الديناميكية',
         'category_id' => 'رقم الفئة',
+        'search_word' => 'البحث',
         'per_page' => 'عدد العناصر في الصفحة',
     ],
 ];
