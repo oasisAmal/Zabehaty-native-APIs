@@ -22,6 +22,7 @@ class UserCountController extends Controller
         return responseSuccessData([
             'favorites_count' => $this->userService->getFavoritesCount(auth('api')->id()),
             'cart_count' => 0,
+            'notifications_count' => 0,
         ]);
     }
 }
