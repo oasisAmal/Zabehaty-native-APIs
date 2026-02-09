@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Modules\Products\App\Services\ProductsService;
 use Modules\Products\App\Transformers\ProductCardResource;
 use Modules\Products\App\Http\Requests\ProductIndexRequest;
+use Modules\Products\App\Http\Requests\AddRemoveFavoriteRequest;
 use Modules\Products\App\Transformers\ProductDetailsResource;
 
 class ProductController extends Controller
@@ -48,7 +49,6 @@ class ProductController extends Controller
             }
             return responseSuccessData(ProductDetailsResource::make($product));
         } catch (\Exception $e) {
-            dd($e->getMessage());
             return responseErrorMessage(
                 __('products::messages.failed_to_retrieve_product_details'),
                 500,
@@ -56,4 +56,20 @@ class ProductController extends Controller
             );
         }
     }   
+
+    /**
+     * Add or remove product from favorite
+     */
+    public function addRemoveFavorite(AddRemoveFavoriteRequest $request)
+    {
+        try {
+            $result = $this->productsService->addRemoveFavorite($request->validated());
+            return responseSuccessData($result);
+        } catch (\Exception $e) {
+            return responseErrorMessage(
+                __('products::messages.failed_to_add_remove_favorite'),
+                500
+            );
+        }
+    }
 }

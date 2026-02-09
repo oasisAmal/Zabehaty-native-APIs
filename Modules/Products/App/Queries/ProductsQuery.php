@@ -63,6 +63,7 @@ class ProductsQuery
         $this->applyHomePageFilter($query, $filters);
         $this->applyDynamicCategoryFilters($query, $filters);
         $this->applyDynamicShopFilters($query, $filters);
+        $this->applyIsFavoriteFilter($query, $filters);
 
         if (isset($filters['search_word']) && $filters['search_word'] !== '') {
             $query->where(function ($query) use ($filters) {
@@ -248,5 +249,20 @@ class ProductsQuery
             ->selectRaw("badges.{$nameColumn}")
             ->whereColumn('product_badges.product_id', 'products.id')
             ->limit(1);
+    }
+
+    private function applyIsFavoriteFilter($query, array $filters): void
+    {
+        if (! array_key_exists('is_favorite', $filters)) {
+            return;
+        }
+
+        $onlyFavorites = filter_var($filters['is_favorite'], FILTER_VALIDATE_BOOLEAN);
+
+        if ($onlyFavorites) {
+            $query->whereNotNull('favourites.id');
+        } else {
+            $query->whereNull('favourites.id');
+        }
     }
 }

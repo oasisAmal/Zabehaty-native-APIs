@@ -34,6 +34,7 @@ class ProductIndexRequest extends FormRequest
             'dynamic_shop_section_id' => ['sometimes', 'nullable', 'integer', 'exists:dynamic_shop_sections,id'],
             'dynamic_shop_menu_id' => ['sometimes', 'nullable', 'integer', 'exists:dynamic_shop_section_items,menu_item_parent_id'],
             'search_word' => ['sometimes', 'nullable', 'string'],
+            'is_favorite' => ['sometimes', 'nullable', 'boolean'],
             'per_page' => ['sometimes', 'nullable', 'integer', 'min:1', 'max:30'],
         ];
     }
@@ -99,6 +100,7 @@ class ProductIndexRequest extends FormRequest
             'dynamic_shop_menu_id.integer' => __('validation.integer'),
             'dynamic_shop_menu_id.exists' => __('validation.exists'),
             'search_word.string' => __('validation.string'),
+            'is_favorite.boolean' => __('validation.boolean'),
             'per_page.integer' => __('validation.integer'),
             'per_page.min' => __('validation.min.string'),
             'per_page.max' => __('validation.max.string'),
@@ -116,6 +118,7 @@ class ProductIndexRequest extends FormRequest
             'dynamic_shop_section_id' => __('products::messages.attributes.dynamic_shop_section_id'),
             'dynamic_shop_menu_id' => __('products::messages.attributes.dynamic_shop_menu_id'),
             'search_word' => __('products::messages.attributes.search_word'),
+            'is_favorite' => __('products::messages.attributes.is_favorite'),
             'per_page' => __('products::messages.attributes.per_page'),
         ];
     }
