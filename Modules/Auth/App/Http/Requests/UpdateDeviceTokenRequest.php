@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Customers\App\Http\Requests\Api;
+namespace Modules\Auth\App\Http\Requests;
 
 use App\Enums\DeviceTokenType;
 use Illuminate\Validation\Rule;

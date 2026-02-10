@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Notifications\Services;
+namespace Modules\Notifications\App\Services;
 
 use Illuminate\Support\Facades\Log;
 use Modules\Notifications\App\Services\FCMService;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\HomePage\App\Models;
+namespace Modules\Search\App\Http\Models;
 
 use App\Traits\CountryDatabaseTrait;
 use Illuminate\Database\Eloquent\Model;
