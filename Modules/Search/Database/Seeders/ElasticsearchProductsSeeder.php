@@ -23,7 +23,7 @@ class ElasticsearchProductsSeeder extends Seeder
      */
     public function run(): void
     {
-        $indexName = config('search.elasticsearch_index_names.products', 'products');
+        $indexName = config('search.elasticsearch_index_names.products');
         $esHost = config('elastica.hosts.0', 'not set');
         $this->command->info("Elasticsearch: {$esHost}");
         $this->command->info("Creating index: {$indexName}");
