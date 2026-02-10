@@ -31,6 +31,7 @@ class ElasticsearchProductsSeeder extends Seeder
         try {
             $this->ensureIndexAndMapping($indexName);
         } catch (\Elastic\Transport\Exception\NoNodeAvailableException $e) {
+            dd('error', $e->getMessage());
             $this->command->error('Cannot reach Elasticsearch. When running in Docker use ELASTICSEARCH_HOST=elasticsearch in .env and run: php artisan config:clear');
             throw $e;
         }
