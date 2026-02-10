@@ -43,6 +43,15 @@ class SearchServiceProvider extends ServiceProvider
         $this->app->singleton(
             \Modules\Search\App\Services\Builders\SectionBuilder::class
         );
+        $this->app->singleton(
+            \Modules\Search\App\Services\Elastica\ElasticaClientService::class
+        );
+        $this->app->singleton(
+            \Modules\Search\App\Services\Elastica\ElasticaIndexService::class
+        );
+        $this->app->singleton(
+            \Modules\Search\App\Services\Elastica\ElasticaSearchService::class
+        );
     }
 
     /**
@@ -50,7 +59,9 @@ class SearchServiceProvider extends ServiceProvider
      */
     protected function registerCommands(): void
     {
-        // $this->commands([]);
+        $this->commands([
+            \Modules\Search\App\Console\IndexProductsElasticsearchCommand::class,
+        ]);
     }
 
     /**

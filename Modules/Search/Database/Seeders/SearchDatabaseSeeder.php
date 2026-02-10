@@ -11,6 +11,8 @@ class SearchDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([]);
+        $this->call([
+            ElasticsearchProductsSeeder::class,
+        ]);
     }
 }
