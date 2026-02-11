@@ -15,11 +15,19 @@ class ProductDetailsQuery
         $titleColumn = $locale === 'ar' ? 'title' : 'title_en';
         $briefColumn = $locale === 'ar' ? 'brief' : 'brief_en';
         $descriptionColumn = $locale === 'ar' ? 'description' : 'description_en';
+        $user = auth('api')->user();
+
 
         $product = $this->getCountryConnection()
             ->table('products')
             ->leftJoin('shops', 'shops.id', '=', 'products.shop_id')
             ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+            ->leftJoin('favourites', function ($join) use ($user) {
+                $join->on('favourites.product_id', '=', 'products.id');
+                if ($user) {
+                    $join->where('favourites.user_id', '=', $user->id);
+                }
+            })
             ->select([
                 'products.id',
                 'products.category_id',
@@ -40,6 +48,7 @@ class ProductDetailsQuery
                 'products.description as description_ar',
                 'products.description_en',
             ])
+            ->selectRaw('IF(favourites.id IS NULL, 0, 1) as is_favorite')
             ->selectRaw("products.{$nameColumn} as name")
             ->selectRaw("shops.{$nameColumn} as shop_name")
             ->selectRaw("categories.{$nameColumn} as category_name")
