@@ -55,6 +55,8 @@ class ElasticsearchProductsSeeder extends Seeder
                 'products.price',
                 'products.old_price',
                 'products.is_active',
+                'products.is_approved',
+                'products.department_id',
             ])
             ->where('products.is_active', true)
             ->where('products.is_approved', true)
@@ -104,6 +106,8 @@ class ElasticsearchProductsSeeder extends Seeder
             'price' => ['type' => 'float'],
             'old_price' => ['type' => 'float'],
             'is_active' => ['type' => 'boolean'],
+            'is_approved' => ['type' => 'boolean'],
+            'department_id' => ['type' => 'integer'],
         ]);
     }
 
@@ -129,6 +133,8 @@ class ElasticsearchProductsSeeder extends Seeder
             'price' => (float) ($product->price ?? 0),
             'old_price' => isset($product->old_price) ? (float) $product->old_price : null,
             'is_active' => (bool) ($product->is_active ?? true),
+            'is_approved' => (bool) ($product->is_approved ?? true),
+            'department_id' => (int) ($product->department_id ?? 0),
         ];
     }
 }

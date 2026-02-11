@@ -86,6 +86,11 @@ class SearchService
                     'size' => $limit,
                     'query' => [
                         'bool' => [
+                            'filter' => [
+                                ['term' => ['is_active' => true]],
+                                ['term' => ['is_approved' => true]],
+                                ['range' => ['department_id' => ['gt' => 0]]]
+                            ],
                             'should' => [
                                 [
                                     'multi_match' => [
