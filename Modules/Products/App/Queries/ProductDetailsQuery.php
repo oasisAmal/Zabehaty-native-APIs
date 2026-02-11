@@ -98,7 +98,6 @@ class ProductDetailsQuery
             $productArray['limited_offer_expired_at'] ?? null
         );
         $productArray['badge'] = $productArray['badge_name'] ?? null;
-        $productArray['is_favorite'] = false;
         $productArray['quantity_settings'] = [
             'min' => isset($productArray['quantity_min']) ? (float) $productArray['quantity_min'] : 0.0,
             'step' => isset($productArray['quantity_step']) ? (float) $productArray['quantity_step'] : 0.0,
