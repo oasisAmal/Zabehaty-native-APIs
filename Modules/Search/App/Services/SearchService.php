@@ -124,9 +124,14 @@ class SearchService
     protected function normalizeSearchResults(ResultSet $resultSet, array $fields, string $query, int $limit): array
     {
         $suggestions = [];
+        $locale = app()->getLocale() === 'ar' ? 'ar' : 'en';
+        $displayField = $locale === 'ar' ? 'name' : 'name_en';
+        $fallbackField = $locale === 'ar' ? 'name_en' : 'name';
 
         foreach ($resultSet->getResults() as $result) {
             $source = $result->getData();
+            $matched = false;
+
             foreach ($fields as $field) {
                 $value = $source[$field] ?? null;
                 if (!is_string($value) || $value === '') {
@@ -134,8 +139,22 @@ class SearchService
                 }
 
                 if (mb_stripos($value, $query) !== false) {
-                    $suggestions[] = $value;
+                    $matched = true;
+                    break;
                 }
+            }
+
+            if (!$matched) {
+                continue;
+            }
+
+            $displayValue = $source[$displayField] ?? null;
+            if (!is_string($displayValue) || $displayValue === '') {
+                $displayValue = $source[$fallbackField] ?? null;
+            }
+
+            if (is_string($displayValue) && $displayValue !== '') {
+                $suggestions[] = $displayValue;
             }
         }
 
