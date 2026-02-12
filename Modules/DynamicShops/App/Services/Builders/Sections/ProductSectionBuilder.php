@@ -43,7 +43,7 @@ class ProductSectionBuilder implements SectionBuilderInterface
                     'discount_percentage' => $this->resolveDiscountPercentage($item->old_price, $price),
                     'limited_offer_expired_at' => $this->resolveExpiredAtTimestamp($item->limited_offer_expired_at),
                     'badge' => $item->badge_name ?? null,
-                    'is_favorite' => false,
+                    'is_favorite' => (bool) ($item->is_favorite ?? false),
                 ];
             })
             ->values()
@@ -65,6 +65,8 @@ class ProductSectionBuilder implements SectionBuilderInterface
 
     private function buildItemsQuery(array $dynamicShopSection, string $nameColumn)
     {
+        $user = auth('api')->user();
+
         $query = $this->getConnection()
             ->table('dynamic_shop_section_items')
             ->join('products', function ($join) {
@@ -73,6 +75,12 @@ class ProductSectionBuilder implements SectionBuilderInterface
             })
             ->leftJoin('shops', 'shops.id', '=', 'products.shop_id')
             ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
+            ->leftJoin('favourites', function ($join) use ($user) {
+                $join->on('favourites.product_id', '=', 'products.id');
+                if ($user) {
+                    $join->where('favourites.user_id', '=', $user->id);
+                }
+            })
             ->select([
                 'products.id',
                 'products.image',
@@ -81,6 +89,7 @@ class ProductSectionBuilder implements SectionBuilderInterface
                 'products.has_sub_products',
                 'products.limited_offer_expired_at',
             ])
+            ->selectRaw('IF(favourites.id IS NULL, 0, 1) as is_favorite')
             ->selectRaw("products.{$nameColumn} as name")
             ->selectRaw("shops.{$nameColumn} as shop_name")
             ->selectRaw("categories.{$nameColumn} as category_name")
