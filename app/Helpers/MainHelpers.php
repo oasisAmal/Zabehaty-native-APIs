@@ -670,3 +670,49 @@ function saveUserVisit($productId = null, $shopId = null, $categoryId = null)
         'visit_count' => DB::raw('visit_count + 1'),
     ]);
 }
+
+/**
+ * Map of Arabic character variants to their base form (for search normalization).
+ *
+ * @return array<string, string>
+ */
+function arabicNormalizationMap(): array
+{
+    return [
+        'ء' => 'ا', 'أ' => 'ا', 'إ' => 'ا', 'آ' => 'ا', 'ٱ' => 'ا', 'ٲ' => 'ا', 'ٳ' => 'ا',
+        'ة' => 'ه', 'ۀ' => 'ه',
+        'ى' => 'ي', 'ۍ' => 'ي', 'ێ' => 'ي', 'ې' => 'ي', 'ۑ' => 'ي', 'ئ' => 'ي',
+        'ؤ' => 'و', 'ۏ' => 'و',
+        'ک' => 'ك',
+        '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4', '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
+        '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
+    ];
+}
+
+/**
+ * Normalize Arabic text for search (one place, uses map).
+ *
+ * @param string $text
+ * @return string
+ */
+function normalizeArabicText(string $text): string
+{
+    return strtr($text, arabicNormalizationMap());
+}
+
+/**
+ * Build SQL expression to normalize a column with the same Arabic map (for LIKE search).
+ *
+ * @param string $columnName
+ * @return string
+ */
+function arabicNormalizeColumnSql(string $columnName): string
+{
+    $sql = $columnName;
+    foreach (arabicNormalizationMap() as $from => $to) {
+        $from = addslashes($from);
+        $to = addslashes($to);
+        $sql = "REPLACE({$sql}, '{$from}', '{$to}')";
+    }
+    return $sql;
+}

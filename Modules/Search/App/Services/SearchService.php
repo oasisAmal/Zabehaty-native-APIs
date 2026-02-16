@@ -70,11 +70,14 @@ class SearchService
         $type = $data['type'] ?? SearchTypes::ALL;
         $locale = app()->getLocale() === 'ar' ? 'ar' : 'en';
         $nameColumn = $locale === 'ar' ? 'name' : 'name_en';
-        $searchPattern = '%' . $query . '%';
+        
+        $searchPattern = '%' . normalizeArabicText($query) . '%';
+        $nameSql = arabicNormalizeColumnSql('name');
+        $nameEnSql = arabicNormalizeColumnSql('name_en');
 
-        $nameFilter = function ($q) use ($searchPattern) {
-            $q->where('name', 'like', $searchPattern)
-                ->orWhere('name_en', 'like', $searchPattern);
+        $nameFilter = function ($q) use ($searchPattern, $nameSql, $nameEnSql) {
+            $q->whereRaw("{$nameSql} LIKE ?", [$searchPattern])
+                ->orWhereRaw("{$nameEnSql} LIKE ?", [$searchPattern]);
         };
 
         if ($type === SearchTypes::PRODUCTS) {
