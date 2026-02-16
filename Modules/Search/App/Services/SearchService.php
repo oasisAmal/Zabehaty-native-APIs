@@ -2,22 +2,19 @@
 
 namespace Modules\Search\App\Services;
 
-use Elastica\ResultSet;
-use Modules\Search\App\Services\Builders\SectionBuilder;
-use Modules\Search\App\Services\Cache\CacheService;
-use Modules\Search\App\Services\Elastica\ElasticaIndexService;
-use Modules\Search\App\Services\Elastica\ElasticaSearchService;
+use Modules\Products\App\Models\Product;
+use Modules\Search\Enums\SearchTypes;
 use Modules\Search\Enums\SearchSectionType;
+use Modules\Search\App\Services\Cache\CacheService;
+use Modules\Search\App\Services\Builders\SectionBuilder;
+use Modules\Shops\App\Models\Shop;
 
 class SearchService
 {
     public function __construct(
         protected SectionBuilder $sectionBuilder,
         protected CacheService $cacheService,
-        protected ElasticaSearchService $elasticaSearchService,
-        protected ElasticaIndexService $elasticaIndexService
-    ) {
-    }
+    ) {}
 
     /**
      * Prepare search data
@@ -57,10 +54,10 @@ class SearchService
     }
 
     /**
-     * Get search suggestions from Elasticsearch using multi-field search.
+     * Get search suggestions from MySQL (products and/or shops).
      *
      * @param  array  $data
-     * @return array<int, string>
+     * @return array<int, array{id: int, name: string, type: string}>
      */
     public function getSearchSuggestions(array $data): array
     {
@@ -70,99 +67,72 @@ class SearchService
         }
 
         $limit = (int) ($data['limit'] ?? 10);
+        $type = $data['type'] ?? SearchTypes::ALL;
+        $locale = app()->getLocale() === 'ar' ? 'ar' : 'en';
+        $nameColumn = $locale === 'ar' ? 'name' : 'name_en';
+        $searchPattern = '%' . $query . '%';
 
-        $indexName = config('search.elasticsearch_index_names.products');
-        $suggestFields = config('search.elasticsearch_suggest_fields.products');
+        $nameFilter = function ($q) use ($searchPattern) {
+            $q->where('name', 'like', $searchPattern)
+                ->orWhere('name_en', 'like', $searchPattern);
+        };
 
-        try {
-            if (!$this->elasticaIndexService->exists($indexName)) {
-                return [];
-            }
-
-            $resultSet = $this->elasticaSearchService->search(
-                $indexName,
-                [
-                    '_source' => $suggestFields,
-                    'size' => $limit,
-                    'query' => [
-                        'bool' => [
-                            'filter' => [
-                                ['term' => ['is_active' => true]],
-                                ['term' => ['is_approved' => true]],
-                                ['range' => ['department_id' => ['gt' => 0]]]
-                            ],
-                            'should' => [
-                                [
-                                    'multi_match' => [
-                                        'query' => $query,
-                                        'fields' => $suggestFields,
-                                        'type' => 'phrase_prefix',
-                                    ],
-                                ],
-                                [
-                                    'multi_match' => [
-                                        'query' => $query,
-                                        'fields' => $suggestFields,
-                                        'type' => 'best_fields',
-                                        'operator' => 'and',
-                                    ],
-                                ],
-                            ],
-                            'minimum_should_match' => 1,
-                        ],
-                    ],
-                ]
-            );
-
-            return $this->normalizeSearchResults($resultSet, $suggestFields, $query, $limit);
-        } catch (\Throwable $e) {
-            return [];
+        if ($type === SearchTypes::PRODUCTS) {
+            return $this->getProductSuggestions($nameColumn, $nameFilter, $limit);
         }
+
+        if ($type === SearchTypes::SHOPS) {
+            return $this->getShopSuggestions($nameColumn, $nameFilter, $limit);
+        }
+
+        $products = $this->getProductSuggestions($nameColumn, $nameFilter, $limit);
+        $shops = $this->getShopSuggestions($nameColumn, $nameFilter, $limit);
+        $merged = array_merge($products, $shops);
+
+        return array_slice($merged, 0, $limit);
     }
 
     /**
-     * Normalize ES hits to flat suggestion strings from selected fields.
-     *
-     * @param  array<int, string>  $fields
-     * @return array<int, string>
+     * @param  string  $nameColumn
+     * @param  callable  $nameFilter
+     * @param  int  $limit
+     * @return array<int, array{id: int, name: string, type: string}>
      */
-    protected function normalizeSearchResults(ResultSet $resultSet, array $fields, string $query, int $limit): array
+    private function getProductSuggestions(string $nameColumn, callable $nameFilter, int $limit): array
     {
-        $suggestions = [];
-        $locale = app()->getLocale() === 'ar' ? 'ar' : 'en';
-        $displayField = $locale === 'ar' ? 'name' : 'name_en';
-        $fallbackField = $locale === 'ar' ? 'name_en' : 'name';
+        return Product::query()
+            ->where($nameFilter)
+            ->select('id', $nameColumn)
+            ->limit($limit)
+            ->get()
+            ->map(fn ($row) => [
+                // 'id' => $row->id,
+                'name' => $row->{$nameColumn},
+                'type' => 'product',
+            ])
+            ->values()
+            ->all();
+    }
 
-        foreach ($resultSet->getResults() as $result) {
-            $source = $result->getData();
-            $matched = false;
-
-            foreach ($fields as $field) {
-                $value = $source[$field] ?? null;
-                if (!is_string($value) || $value === '') {
-                    continue;
-                }
-
-                if (mb_stripos($value, $query) !== false) {
-                    $matched = true;
-                    break;
-                }
-            }
-
-            if (!$matched) {
-                continue;
-            }
-
-            $displayValue = $source[$displayField] ?? null;
-            if (!is_string($displayValue) || $displayValue === '') {
-                $displayValue = $source[$fallbackField] ?? null;
-            }
-
-            if (is_string($displayValue) && $displayValue !== '') {
-                $suggestions[] = $displayValue;
-            }
-        }
-
-        return collect($suggestions)->unique()->slice(0, $limit)->toArray();
+    /**
+     * @param  string  $nameColumn
+     * @param  callable  $nameFilter
+     * @param  int  $limit
+     * @return array<int, array{id: int, name: string, type: string}>
+     */
+    private function getShopSuggestions(string $nameColumn, callable $nameFilter, int $limit): array
+    {
+        return Shop::query()
+            ->where($nameFilter)
+            ->select('id', $nameColumn)
+            ->limit($limit)
+            ->get()
+            ->map(fn ($row) => [
+                // 'id' => $row->id,
+                'name' => $row->{$nameColumn},
+                'type' => 'shop',
+            ])
+            ->values()
+            ->all();
     }
 }

@@ -7,5 +7,6 @@ return [
     'attributes' => [
         'query' => 'query',
         'limit' => 'limit',
+        'type' => 'type',
     ],
 ];

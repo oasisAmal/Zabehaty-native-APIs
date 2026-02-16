@@ -20,8 +20,7 @@ class ElasticaSearchService
 {
     public function __construct(
         protected ElasticaClientService $clientService
-    ) {
-    }
+    ) {}
 
     /**
      * Run a search on the given index(es).
@@ -108,6 +107,56 @@ class ElasticaSearchService
 
         $resultSet = $search->search('', null);
 
-        return $resultSet->hasSuggests() ? $resultSet->getSuggests() : [];
+        $suggestions = $resultSet->hasSuggests() ? $resultSet->getSuggests() : [];
+        return $this->normalizeSearchResults($suggestions, $fields, $text, $size);
+    }
+
+    /**
+     * Normalize ES hits to flat suggestion strings from selected fields.
+     *
+     * @param  ResultSet  $resultSet
+     * @param  array<int, string>  $fields
+     * @param  string  $query
+     * @param  int  $limit
+     * @return array<int, string>
+     */
+    protected function normalizeSearchResults(array $suggestions, array $fields, string $query, int $limit): array
+    {
+        $suggestions = [];
+        $locale = app()->getLocale() === 'ar' ? 'ar' : 'en';
+        $displayField = $locale === 'ar' ? 'name' : 'name_en';
+        $fallbackField = $locale === 'ar' ? 'name_en' : 'name';
+
+        foreach ($suggestions as $suggestion => $suggestionData) {
+            $source = $suggestionData['options'];
+            $matched = false;
+
+            foreach ($fields as $field) {
+                $value = $source[$field] ?? null;
+                if (!is_string($value) || $value === '') {
+                    continue;
+                }
+
+                if (mb_stripos($value, $query) !== false) {
+                    $matched = true;
+                    break;
+                }
+            }
+
+            if (!$matched) {
+                continue;
+            }
+
+            $displayValue = $source[$displayField] ?? null;
+            if (!is_string($displayValue) || $displayValue === '') {
+                $displayValue = $source[$fallbackField] ?? null;
+            }
+
+            if (is_string($displayValue) && $displayValue !== '') {
+                $suggestions[] = $displayValue;
+            }
+        }
+
+        return collect($suggestions)->unique()->slice(0, $limit)->toArray();
     }
 }

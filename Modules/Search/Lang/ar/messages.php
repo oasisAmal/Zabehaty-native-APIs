@@ -7,5 +7,6 @@ return [
     'attributes' => [
         'query' => 'استعلام',
         'limit' => 'الحد',
+        'type' => 'النوع',
     ],
 ];
