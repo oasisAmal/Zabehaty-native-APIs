@@ -51,7 +51,6 @@ class SearchController extends Controller
             $suggestions = $this->searchService->getSearchSuggestions($request->validated());
             return responseSuccessData($suggestions);
         } catch (\Exception $e) {
-            dd($e->getMessage());
             return responseErrorMessage(
                 __('search::messages.failed_to_get_search_suggestions'),
                 500
