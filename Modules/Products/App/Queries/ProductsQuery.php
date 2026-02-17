@@ -59,7 +59,7 @@ class ProductsQuery
                     ->orWhereExists($this->activeSubProductsExistsSubQuery());
             });
 
-        // $this->applyProductVisibility($query);
+        $this->applyProductVisibility($query);
 
         $this->applyHomePageFilter($query, $filters);
         $this->applyDynamicCategoryFilters($query, $filters);
