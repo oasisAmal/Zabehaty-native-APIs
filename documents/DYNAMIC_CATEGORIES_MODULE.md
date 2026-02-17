@@ -277,7 +277,10 @@ Each section builder implements `hasMoreItems()` to determine if there are addit
 
 **Shared Query/Visibility Helpers:**
 - Builders reuse a shared trait (`UsesDynamicCategoriesQueryBuilder`) to avoid duplication.
-- The trait provides the country-aware DB connection, default address resolution, and reusable visibility subqueries (product/shop/category).
+- The trait provides the country-aware DB connection, default address resolution, and visibility helpers that filter by the user's default address (emirate + region) and optional `is_visible` on visibility tables (`product_visibilities`, `shop_visibilities`, `category_visibilities`).
+- **`applyIsVisibleVisibility`**: JOIN-based; used when the main query already has the entity table. Joins the visibility table and filters by `emirate_id`, `region_ids` (JSON contains), and `is_visible = 1`. Used by `ShopSectionBuilder` and `ProductSectionBuilder` with parameters: `(query, visibilityTable, visibilityFkColumn, mainEntityIdColumn, defaultAddress)`.
+- **`applyIsVisibleVisibilityExists`**: WHERE EXISTS subquery; used when the main query must not be joined (e.g. banner section with OR branches per item type). Same filters. Used by `BannerSectionBuilder` for product/shop/category items.
+- Legacy helpers (`applyVisibilityExists`, category/shop through products/shop categories) remain available for region-based visibility (emirate + region_ids null or contains).
 
 #### MenuItemsSectionBuilder
 
@@ -349,7 +352,7 @@ Each item in the menu items section includes:
 
 #### ProductSectionBuilder
 
-Builds product sections via Query Builder and applies full visibility rules (product + shop + category). It also mirrors the product active conditions for price/approval/department and calculates derived fields like price and discount.
+Builds product sections via Query Builder and applies full visibility rules (product visibility via `applyIsVisibleVisibility` on `product_visibilities` with emirate, region, and `is_visible = 1`; plus shop and category visibility as applicable). It also mirrors the product active conditions for price/approval/department and calculates derived fields like price and discount.
 
 ```php
 public function build(DynamicCategorySection $dynamicCategorySection): array
@@ -383,7 +386,7 @@ Filters out null items before counting to ensure accurate pagination indication.
 
 #### ShopSectionBuilder
 
-Builds shop sections via Query Builder and applies shop + category visibility rules to ensure shops are shown only when both visibility layers pass.
+Builds shop sections via Query Builder and applies shop visibility via `applyIsVisibleVisibility` on `shop_visibilities` (emirate, region, `is_visible = 1`) and category visibility rules so shops are shown only when both visibility layers pass.
 
 ```php
 public function build(DynamicCategorySection $dynamicCategorySection): array
@@ -417,7 +420,7 @@ Filters out null items before counting to ensure accurate pagination indication.
 
 #### BannerSectionBuilder
 
-Builds banner sections via Query Builder. If a banner is linked to a product/shop/category, it is returned only when the linked item passes its visibility rules. Unlinked banners remain visible.
+Builds banner sections via Query Builder. If a banner is linked to a product/shop/category, it is returned only when the linked item passes its visibility rules (using `applyIsVisibleVisibilityExists` for direct product/shop/category visibility with emirate, region, and `is_visible = 1`). Unlinked banners remain visible.
 
 ```php
 public function build(DynamicCategorySection $dynamicCategorySection): array
@@ -878,10 +881,11 @@ The module fully supports the multi-country database system:
 
 Sections can be filtered by location:
 
-- **Emirate Filter**: `emirate_ids` JSON array
-- **Region Filter**: `region_ids` JSON array
+- **Emirate Filter**: `emirate_ids` JSON array on the section
+- **Region Filter**: `region_ids` JSON array on the section
 - **Global Sections**: When both are null, section shows for all locations (within the category)
 - **Category Filter**: `category_id` field (required)
+- **Item visibility**: Product, shop, and category items are filtered by the user's default address using the visibility tables; builders use `applyIsVisibleVisibility` / `applyIsVisibleVisibilityExists` with `emirate_id`, `region_ids` (JSON contains), and `is_visible = 1`.
 
 **Note:** Dynamic Categories applies visibility rules directly in the builders for category responses, so model scopes are not required for these endpoints. Other parts of the system may still rely on the model scopes.
 

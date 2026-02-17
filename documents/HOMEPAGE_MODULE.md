@@ -248,7 +248,10 @@ interface SectionBuilderInterface
 
 **Shared Query/Visibility Helpers:**
 - Builders reuse a shared trait (`UsesHomepageQueryBuilder`) to avoid duplication.
-- The trait provides the country-aware DB connection, default address resolution, and reusable visibility subqueries (product/shop/category).
+- The trait provides the country-aware DB connection, default address resolution, and visibility helpers that filter by the user's default address (emirate + region) and `is_visible = 1` on visibility tables (`product_visibilities`, `shop_visibilities`, `category_visibilities`).
+- **`applyIsVisibleVisibility`**: JOIN-based; used when the main query already has the entity table (e.g. shops, categories, products). Joins the visibility table and filters by `emirate_id`, `region_ids` (JSON contains), and `is_visible = 1`. Used by `ShopSectionBuilder`, `CategorySectionBuilder`, and `ProductSectionBuilder` with parameters: `(query, visibilityTable, visibilityFkColumn, mainEntityIdColumn, defaultAddress)`.
+- **`applyIsVisibleVisibilityExists`**: WHERE EXISTS subquery; used when the main query must not be joined (e.g. banner section with OR branches per item type). Same filters. Used by `BannerSectionBuilder` for product/shop/category items.
+- **Through helpers** (category through products, shop through products, category through shop categories): used for banner product/shop items to enforce category and shop visibility via related tables; they use `applyVisibilityExists`-style subqueries (emirate + region; optional `is_visible` depending on implementation).
 
 #### ProductSectionBuilder
 
@@ -308,7 +311,11 @@ public function build(array $homePage): array
 
 #### BannerSectionBuilder
 
-Builds banner sections via Query Builder. If a banner is linked to a product/shop/category, it is returned only when the linked item passes its visibility rules. Unlinked banners remain visible.
+Builds banner sections via Query Builder. If a banner is linked to a product/shop/category, it is returned only when the linked item passes its visibility rules (using `applyIsVisibleVisibilityExists` and the "through" helpers). Unlinked banners or items with null `item_id` remain visible; items whose type is not product/shop/category are shown without visibility checks.
+
+- **Products**: Must pass product visibility (`applyIsVisibleVisibilityExists` on `product_visibilities`), category visibility through products, and either have no shop or pass shop visibility through products.
+- **Shops**: Must pass shop visibility (`applyIsVisibleVisibilityExists` on `shop_visibilities`) and category visibility through shop categories.
+- **Categories**: Must pass category visibility (`applyIsVisibleVisibilityExists` on `category_visibilities`).
 
 ```php
 public function build(array $homePage): array
@@ -323,6 +330,8 @@ public function build(array $homePage): array
         'id' => $item->id,
         'image_url' => $this->getImageUrl($item),
         'item_type' => $this->getItemTypeName($item->item_type),
+        'item_id' => $item->item_id ?? 0,
+        'external_link' => $item->external_link ?? '',
     ])->toArray();
 }
 ```
@@ -638,12 +647,14 @@ $cacheService->clearAllHomePageCache();
 
 **Backend Interface:**
 - Sections with **no items** will not appear on the homepage
-- Sections are automatically filtered by location if `emirate_id` or `region_ids` are set
+- Sections are automatically filtered by location if `emirate_ids` or `region_ids` are set on the section
+- Item visibility (products, shops, categories) is enforced via visibility tables: items are shown only when a matching row exists in `product_visibilities` / `shop_visibilities` / `category_visibilities` with the user's emirate, region (JSON contains), and `is_visible = 1`
 - Sections are ordered by the `sorting` field (ascending)
 
 **Best Practices:**
 - Always ensure sections have at least one item before publishing
 - Use appropriate sorting values to control display order
+- Ensure visibility tables have the correct `emirate_id`, `region_ids`, and `is_visible` for items that should appear per location
 - Test location filtering with different user addresses
 - Clear cache after making changes to see updates immediately
 
@@ -705,11 +716,12 @@ The module fully supports the multi-country database system:
 
 Sections can be filtered by location:
 
-- **Emirate Filter**: `emirate_ids` JSON array
-- **Region Filter**: `region_ids` JSON array
+- **Emirate Filter**: `emirate_ids` JSON array on the section
+- **Region Filter**: `region_ids` JSON array on the section
 - **Global Sections**: When both are null, section shows for all locations
+- **Item visibility**: Products, shops, and categories are filtered by the user's default address using the visibility tables (`product_visibilities`, `shop_visibilities`, `category_visibilities`). A row must exist with matching `emirate_id`, `region_ids` (JSON contains the user's region), and `is_visible = 1`.
 
-**Note:** The homepage uses Query Builder and applies visibility rules directly in the builders, so model scopes are not required for homepage responses. Other parts of the system may still rely on the model scopes.
+**Note:** The homepage uses Query Builder and applies visibility rules directly in the builders (via `UsesHomepageQueryBuilder`), so model scopes are not required for homepage responses. Other parts of the system may still rely on the model scopes.
 
 ## Caching Strategy
 
@@ -866,13 +878,10 @@ php artisan country:db migrate --country=AE
 
 ### Planned Features
 
-1. **Banner Section Builder**: Complete implementation with BannerCardResource
-2. **Shop Section Builder**: Complete implementation with ShopCardResource
-3. **Location-Based Filtering**: Enable MatchedDefaultAddressScope
-4. **User Stories**: Implement user stories functionality
-5. **Section Templates**: Pre-defined section templates
-6. **A/B Testing**: Support for multiple homepage variants
-7. **Analytics**: Track section performance
+1. **User Stories**: Implement user stories functionality
+2. **Section Templates**: Pre-defined section templates
+3. **A/B Testing**: Support for multiple homepage variants
+4. **Analytics**: Track section performance
 
 ## Related Documentation
 
