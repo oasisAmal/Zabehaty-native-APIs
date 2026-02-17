@@ -54,12 +54,13 @@ class ProductDetailsQuery
             ->selectRaw("categories.{$nameColumn} as category_name")
             ->selectSub($this->minSubProductPriceSubQuery(), 'min_sub_price')
             ->selectSub($this->badgeNameSubQuery($nameColumn), 'badge_name')
-            ->where('products.id', $id)
-            ->first();
+            ->where('products.id', $id);
 
         $this->applyProductVisibility($product);
 
-        if (! $product) {
+        $product = $product->first();
+
+        if (!$product) {
             return null;
         }
 
