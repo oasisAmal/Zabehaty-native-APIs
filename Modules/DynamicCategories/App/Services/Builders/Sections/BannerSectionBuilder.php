@@ -92,6 +92,76 @@ class BannerSectionBuilder implements SectionBuilderInterface
         $shopType = Shop::class;
         $categoryType = Category::class;
 
+        // old implementation
+        // $query->where(function ($outerQuery) use ($defaultAddress, $productType, $shopType, $categoryType) {
+        //     $outerQuery->whereNull('item_id')
+        //         ->orWhereNotIn('item_type', [$productType, $shopType, $categoryType])
+        //         ->orWhere(function ($typedQuery) use ($defaultAddress, $productType, $shopType, $categoryType) {
+        //             $typedQuery->where(function ($productQuery) use ($defaultAddress, $productType) {
+        //                 $productQuery->where('item_type', $productType)
+        //                     ->where(function ($productVisibilityQuery) use ($defaultAddress) {
+        //                         $this->applyVisibilityExists(
+        //                             $productVisibilityQuery,
+        //                             'product_visibilities',
+        //                             'product_id',
+        //                             'dynamic_category_section_items.item_id',
+        //                             $defaultAddress
+        //                         );
+        //                     })
+        //                     ->where(function ($categoryVisibilityQuery) use ($defaultAddress) {
+        //                         $this->applyCategoryVisibilityThroughProducts(
+        //                             $categoryVisibilityQuery,
+        //                             'dynamic_category_section_items.item_id',
+        //                             $defaultAddress
+        //                         );
+        //                     })
+        //                     ->where(function ($shopQuery) use ($defaultAddress) {
+        //                         $shopQuery->whereExists(function ($subQuery) {
+        //                             $subQuery->selectRaw('1')
+        //                                 ->from('products')
+        //                                 ->whereColumn('products.id', 'dynamic_category_section_items.item_id')
+        //                                 ->whereNull('products.shop_id');
+        //                         })
+        //                         ->orWhere(function ($shopVisibilityQuery) use ($defaultAddress) {
+        //                             $this->applyShopVisibilityThroughProducts(
+        //                                 $shopVisibilityQuery,
+        //                                 'dynamic_category_section_items.item_id',
+        //                                 $defaultAddress
+        //                             );
+        //                         });
+        //                     });
+        //             })
+        //             ->orWhere(function ($shopQuery) use ($defaultAddress, $shopType) {
+        //                 $shopQuery->where('item_type', $shopType)
+        //                     ->where(function ($shopVisibilityQuery) use ($defaultAddress) {
+        //                         $this->applyShopVisibilityByShopId(
+        //                             $shopVisibilityQuery,
+        //                             'dynamic_category_section_items.item_id',
+        //                             $defaultAddress
+        //                         );
+        //                     })
+        //                     ->where(function ($categoryVisibilityQuery) use ($defaultAddress) {
+        //                         $this->applyCategoryVisibilityThroughShopCategories(
+        //                             $categoryVisibilityQuery,
+        //                             'dynamic_category_section_items.item_id',
+        //                             $defaultAddress
+        //                         );
+        //                     });
+        //             })
+        //             ->orWhere(function ($categoryQuery) use ($defaultAddress, $categoryType) {
+        //                 $categoryQuery->where('item_type', $categoryType)
+        //                     ->where(function ($categoryVisibilityQuery) use ($defaultAddress) {
+        //                         $this->applyCategoryVisibilityByCategoryId(
+        //                             $categoryVisibilityQuery,
+        //                             'dynamic_category_section_items.item_id',
+        //                             $defaultAddress
+        //                         );
+        //                     });
+        //             });
+        //         });
+        // });
+
+        // new implementation
         $query->where(function ($outerQuery) use ($defaultAddress, $productType, $shopType, $categoryType) {
             $outerQuery->whereNull('item_id')
                 ->orWhereNotIn('item_type', [$productType, $shopType, $categoryType])
@@ -99,64 +169,39 @@ class BannerSectionBuilder implements SectionBuilderInterface
                     $typedQuery->where(function ($productQuery) use ($defaultAddress, $productType) {
                         $productQuery->where('item_type', $productType)
                             ->where(function ($productVisibilityQuery) use ($defaultAddress) {
-                                $this->applyVisibilityExists(
+                                $this->applyIsVisibleVisibilityExists(
                                     $productVisibilityQuery,
                                     'product_visibilities',
                                     'product_id',
                                     'dynamic_category_section_items.item_id',
                                     $defaultAddress
                                 );
-                            })
-                            ->where(function ($categoryVisibilityQuery) use ($defaultAddress) {
-                                $this->applyCategoryVisibilityThroughProducts(
-                                    $categoryVisibilityQuery,
-                                    'dynamic_category_section_items.item_id',
-                                    $defaultAddress
-                                );
-                            })
-                            ->where(function ($shopQuery) use ($defaultAddress) {
-                                $shopQuery->whereExists(function ($subQuery) {
-                                    $subQuery->selectRaw('1')
-                                        ->from('products')
-                                        ->whereColumn('products.id', 'dynamic_category_section_items.item_id')
-                                        ->whereNull('products.shop_id');
-                                })
-                                ->orWhere(function ($shopVisibilityQuery) use ($defaultAddress) {
-                                    $this->applyShopVisibilityThroughProducts(
+                            });
+                    })
+                        ->orWhere(function ($shopQuery) use ($defaultAddress, $shopType) {
+                            $shopQuery->where('item_type', $shopType)
+                                ->where(function ($shopVisibilityQuery) use ($defaultAddress) {
+                                    $this->applyIsVisibleVisibilityExists(
                                         $shopVisibilityQuery,
+                                        'shop_visibilities',
+                                        'shop_id',
                                         'dynamic_category_section_items.item_id',
                                         $defaultAddress
                                     );
                                 });
-                            });
-                    })
-                    ->orWhere(function ($shopQuery) use ($defaultAddress, $shopType) {
-                        $shopQuery->where('item_type', $shopType)
-                            ->where(function ($shopVisibilityQuery) use ($defaultAddress) {
-                                $this->applyShopVisibilityByShopId(
-                                    $shopVisibilityQuery,
-                                    'dynamic_category_section_items.item_id',
-                                    $defaultAddress
-                                );
-                            })
-                            ->where(function ($categoryVisibilityQuery) use ($defaultAddress) {
-                                $this->applyCategoryVisibilityThroughShopCategories(
-                                    $categoryVisibilityQuery,
-                                    'dynamic_category_section_items.item_id',
-                                    $defaultAddress
-                                );
-                            });
-                    })
-                    ->orWhere(function ($categoryQuery) use ($defaultAddress, $categoryType) {
-                        $categoryQuery->where('item_type', $categoryType)
-                            ->where(function ($categoryVisibilityQuery) use ($defaultAddress) {
-                                $this->applyCategoryVisibilityByCategoryId(
-                                    $categoryVisibilityQuery,
-                                    'dynamic_category_section_items.item_id',
-                                    $defaultAddress
-                                );
-                            });
-                    });
+                        })
+                        ->orWhere(function ($categoryQuery) use ($defaultAddress, $categoryType) {
+                            $categoryQuery->where('item_type', $categoryType)
+                                ->where(function ($categoryVisibilityQuery) use ($defaultAddress) {
+                                    $this->applyIsVisibleVisibilityExists(
+                                        $categoryVisibilityQuery,
+                                        'category_visibilities',
+                                        'category_id',
+                                        'dynamic_category_section_items.item_id',
+                                        $defaultAddress
+                                    );
+                                });
+                        });
                 });
         });
     }

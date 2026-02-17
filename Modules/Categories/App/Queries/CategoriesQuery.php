@@ -51,20 +51,23 @@ class CategoriesQuery
         if (! $defaultAddress) {
             return;
         }
+        
+        // old implementation
+        // $regionId = $defaultAddress->region_id;
+        // $query->whereExists(function ($subQuery) use ($defaultAddress, $regionId) {
+        //     $subQuery->select(DB::raw(1))
+        //         ->from('category_visibilities')
+        //         ->whereColumn('category_visibilities.category_id', 'categories.id')
+        //         ->where('category_visibilities.emirate_id', $defaultAddress->emirate_id)
+        //         ->where(function ($regionQuery) use ($regionId) {
+        //             $regionQuery->whereNull('category_visibilities.region_ids');
+        //             if ($regionId !== null) {
+        //                 $regionQuery->orWhereJsonContains('category_visibilities.region_ids', (int) $regionId);
+        //             }
+        //         });
+        // });
 
-        $regionId = $defaultAddress->region_id;
-
-        $query->whereExists(function ($subQuery) use ($defaultAddress, $regionId) {
-            $subQuery->select(DB::raw(1))
-                ->from('category_visibilities')
-                ->whereColumn('category_visibilities.category_id', 'categories.id')
-                ->where('category_visibilities.emirate_id', $defaultAddress->emirate_id)
-                ->where(function ($regionQuery) use ($regionId) {
-                    $regionQuery->whereNull('category_visibilities.region_ids');
-                    if ($regionId !== null) {
-                        $regionQuery->orWhereJsonContains('category_visibilities.region_ids', (int) $regionId);
-                    }
-                });
-        });
+        // new implementation
+        applyIsVisibleVisibility($query, 'category_visibilities', 'category_id', 'categories.id', $defaultAddress);
     }
 }

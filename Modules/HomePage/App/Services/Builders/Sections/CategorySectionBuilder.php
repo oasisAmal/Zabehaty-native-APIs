@@ -60,12 +60,16 @@ class CategorySectionBuilder implements SectionBuilderInterface
             return;
         }
 
-        $this->applyVisibilityExists(
-            $query,
-            'category_visibilities',
-            'category_id',
-            'categories.id',
-            $defaultAddress
-        );
+        // old implementation
+        // $this->applyVisibilityExists(
+        //     $query,
+        //     'category_visibilities',
+        //     'category_id',
+        //     'categories.id',
+        //     $defaultAddress
+        // );
+
+        // new implementation
+        applyIsVisibleVisibility($query, 'category_visibilities', 'category_id', 'categories.id', $defaultAddress);
     }
 }

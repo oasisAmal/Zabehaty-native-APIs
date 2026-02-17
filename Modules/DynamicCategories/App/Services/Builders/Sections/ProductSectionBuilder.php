@@ -175,19 +175,23 @@ class ProductSectionBuilder implements SectionBuilderInterface
             return;
         }
 
-        $this->applyVisibilityExists($query, 'product_visibilities', 'product_id', 'products.id', $defaultAddress);
+        // old implementation
+        // $this->applyVisibilityExists($query, 'product_visibilities', 'product_id', 'products.id', $defaultAddress);
 
-        $query->where(function ($shopQuery) use ($defaultAddress) {
-            $shopQuery->whereNull('products.shop_id')
-                ->orWhere(function ($shopVisibilityQuery) use ($defaultAddress) {
-                    $this->applyShopVisibilityByShopId(
-                        $shopVisibilityQuery,
-                        'products.shop_id',
-                        $defaultAddress
-                    );
-                });
-        });
+        // $query->where(function ($shopQuery) use ($defaultAddress) {
+        //     $shopQuery->whereNull('products.shop_id')
+        //         ->orWhere(function ($shopVisibilityQuery) use ($defaultAddress) {
+        //             $this->applyShopVisibilityByShopId(
+        //                 $shopVisibilityQuery,
+        //                 'products.shop_id',
+        //                 $defaultAddress
+        //             );
+        //         });
+        // });
 
-        $this->applyCategoryVisibilityByCategoryId($query, 'products.category_id', $defaultAddress);
+        // $this->applyCategoryVisibilityByCategoryId($query, 'products.category_id', $defaultAddress);
+
+        // new implementation
+        applyIsVisibleVisibility($query, 'product_visibilities', 'product_id', 'products.id', $defaultAddress);
     }
 }

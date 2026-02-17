@@ -78,7 +78,11 @@ class ShopSectionBuilder implements SectionBuilderInterface
             return;
         }
 
-        $this->applyShopVisibilityByShopId($query, 'shops.id', $defaultAddress);
-        $this->applyCategoryVisibilityThroughShopCategories($query, 'shops.id', $defaultAddress);
+        // old implementation
+        // $this->applyShopVisibilityByShopId($query, 'shops.id', $defaultAddress);
+        // $this->applyCategoryVisibilityThroughShopCategories($query, 'shops.id', $defaultAddress);
+
+        // new implementation
+        applyIsVisibleVisibility($query, 'shop_visibilities', 'shop_id', 'shops.id', $defaultAddress);
     }
 }

@@ -57,6 +57,8 @@ class ProductDetailsQuery
             ->where('products.id', $id)
             ->first();
 
+        $this->applyProductVisibility($product);
+
         if (! $product) {
             return null;
         }
@@ -307,5 +309,21 @@ class ProductDetailsQuery
         }
 
         return null;
+    }
+
+    private function applyProductVisibility($product): void
+    {
+        $user = auth('api')->user();
+        if (! $user) {
+            return;
+        }
+
+        $defaultAddress = $user->defaultAddress;
+        if (! $defaultAddress) {
+            return;
+        }
+
+        // new implementation
+        applyIsVisibleVisibility($product, 'product_visibilities', 'product_id', 'products.id', $defaultAddress);
     }
 }

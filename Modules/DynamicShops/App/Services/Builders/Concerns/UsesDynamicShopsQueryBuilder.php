@@ -133,4 +133,31 @@ trait UsesDynamicShopsQueryBuilder
                 });
         });
     }
+
+    private function applyIsVisibleVisibility(
+        $query,
+        string $visibilityTable,
+        string $visibilityFkColumn,
+        string $mainEntityIdColumn,
+        object $defaultAddress
+    ): void {
+        applyIsVisibleVisibility($query, $visibilityTable, $visibilityFkColumn, $mainEntityIdColumn, $defaultAddress);
+    }
+
+    private function applyIsVisibleVisibilityExists(
+        $query,
+        string $visibilityTable,
+        string $visibilityFkColumn,
+        string $mainEntityIdColumn,
+        object $defaultAddress
+    ): void {
+        $query->whereExists(function ($subQuery) use ($visibilityTable, $visibilityFkColumn, $mainEntityIdColumn, $defaultAddress) {
+            $subQuery->selectRaw('1')
+                ->from($visibilityTable)
+                ->whereColumn("{$visibilityTable}.{$visibilityFkColumn}", $mainEntityIdColumn)
+                ->where("{$visibilityTable}.emirate_id", $defaultAddress->emirate_id)
+                ->whereJsonContains("{$visibilityTable}.region_ids", (int) $defaultAddress->region_id)
+                ->where("{$visibilityTable}.is_visible", 1);
+        });
+    }
 }

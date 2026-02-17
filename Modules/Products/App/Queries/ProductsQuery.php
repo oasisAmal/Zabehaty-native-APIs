@@ -88,49 +88,53 @@ class ProductsQuery
             return;
         }
 
-        $regionId = $defaultAddress->region_id;
+        // old implementation
+        // $regionId = $defaultAddress->region_id;
 
-        $query->whereExists(function ($subQuery) use ($defaultAddress, $regionId) {
-            $subQuery->select(DB::raw(1))
-                ->from('product_visibilities')
-                ->whereColumn('product_visibilities.product_id', 'products.id')
-                ->where('product_visibilities.emirate_id', $defaultAddress->emirate_id)
-                ->where(function ($regionQuery) use ($regionId) {
-                    $regionQuery->whereNull('product_visibilities.region_ids');
-                    if ($regionId !== null) {
-                        $regionQuery->orWhereJsonContains('product_visibilities.region_ids', (int) $regionId);
-                    }
-                });
-        });
+        // $query->whereExists(function ($subQuery) use ($defaultAddress, $regionId) {
+        //     $subQuery->select(DB::raw(1))
+        //         ->from('product_visibilities')
+        //         ->whereColumn('product_visibilities.product_id', 'products.id')
+        //         ->where('product_visibilities.emirate_id', $defaultAddress->emirate_id)
+        //         ->where(function ($regionQuery) use ($regionId) {
+        //             $regionQuery->whereNull('product_visibilities.region_ids');
+        //             if ($regionId !== null) {
+        //                 $regionQuery->orWhereJsonContains('product_visibilities.region_ids', (int) $regionId);
+        //             }
+        //         });
+        // });
 
-        $query->where(function ($shopQuery) use ($defaultAddress, $regionId) {
-            $shopQuery->whereNull('products.shop_id')
-                ->orWhereExists(function ($subQuery) use ($defaultAddress, $regionId) {
-                    $subQuery->select(DB::raw(1))
-                        ->from('shop_visibilities')
-                        ->whereColumn('shop_visibilities.shop_id', 'products.shop_id')
-                        ->where('shop_visibilities.emirate_id', $defaultAddress->emirate_id)
-                        ->where(function ($regionQuery) use ($regionId) {
-                            $regionQuery->whereNull('shop_visibilities.region_ids');
-                            if ($regionId !== null) {
-                                $regionQuery->orWhereJsonContains('shop_visibilities.region_ids', (int) $regionId);
-                            }
-                        });
-                });
-        });
+        // $query->where(function ($shopQuery) use ($defaultAddress, $regionId) {
+        //     $shopQuery->whereNull('products.shop_id')
+        //         ->orWhereExists(function ($subQuery) use ($defaultAddress, $regionId) {
+        //             $subQuery->select(DB::raw(1))
+        //                 ->from('shop_visibilities')
+        //                 ->whereColumn('shop_visibilities.shop_id', 'products.shop_id')
+        //                 ->where('shop_visibilities.emirate_id', $defaultAddress->emirate_id)
+        //                 ->where(function ($regionQuery) use ($regionId) {
+        //                     $regionQuery->whereNull('shop_visibilities.region_ids');
+        //                     if ($regionId !== null) {
+        //                         $regionQuery->orWhereJsonContains('shop_visibilities.region_ids', (int) $regionId);
+        //                     }
+        //                 });
+        //         });
+        // });
 
-        $query->whereExists(function ($subQuery) use ($defaultAddress, $regionId) {
-            $subQuery->select(DB::raw(1))
-                ->from('category_visibilities')
-                ->whereColumn('category_visibilities.category_id', 'products.category_id')
-                ->where('category_visibilities.emirate_id', $defaultAddress->emirate_id)
-                ->where(function ($regionQuery) use ($regionId) {
-                    $regionQuery->whereNull('category_visibilities.region_ids');
-                    if ($regionId !== null) {
-                        $regionQuery->orWhereJsonContains('category_visibilities.region_ids', (int) $regionId);
-                    }
-                });
-        });
+        // $query->whereExists(function ($subQuery) use ($defaultAddress, $regionId) {
+        //     $subQuery->select(DB::raw(1))
+        //         ->from('category_visibilities')
+        //         ->whereColumn('category_visibilities.category_id', 'products.category_id')
+        //         ->where('category_visibilities.emirate_id', $defaultAddress->emirate_id)
+        //         ->where(function ($regionQuery) use ($regionId) {
+        //             $regionQuery->whereNull('category_visibilities.region_ids');
+        //             if ($regionId !== null) {
+        //                 $regionQuery->orWhereJsonContains('category_visibilities.region_ids', (int) $regionId);
+        //             }
+        //         });
+        // });
+
+        // new implementation
+        applyIsVisibleVisibility($query, 'product_visibilities', 'product_id', 'products.id', $defaultAddress);
     }
 
     private function applyHomePageFilter($query, array $filters): void

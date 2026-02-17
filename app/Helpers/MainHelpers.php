@@ -654,7 +654,7 @@ function saveSearchWord($searchWord)
     ]);
 }
 
-function saveUserVisit($productId = null, $shopId = null, $categoryId = null) 
+function saveUserVisit($productId = null, $shopId = null, $categoryId = null)
 {
     $user = auth('api')->user();
     if (!$user) {
@@ -679,13 +679,44 @@ function saveUserVisit($productId = null, $shopId = null, $categoryId = null)
 function arabicNormalizationMap(): array
 {
     return [
-        'ء' => 'ا', 'أ' => 'ا', 'إ' => 'ا', 'آ' => 'ا', 'ٱ' => 'ا', 'ٲ' => 'ا', 'ٳ' => 'ا',
-        'ة' => 'ه', 'ۀ' => 'ه',
-        'ى' => 'ي', 'ۍ' => 'ي', 'ێ' => 'ي', 'ې' => 'ي', 'ۑ' => 'ي', 'ئ' => 'ي',
-        'ؤ' => 'و', 'ۏ' => 'و',
+        'ء' => 'ا',
+        'أ' => 'ا',
+        'إ' => 'ا',
+        'آ' => 'ا',
+        'ٱ' => 'ا',
+        'ٲ' => 'ا',
+        'ٳ' => 'ا',
+        'ة' => 'ه',
+        'ۀ' => 'ه',
+        'ى' => 'ي',
+        'ۍ' => 'ي',
+        'ێ' => 'ي',
+        'ې' => 'ي',
+        'ۑ' => 'ي',
+        'ئ' => 'ي',
+        'ؤ' => 'و',
+        'ۏ' => 'و',
         'ک' => 'ك',
-        '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4', '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
-        '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4', '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
+        '٠' => '0',
+        '١' => '1',
+        '٢' => '2',
+        '٣' => '3',
+        '٤' => '4',
+        '٥' => '5',
+        '٦' => '6',
+        '٧' => '7',
+        '٨' => '8',
+        '٩' => '9',
+        '۰' => '0',
+        '۱' => '1',
+        '۲' => '2',
+        '۳' => '3',
+        '۴' => '4',
+        '۵' => '5',
+        '۶' => '6',
+        '۷' => '7',
+        '۸' => '8',
+        '۹' => '9',
     ];
 }
 
@@ -715,4 +746,31 @@ function arabicNormalizeColumnSql(string $columnName): string
         $sql = "REPLACE({$sql}, '{$from}', '{$to}')";
     }
     return $sql;
+}
+
+/**
+ * Apply Is Visible Visibility
+ *
+ * @param $query
+ * @param string $visibilityTable
+ * @param string $visibilityFkColumn
+ * @param string $mainEntityIdColumn
+ * @param object $defaultAddress
+ * @return void
+ */
+function applyIsVisibleVisibility(
+    $query,
+    string $visibilityTable,
+    string $visibilityFkColumn,
+    string $mainEntityIdColumn,
+    object $defaultAddress
+): void {
+    $query->whereExists(function ($subQuery) use ($visibilityTable, $visibilityFkColumn, $mainEntityIdColumn, $defaultAddress) {
+        $subQuery->selectRaw('1')
+            ->from($visibilityTable)
+            ->whereColumn("{$visibilityTable}.{$visibilityFkColumn}", $mainEntityIdColumn)
+            ->where("{$visibilityTable}.emirate_id", $defaultAddress->emirate_id)
+            ->whereJsonContains("{$visibilityTable}.region_ids", (int) $defaultAddress->region_id)
+            ->where("{$visibilityTable}.is_visible", 1);
+    });
 }
