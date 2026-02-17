@@ -27,6 +27,7 @@ class ProductCardResource extends JsonResource
             'limited_offer_expired_at' => $this->resolveLimitedOfferTimestamp($this->limited_offer_expired_at),
             'badge' => $this->badge_name ?? null,
             'is_favorite' => (bool) ($this->is_favorite ?? false),
+            'has_addons' => (bool) ($this->has_addons ?? false),
         ];
     }
 

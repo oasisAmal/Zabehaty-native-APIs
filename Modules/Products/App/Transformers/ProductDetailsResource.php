@@ -16,6 +16,7 @@ class ProductDetailsResource extends JsonResource
         $product = is_array($this->resource) ? $this->resource : (array) $this->resource;
         $sizes = $product['sub_products'] ?? [];
         $categoryId = $product['category_id'] ?? null;
+        $addonSections = collect($product['addon_sections'] ?? []);
 
         return [
             'id' => $product['id'] ?? null,
@@ -44,8 +45,8 @@ class ProductDetailsResource extends JsonResource
                 }
                 return new ProductSizeResource((object) $sizeArray);
             }),
-            'addon_sections' => collect($product['addon_sections'] ?? [])
-                ->map(fn ($section) => new AddonSectionResource((object) $section)),
+            'addon_sections' => $addonSections->map(fn ($section) => new AddonSectionResource((object) $section)),
+            'has_addons' => $addonSections->isNotEmpty(),
         ];
     }
 }
