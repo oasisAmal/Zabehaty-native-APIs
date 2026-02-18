@@ -70,6 +70,7 @@ class RecentlyViewedProductsSectionBuilder implements SectionBuilderInterface
             ->selectRaw("categories.{$nameColumn} as category_name")
             ->selectSub($this->minSubProductPriceSubQuery(), 'min_sub_price')
             ->selectSub($this->badgeNameSubQuery($nameColumn), 'badge_name')
+            ->selectSub($this->hasAddonsSubQuery(), 'has_addons')
             ->whereIn('products.id', $productIds)
             ->where('products.is_active', true)
             ->where('products.is_approved', true)
@@ -105,6 +106,7 @@ class RecentlyViewedProductsSectionBuilder implements SectionBuilderInterface
                     'limited_offer_expired_at' => $this->resolveExpiredAtTimestamp($item->limited_offer_expired_at),
                     'badge' => $item->badge_name ?? null,
                     'is_favorite' => (bool) $item->is_favorite,
+                    'has_addons' => (bool) $item->has_addons,
                 ];
             })
             ->values()
@@ -136,6 +138,15 @@ class RecentlyViewedProductsSectionBuilder implements SectionBuilderInterface
             ->join('badges', 'badges.id', '=', 'product_badges.badge_id')
             ->selectRaw("badges.{$nameColumn}")
             ->whereColumn('product_badges.product_id', 'products.id')
+            ->limit(1);
+    }
+
+    private function hasAddonsSubQuery()
+    {
+        return $this->getCountryConnection()
+            ->table('product_addon_sections')
+            ->selectRaw('1')
+            ->whereColumn('product_addon_sections.product_id', 'products.id')
             ->limit(1);
     }
 
